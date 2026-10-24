@@ -1,31 +1,29 @@
-import type { Metadata } from 'next';
-import type { ReactNode } from 'react';
-
-import { NavBar } from '@/components/nav-bar';
-
-import './globals.css';
+import type { Metadata } from "next";
+import "./globals.css";
+import "./theme.css";
+import "./mode.css";
+import "./pages.css";
+import "./continuity.css";
+import "./loading.css";
+import "./picker.css";
 
 export const metadata: Metadata = {
-  title: {
-    default: 'MaroonWay',
-    template: '%s · MaroonWay',
+  title: "Maroonway | Build a Better TAMU Schedule",
+  description: "AI-powered course schedule recommendations for Texas A&M students.",
+  icons: {
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
   },
-  description: 'A Next.js + Tailwind CSS starter.',
 };
 
-/**
- * Wraps every route: the <html> shell, the nav bar, and the centered
- * max-width column that pages render into.
- */
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
     <html lang="en">
-      <body className="flex min-h-dvh flex-col">
-        <NavBar />
-        <main className="mx-auto flex w-full max-w-page grow flex-col gap-10 px-6 py-10">
-          {children}
-        </main>
-      </body>
+      <body className="antialiased">{children}</body>
     </html>
   );
 }
