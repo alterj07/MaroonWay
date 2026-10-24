@@ -22,7 +22,7 @@ from __future__ import annotations
 import asyncio
 import random
 from collections.abc import Callable, Iterable, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Protocol
 
