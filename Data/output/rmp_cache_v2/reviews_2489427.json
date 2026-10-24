@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "STAT660",
+      "comment": "Smart prof who cares about student learning with actual applications & not more theory than you need! There are 14 HWs but that's it, no exams. You will also see (his own photos) & hear about his many adventures, along with interesting stories that take breaks from the class, haha. He's not super tech savvy but everything is very reasonable & in R.",
+      "createdByUser": false,
+      "date": "2024-04-18 21:08:19 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTM5MjA1NjY0",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 39205664,
+      "ratingTags": "Amazing lectures --Lots of homework--Respected",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:16:21.405332+00:00"
+}

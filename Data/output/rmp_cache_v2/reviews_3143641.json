@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 4,
+      "class": "CVEN250",
+      "comment": "This class is more tedious than difficult, your given clear explanation for the projects and ample time to work on them with grading being pretty lenient. He explains things well in class and is a super nice guy, I frequently went to his office hours and he had no problem helping me. The midterm was pretty hard but its curved and the final is ez.",
+      "createdByUser": false,
+      "date": "2025-12-22 23:51:48 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 4,
+      "id": "UmF0aW5nLTQyMzc5MzQx",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 42379341,
+      "ratingTags": "Group projects--Clear grading criteria--Accessible outside class",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:53:55.275652+00:00"
+}

@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "210",
+      "comment": "Great professor. Interesting lectures, easy tests, lots of extra credit.",
+      "createdByUser": false,
+      "date": "2026-01-06 23:51:25 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQyNDUwMjQ0",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 42450244,
+      "ratingTags": "EXTRA CREDIT--Caring--Graded by few things",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 4,
+      "class": "210",
+      "comment": "This professor was very clear during lectures and open to answering questions. The instructions for his assignments and exams were also very clear.",
+      "createdByUser": false,
+      "date": "2024-12-14 22:53:00 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 4,
+      "id": "UmF0aW5nLTQwMzAwMzM5",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 40300339,
+      "ratingTags": "Participation matters--Group projects--Clear grading criteria",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:43:22.971856+00:00"
+}

@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 4,
+      "class": "CVEN-302",
+      "comment": "Very nice and easy grader, lectures are pretty boring and not super helpful.  Practice exams are very helpful",
+      "createdByUser": false,
+      "date": "2026-07-29 21:55:49 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "B+",
+      "helpfulRating": 4,
+      "id": "UmF0aW5nLTQzMzMyNDI1",
+      "isForCredit": false,
+      "isForOnlineClass": false,
+      "legacyId": 43332425,
+      "ratingTags": "Clear grading criteria",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "CVEN-302",
+      "comment": "I took CVEN 302 with Professor Jiang, lectures are super helpful on homework. Coding portion is practically done for you in the notes. There's about one homework a week. As people stop showing up to class, she give out quizzes to reword those who show up with extra credit on exams. Quizzes are completion grades only. reviews are similar to tests",
+      "createdByUser": false,
+      "date": "2026-04-20 21:57:51 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "B",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQyODgxMjI0",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 42881224,
+      "ratingTags": "EXTRA CREDIT--Amazing lectures ",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:54:02.298603+00:00"
+}

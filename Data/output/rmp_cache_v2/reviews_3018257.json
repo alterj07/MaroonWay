@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "140",
+      "comment": "he was so sweet! def one of my favorite profs. tests weren't super difficult and he was very clear on what would be on his exams. he's always there to help and is very encouraging. in class iclickers which count toward grade. there were mostly group/take-home quizzes but some in-person as well. ",
+      "createdByUser": false,
+      "date": "2024-06-02 21:16:50 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTM5NTQzNTky",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 39543592,
+      "ratingTags": "Participation matters--Caring--Accessible outside class",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:04:18.689554+00:00"
+}

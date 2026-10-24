@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 2,
+      "class": "MKTG602",
+      "comment": "I wouldn't choose to take Dr. Liu again after taking her marketing metrics masters course. She is a really smart professor but isn't great at explaining hard to understand topics in a simpler way. Most of my class was confused at the end of this course.",
+      "createdByUser": false,
+      "date": "2024-07-30 13:37:09 +0000 UTC",
+      "difficultyRating": 4,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 2,
+      "id": "UmF0aW5nLTM5NjUwODE2",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 39650816,
+      "ratingTags": "Group projects--Lecture heavy--Graded by few things",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": null
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:09:05.817445+00:00"
+}

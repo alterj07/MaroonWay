@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "MARS102",
+      "comment": "Dr. Smith is easily one of the best profs on campus. I've taken MARS 102, 305, 342, and GEOL 106 with him. He's consistent and easy to understand, super fun, and easy to talk to. He makes every lecture interesting and admits when something may be hard or boring. I could not recommend him any more! He's amazing!!",
+      "createdByUser": false,
+      "date": "2026-02-25 19:54:20 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "B",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQyNjQ0MzY4",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 42644368,
+      "ratingTags": "Amazing lectures --Clear grading criteria--Respected",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 1,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "MARS102",
+      "comment": "Insanely easy class, Dr Smith sets you up so well I have no idea how anyone could ever fail. Tests are fair and cover the broad topics of each unit. Just pay attention in class. Lab TAs are nice and grade well. No homework, just a quiz every now and then and 4 exams with the final.",
+      "createdByUser": false,
+      "date": "2025-12-14 03:55:56 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQyMjM4ODAz",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 42238803,
+      "ratingTags": "",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:16:27.356613+00:00"
+}

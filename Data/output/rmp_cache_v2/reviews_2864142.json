@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "MARB310",
+      "comment": "Dr Hala is a great professor He trys his best to male sure you understand the content in lecture even though He does his lectures \"old school\" by just writing on the board with no slides. Exams are easy and take home and he will give feedback if you miss anthing on them. Labs are moderate but are manageable if you have a good TA overall great class",
+      "createdByUser": false,
+      "date": "2026-05-05 21:28:09 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "REVIEWED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQzMDM2OTAx",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 43036901,
+      "ratingTags": "Gives good feedback--Inspirational--Caring",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:16:31.445355+00:00"
+}

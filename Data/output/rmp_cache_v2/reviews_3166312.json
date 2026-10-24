@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "STAT211",
+      "comment": "Great stats professor. New to teaching, but cares about her students. Explanations in lecture can be a bit confusing so questions and office hours are recommended if you want to do well.",
+      "createdByUser": false,
+      "date": "2026-05-12 21:21:33 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQzMTA4MTUx",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 43108151,
+      "ratingTags": "Clear grading criteria--Gives good feedback",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:15:29.147012+00:00"
+}

@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "POLS475",
+      "comment": "Very knowledgeable on the subject matter and is clearly very passionate about political science. Attendance checks every day. Grades consisted of three exams, attendance checks, and short writing assignments throughout the semester. Can't recommend her enough!",
+      "createdByUser": false,
+      "date": "2026-05-05 00:38:38 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQyODUxMzU2",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 42851356,
+      "ratingTags": "Participation matters--Gives good feedback--Accessible outside class",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:13:52.808055+00:00"
+}

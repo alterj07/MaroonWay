@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 1,
+      "class": "CVEN424",
+      "comment": "Dr.Scarfuto was a very hands off professor. Everything was done via canvas and she never fully engaged with the class. When it was time for the papers to be graded, Dr.Scarfuto was incredibly nitpicky and one mistake could drop you down to a C for that paper. Overall, I strongly recommend avoiding this professor if at all possible.",
+      "createdByUser": false,
+      "date": "2022-08-16 14:56:43 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "B",
+      "helpfulRating": 1,
+      "id": "UmF0aW5nLTM2NTg5OTM3",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 36589937,
+      "ratingTags": "Tough grader--Group projects--So many papers",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": null
+    },
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "CVEN424",
+      "comment": "Took this class during the COVID summer. Very easy grading and learned some good writing skills. Assignments are two memos, a proposal, a midterm, a final, and some minor assignments throughout.",
+      "createdByUser": false,
+      "date": "2020-08-03 23:15:12 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTMzNTU2NTg5",
+      "isForCredit": true,
+      "isForOnlineClass": true,
+      "legacyId": 33556589,
+      "ratingTags": "",
+      "teacherNote": null,
+      "textbookUse": 0,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:54:40.423998+00:00"
+}

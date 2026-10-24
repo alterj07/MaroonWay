@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 4,
+      "class": "ANTH-210",
+      "comment": "Very easy class with few assignments, so make sure to do well on them or your grade will drop. She has decently easy MC tests but some questions are straight from lecture, not the slides so definitely go to class if you want an easy A. ",
+      "createdByUser": false,
+      "date": "2024-12-09 00:33:38 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 4,
+      "id": "UmF0aW5nLTQwMTY0MzI2",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 40164326,
+      "ratingTags": "Clear grading criteria--Graded by few things",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 3,
+      "class": "ANTH-210",
+      "comment": "Was a pretty easy class, majority of content was easy and common sense however I do know a lot of people struggled which I personally do not understand how. Attending lecture is important because she will go over stuff that would not be in the slides or textbook. Overall pretty easy and good for the cultural discourse credit",
+      "createdByUser": false,
+      "date": "2024-12-08 05:53:24 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A+",
+      "helpfulRating": 3,
+      "id": "UmF0aW5nLTQwMTU3MzY3",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 40157367,
+      "ratingTags": "EXTRA CREDIT--Lecture heavy",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:43:16.889322+00:00"
+}

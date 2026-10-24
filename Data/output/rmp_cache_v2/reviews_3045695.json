@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "busn-203",
+      "comment": "Prof. Kizil is the most understanding professor. Attendance is graded, there is a quiz each week but they have multiple attempts and the lowest one gets dropped, the homeworks are tedious but not hard, and the tests are straightforward and he prepares you well. He truly loves to connect with each student and WILL help with any and all questions.",
+      "createdByUser": false,
+      "date": "2026-05-06 01:43:13 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "B+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQzMDQwMTY1",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 43040165,
+      "ratingTags": "Clear grading criteria--Gives good feedback",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "busn-203",
+      "comment": "He is an amazing professor! All homework and quizzes are online with multiple attempts. Exams are easy and straightforward, and the lowest one gets dropped. He is very understanding and accepts late work for full credit. Attendance is graded but his lectures are helpful and entertaining. Overall it was an easy course and he is a very kind prof!",
+      "createdByUser": false,
+      "date": "2024-12-09 15:16:51 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQwMTcxMjIz",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 40171223,
+      "ratingTags": "Amazing lectures --Caring",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:47:36.984003+00:00"
+}

@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "SOCI-328",
+      "comment": "Nothing crazy for the assignments, several in class activities (unannounced so go to class), and 3 papers, one being a group project with an in class presentation as the final. Great dude, he's passionate about the material which is easy to interact with. Usually announced what to read/watch to be able to engage in class dicussion the next day. ",
+      "createdByUser": false,
+      "date": "2025-12-16 22:40:28 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQyMjk0MTkx",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 42294191,
+      "ratingTags": "Participation matters--Clear grading criteria--Caring",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "SOCI-420",
+      "comment": "Professor Marlow is amazing, super chill, nice to talk to in any context. Lectures are better if you are engaging with the material and answer his questions, I wish I could take more with him. 3 coding assignments which weren't hard (resources available + an attempt to reubmit for a higher score), discussion posts/quizzes, one final, all online.",
+      "createdByUser": false,
+      "date": "2025-12-16 22:25:09 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQyMjkzNjQ1",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 42293645,
+      "ratingTags": "Clear grading criteria--Gives good feedback--Caring",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:14:54.019340+00:00"
+}

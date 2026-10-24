@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 2,
+      "class": "COSC421",
+      "comment": "This was hands down my easiest class all semester because prof. Bulut is a generous grader. The content of the course is not super relevant to construction professionals the course teaches the principles of geotechnical engineering. This course is not fit for COSC, would be a great course for engineers.",
+      "createdByUser": false,
+      "date": "2024-11-19 16:47:16 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 2,
+      "id": "UmF0aW5nLTM5OTgwNDQ2",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 39980446,
+      "ratingTags": "Lecture heavy--Graded by few things",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": null
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:52:14.937834+00:00"
+}

@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "",
+      "clarityRating": 4,
+      "class": "MATH1324",
+      "comment": "He's a really chill guy and super laid-back but doesn't really know how to teach well just yet because he's relatively new. He is extremely understanding though and made our final very easy to make up for the other difficult tests.",
+      "createdByUser": false,
+      "date": "2025-01-09 14:02:47 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A-",
+      "helpfulRating": 4,
+      "id": "UmF0aW5nLTQwNTE1NzQz",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 40515743,
+      "ratingTags": "EXTRA CREDIT--Lots of homework--Accessible outside class",
+      "teacherNote": null,
+      "textbookUse": null,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 4,
+      "class": "MATH167",
+      "comment": "Pretty standard professor. You can tell he is new, he will sometimes correct himself mid lecture. Does not really give extra credit. If you don't show up to lectures, you will be pretty lost. Tests will determine most of your grade. Tries to engage students during lectures to lighten them up a little. Very helpful when it comes to office hrs.",
+      "createdByUser": false,
+      "date": "2021-12-20 14:09:38 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "",
+      "helpfulRating": 4,
+      "id": "UmF0aW5nLTM1NjA1NzA4",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 35605708,
+      "ratingTags": "Accessible outside class--Skip class? You won't pass.",
+      "teacherNote": null,
+      "textbookUse": 0,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:04:23.764979+00:00"
+}

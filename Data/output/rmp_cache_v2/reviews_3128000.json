@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "MGMT421",
+      "comment": "She truly cares about her students! The class is very interesting and applicable. She helps students if they need help. Great prof!!!! I would take her again any day!",
+      "createdByUser": false,
+      "date": "2026-08-30 18:34:34 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQzMzk4MDI4",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 43398028,
+      "ratingTags": "Group projects--Inspirational--Caring",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "MGMT421",
+      "comment": "LOVED HER! Easily my favorite professor so far. Her married name is Gonzales, though Howdy shows Walker. She teaches clearly, keeps class engaging, and is super kind. Attendance matters, but I actually wanted to go! Classwork was manageable, exams matched lectures, and she guided us through activities. This class made me consider a career in data!",
+      "createdByUser": false,
+      "date": "2026-05-27 02:06:13 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQzMTk3MzIx",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 43197321,
+      "ratingTags": "Group projects--Gives good feedback--Caring",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:08:31.660536+00:00"
+}

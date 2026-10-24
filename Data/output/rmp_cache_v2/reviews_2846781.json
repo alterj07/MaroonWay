@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "ANTH202",
+      "comment": "Dr. Perri is a great professor. She's passionate about what she does and is a joy to be taught by. The exams are super straight forward, so long as you read the chapters & documents, getting below a B is almost impossible.",
+      "createdByUser": false,
+      "date": "2023-04-12 21:04:03 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "B+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTM3NjIxMTY1",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 37621165,
+      "ratingTags": "Get ready to read--Lecture heavy--Graded by few things",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "ANTH202",
+      "comment": "Dr. Perri is the best professor I've ever had. She's actually an incredible person, she's really cool and world-renowned and her work is fascinating, and she brings that passion to class every day. Her lectures are super engaging and she makes them interactive. If you want to do well, you'll have to read the textbook, but it's worth it.",
+      "createdByUser": false,
+      "date": "2023-04-12 19:54:04 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTM3NjIwNDY5",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 37620469,
+      "ratingTags": "Get ready to read--Participation matters--Amazing lectures ",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:43:03.138304+00:00"
+}

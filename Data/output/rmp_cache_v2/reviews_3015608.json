@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "210",
+      "comment": "I loved Ms. Andrews! She is technically a grad student. Her class offered a comprehensive, yet accessible approach to anthropology. She had very clear grading criteria that consisted of only assignments and quizzes and no exams. She is very kind and accommodating. I once turned in an assignment a day late, and she still gave me full credit.",
+      "createdByUser": false,
+      "date": "2024-05-17 06:27:40 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTM5NDgzMDc3",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 39483077,
+      "ratingTags": "EXTRA CREDIT--Clear grading criteria--Caring",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:43:25.919057+00:00"
+}

@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 2,
+      "class": "AGEC350",
+      "comment": "This class was set up as groups where every Tuesday you would take a very hard test over different chapters individually and then as a group. The mean on the individual tests was about a 40% and as a group it was about 70%. The RATs would take up a majority of your grade. And the midterm and final are set up the same awful way. DO NOT RECOMMEND.",
+      "createdByUser": false,
+      "date": "2021-12-14 15:20:05 +0000 UTC",
+      "difficultyRating": 4,
+      "flagStatus": "UNFLAGGED",
+      "grade": "C",
+      "helpfulRating": 2,
+      "id": "UmF0aW5nLTM1NTE2MjYx",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 35516261,
+      "ratingTags": "Get ready to read--Participation matters--Skip class? You won't pass.",
+      "teacherNote": null,
+      "textbookUse": 5,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 0
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:42:19.657122+00:00"
+}

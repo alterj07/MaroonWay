@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "COSC222",
+      "comment": "One of the best professors at Texas A&M. I found myself learning rather than chasing an A in his class. Weekly packbacks which aren't bad and class discussions which are a lot of fun.",
+      "createdByUser": false,
+      "date": "2024-11-20 20:06:41 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTM5OTk0NzI5",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 39994729,
+      "ratingTags": "Participation matters--Gives good feedback--Respected",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "COSC310",
+      "comment": "I took Mr. Morgan for the first class for the Minor in Leadership in the Design and Construction Professions. It's a pretty easy class, and Mr. Morgan is very inspirational in his lectures and he is a very understanding guy.",
+      "createdByUser": false,
+      "date": "2023-12-07 01:34:54 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTM4NTQ4NjEw",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 38548610,
+      "ratingTags": "Amazing lectures --Gives good feedback--Inspirational",
+      "teacherNote": null,
+      "textbookUse": null,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:52:05.902730+00:00"
+}

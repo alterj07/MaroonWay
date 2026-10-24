@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 2,
+      "class": "ECEN215",
+      "comment": "She is new to teaching, so the class is very unorganized, however, she is nice and caring and will give you plenty of opportunities to improve your grade in her class. All the exams are short and open note.",
+      "createdByUser": false,
+      "date": "2022-05-20 17:50:54 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 2,
+      "id": "UmF0aW5nLTM2MzgyNTcx",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 36382571,
+      "ratingTags": "",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:54:57.543478+00:00"
+}

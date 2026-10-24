@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "MGMT439",
+      "comment": "Karen was the sweetest professor ever. Her syllabus was easy to read and she graded her papers not very strictly. There were a ton of papers but her outline was easy to follow and made it possible to achieve a high A. She makes the class interesting but there are some long lectures since this a two and a half hour class. Just plan ahead!",
+      "createdByUser": false,
+      "date": "2022-09-01 16:36:16 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTM2NjIzNTEx",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 36623511,
+      "ratingTags": "Clear grading criteria--Gives good feedback--So many papers",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "COMM280",
+      "comment": "took a pass/fail 1 hour class for communications. she was very nice and cared about her students. class was well organized and it was laid out from the start what was expected from us. she did require attendance, but I actually wanted to go to her class. i know she teaches management but I am not sure what she is like in a harder class like that.",
+      "createdByUser": false,
+      "date": "2022-04-06 18:57:07 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "Not sure yet",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTM2MDMxNzUx",
+      "isForCredit": false,
+      "isForOnlineClass": false,
+      "legacyId": 36031751,
+      "ratingTags": "Accessible outside class--Participation matters--Caring",
+      "teacherNote": null,
+      "textbookUse": 0,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:08:35.637214+00:00"
+}

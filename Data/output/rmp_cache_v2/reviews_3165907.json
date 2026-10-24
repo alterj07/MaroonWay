@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 2,
+      "class": "fivs-308",
+      "comment": "Nice and nerdy man but lectures were a 2/10 at best. not great at explaining the concepts you need to know for the exam. All exam averages were failing. You'll guarantee pass bc of extra credit but it's Giga hard to get an A. Tests like we're graduate students and acts surprised when everyone fails. Will blame you. no good way to study for exams.",
+      "createdByUser": false,
+      "date": "2026-05-05 21:26:32 +0000 UTC",
+      "difficultyRating": 5,
+      "flagStatus": "UNFLAGGED",
+      "grade": "B",
+      "helpfulRating": 2,
+      "id": "UmF0aW5nLTQzMDM2ODcy",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 43036872,
+      "ratingTags": "EXTRA CREDIT--Lots of homework--Lecture heavy",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": null
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:59:24.476121+00:00"
+}

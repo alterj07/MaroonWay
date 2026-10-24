@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 4,
+      "class": "MARA201",
+      "comment": "Mr. Kovacevich is a great guy and a good teacher, but it's a VERY boring class that's death by PowerPoint. I feel bad because he's very passionate about what he teaches but nobody in the class shows that energy back. Two exams (open-note online) and one essay. That's it. Easy A just hard to get through and stay awake, but Kovacevich himself is good",
+      "createdByUser": false,
+      "date": "2025-12-05 03:09:14 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "REVIEWED",
+      "grade": "A",
+      "helpfulRating": 4,
+      "id": "UmF0aW5nLTQyMDUwMTk0",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 42050194,
+      "ratingTags": "Caring--Lecture heavy--Graded by few things",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:16:37.393550+00:00"
+}

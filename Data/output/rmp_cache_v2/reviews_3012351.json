@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "SOCI230",
+      "comment": "Professor Carris is super sweet and genuinely wants everyone to succeed in her class. This class had a very manageable workload with weekly writing assignments and a final project. The instructions and grading criteria are clear, so it's easy to do well. Attendance is required, but you only have to show up twice a week.",
+      "createdByUser": false,
+      "date": "2024-05-08 20:31:35 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTM5NDEwMDQz",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 39410043,
+      "ratingTags": "Clear grading criteria--Gives good feedback--Caring",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:14:45.021383+00:00"
+}

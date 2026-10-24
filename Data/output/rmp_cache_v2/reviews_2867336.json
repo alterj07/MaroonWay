@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "POLS323",
+      "comment": "Prof Armstrong is a great professor for Latin American studies. Class consisted of reading studies and papers, discussing them in class along with specifics about a certain nation in Latin America. Pretty easy, just make sure you read the papers. Attendance is included in your grade, the rest is some exams, papers, and presentations. Great class.",
+      "createdByUser": false,
+      "date": "2023-05-27 05:34:04 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTM3OTk2NTQ2",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 37996546,
+      "ratingTags": "Get ready to read--Amazing lectures --Clear grading criteria",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:13:37.834173+00:00"
+}

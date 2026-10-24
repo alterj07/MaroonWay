@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 4,
+      "class": "MGMT372",
+      "comment": "His lectures are sometimes boring because it feels like the same material over and over again, but overall easy class. He lets you &quot;contract&quot; for an A or B so basically you get to pick how much work you want to put into the class. Tests are open-book but timed and lots of short answer questions. Cold calls on students in class so be prepared.",
+      "createdByUser": false,
+      "date": "2020-11-10 00:37:28 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 4,
+      "id": "UmF0aW5nLTMzNzkwNDQ3",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 33790447,
+      "ratingTags": "Gives good feedback--Participation matters--Clear grading criteria",
+      "teacherNote": null,
+      "textbookUse": 5,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:08:24.600841+00:00"
+}

@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "PHIL251",
+      "comment": "Mr. Crist was an awesome professor and is super passionate about what he teaches. He wants students to succeed. Offered extra credit to the class and made philosophy interesting! Would definitely take this class again if I could.",
+      "createdByUser": false,
+      "date": "2021-12-16 16:29:17 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTM1NTU3MzQw",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 35557340,
+      "ratingTags": "Get ready to read--Amazing lectures--EXTRA CREDIT",
+      "teacherNote": null,
+      "textbookUse": 0,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:11:13.221774+00:00"
+}

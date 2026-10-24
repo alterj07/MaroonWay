@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 2,
+      "class": "MATH140",
+      "comment": "Difficult to understand. Doesn't really take the time to explain things. Does not give good examples of things that will be on exams.",
+      "createdByUser": false,
+      "date": "2023-05-03 01:33:03 +0000 UTC",
+      "difficultyRating": 4,
+      "flagStatus": "UNFLAGGED",
+      "grade": "C",
+      "helpfulRating": 2,
+      "id": "UmF0aW5nLTM3Nzk5MjY1",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 37799265,
+      "ratingTags": "",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": null
+    },
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 3,
+      "class": "MATH140",
+      "comment": "This class was fine. It was the same as my senior year college algebra class so it wasn't hard, it was just annoying. Prof was very sweet. Tests really weren't bad. I skimmed through my notes and did great. 1-3 videos before each class. Weekly homework that was stupid specific. Class moved so slow. But go because she does iClicker for participation",
+      "createdByUser": false,
+      "date": "2023-03-21 01:49:12 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 3,
+      "id": "UmF0aW5nLTM3NTIyNDgz",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 37522483,
+      "ratingTags": "Participation matters--Clear grading criteria--Lots of homework",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:03:43.549507+00:00"
+}

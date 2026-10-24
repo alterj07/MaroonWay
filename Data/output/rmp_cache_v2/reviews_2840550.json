@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "406",
+      "comment": "Yentes is amazing! She understand's where we are at with other classes and heavy workloads and works so well along us. She keeps your attention as she lectures and explains concepts really well, as well as will try to give you points where she can on exams. An easy grader, but has a lot of pop quizzes (but all are open note!). ",
+      "createdByUser": false,
+      "date": "2023-11-16 16:41:52 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTM4NDA0OTY4",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 38404968,
+      "ratingTags": "Participation matters--EXTRA CREDIT--Beware of pop quizzes",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:03:22.477830+00:00"
+}

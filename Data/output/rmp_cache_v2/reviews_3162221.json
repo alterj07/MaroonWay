@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 2,
+      "class": "PHIL341",
+      "comment": "Verrrry difficult",
+      "createdByUser": false,
+      "date": "2026-04-23 18:24:31 +0000 UTC",
+      "difficultyRating": 5,
+      "flagStatus": "UNFLAGGED",
+      "grade": "Not sure yet",
+      "helpfulRating": 2,
+      "id": "UmF0aW5nLTQyOTE0OTc1",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 42914975,
+      "ratingTags": "Get ready to read--Lecture heavy--Graded by few things",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": null
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:11:00.176808+00:00"
+}

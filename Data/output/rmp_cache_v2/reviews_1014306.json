@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "",
+      "clarityRating": 5,
+      "class": "8085ME",
+      "comment": "No thanks",
+      "createdByUser": false,
+      "date": "2014-12-24 23:16:31 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTI0MTg0MzM5",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 24184339,
+      "ratingTags": "",
+      "teacherNote": null,
+      "textbookUse": 5,
+      "thumbsDownTotal": 3,
+      "thumbsUpTotal": 2,
+      "wouldTakeAgain": null
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:09:55.914258+00:00"
+}

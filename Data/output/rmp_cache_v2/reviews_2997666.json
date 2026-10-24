@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 4,
+      "class": "aren430",
+      "comment": "Very kind. Needs to use a textbook to organize his class better though. Go to class, lectures may feel useless but he will see your face and that makes him more willing to help you. Most people did other things in class.",
+      "createdByUser": false,
+      "date": "2024-12-30 22:40:38 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "B",
+      "helpfulRating": 4,
+      "id": "UmF0aW5nLTQwNDYxOTc4",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 40461978,
+      "ratingTags": "",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:44:26.140398+00:00"
+}

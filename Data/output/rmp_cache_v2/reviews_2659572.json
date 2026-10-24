@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "FIVS101",
+      "comment": "Wonderful and really cares about you and your thoughts. I had her for FIVS 102. You get weekly assignments.",
+      "createdByUser": false,
+      "date": "2022-04-12 19:58:12 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTM2MDY0NzIz",
+      "isForCredit": false,
+      "isForOnlineClass": false,
+      "legacyId": 36064723,
+      "ratingTags": "",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "FIVS101",
+      "comment": "Rebecca is full of energy. It was rare that you would walk into the room and be bored. She really cares about her students and has a passion for what she teaches.",
+      "createdByUser": false,
+      "date": "2021-07-07 13:54:04 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTM0OTU2Nzg0",
+      "isForCredit": false,
+      "isForOnlineClass": false,
+      "legacyId": 34956784,
+      "ratingTags": "",
+      "teacherNote": null,
+      "textbookUse": 0,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:00:10.635912+00:00"
+}

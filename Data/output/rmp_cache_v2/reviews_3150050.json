@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 4,
+      "class": "ANTH",
+      "comment": "Dr. Monocello was a great professor! He is very specific about what he wants in terms of the homework so pay attention or you WILL lose points. There are daily quizzes over the last night's reading material. This class is reading heavy!! He also gives very good exam reviews and the exams were never very difficult just lengthy. Overall a great class",
+      "createdByUser": false,
+      "date": "2026-08-12 15:54:03 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 4,
+      "id": "UmF0aW5nLTQzMzYxOTgz",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 43361983,
+      "ratingTags": "EXTRA CREDIT--Beware of pop quizzes--Test heavy",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 4,
+      "class": "ANTH",
+      "comment": "Professor is professional, explains well, and is very understanding, as long as you pay attention in class and do the readings before class for his quizzes, you will get at least an 85 in the class, the tests are also straightforward. Overall solid professor.",
+      "createdByUser": false,
+      "date": "2026-08-03 17:54:08 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "B+",
+      "helpfulRating": 4,
+      "id": "UmF0aW5nLTQzMzQyMjU5",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 43342259,
+      "ratingTags": "Participation matters--Gives good feedback--Test heavy",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:43:35.995624+00:00"
+}

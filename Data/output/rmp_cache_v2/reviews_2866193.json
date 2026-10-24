@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "ENGL104",
+      "comment": "Amazing professor!! He is kind, understanding, and an easy grader. His ENGL 203 class felt like a REAL college class, meaning, reading interesting stories and discussing it as a class. Although it was an 8am, every class was amazing. This class taught me how to write without being worried about crazy grading. My writing improved so much! TAKE HIM!!",
+      "createdByUser": false,
+      "date": "2023-11-15 14:37:26 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTM4Mzk1NjUz",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 38395653,
+      "ratingTags": "Get ready to read--Gives good feedback--Inspirational",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "ENGL104",
+      "comment": "Great professor. Is very understanding and is always willing to help. He wants you to succeed. Take him if you can. Class involves four essays all of which are doable and a group project all of which are doable. Best prof for ENGL 104.",
+      "createdByUser": false,
+      "date": "2022-12-16 22:47:39 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTM3MTYxNzM4",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 37161738,
+      "ratingTags": "Gives good feedback--So many papers--Caring",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:56:32.881546+00:00"
+}

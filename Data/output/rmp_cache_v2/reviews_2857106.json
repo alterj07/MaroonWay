@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 4,
+      "class": "Bio-467",
+      "comment": "Dr. Keene has a very engaging lecture style, and his exams are very manageable. Go to class, and study the slides for exams and it a very reasonable course. \n",
+      "createdByUser": false,
+      "date": "2022-12-06 23:32:38 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 4,
+      "id": "UmF0aW5nLTM2OTk2NTcz",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 36996573,
+      "ratingTags": "",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:45:43.487495+00:00"
+}

@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 1,
+      "class": "ARCH305",
+      "comment": "Genuinely the most chopped class of my life. Treated as though you are a villain if you leave class on time. Did no actual teaching or feedback.",
+      "createdByUser": false,
+      "date": "2026-09-24 20:16:35 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A+",
+      "helpfulRating": 1,
+      "id": "UmF0aW5nLTQzNDQzNDUx",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 43443451,
+      "ratingTags": "",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": null
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:44:08.067916+00:00"
+}

@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "",
+      "clarityRating": 3,
+      "class": "AERO-214",
+      "comment": "not the best lecturer at all but textbook is rly good. gives a lot of practice problems & exams werent horrible. however the final was a nightmare & dropped my 94 to a B. average was 55 for some reason & they had to give a massive curve. labs were alright but it was a lil crunch getting those in on time but was never a big issue. quizzes were ok.",
+      "createdByUser": false,
+      "date": "2024-05-18 03:11:36 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "",
+      "helpfulRating": 3,
+      "id": "UmF0aW5nLTM5NDg3Nzgw",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 39487780,
+      "ratingTags": "",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 1,
+      "class": "AERO-214",
+      "comment": "Although he stresses how mechanics of materials is so important, he cannot teach the subject at all. Read off another prof's slides, and most of the writing he ever did was circling things. His TA did most of the work (quizzes, tests, labs), and graded tests harshly. P.S. If I wanted to be in a yoga class I would've taken a KINE class. ",
+      "createdByUser": false,
+      "date": "2024-05-08 02:51:56 +0000 UTC",
+      "difficultyRating": 4,
+      "flagStatus": "UNFLAGGED",
+      "grade": "Not sure yet",
+      "helpfulRating": 1,
+      "id": "UmF0aW5nLTM5NDAxMjQ5",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 39401249,
+      "ratingTags": "Tough grader--Get ready to read--Beware of pop quizzes",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": null
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:41:32.521069+00:00"
+}

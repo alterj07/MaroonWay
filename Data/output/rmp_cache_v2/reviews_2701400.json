@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "BAEN366",
+      "comment": "You can tell she really cares about her students. She is very tough but she wants you to learn and do the work. Most people I know who took her struggled but really respected and enjoyed her.",
+      "createdByUser": false,
+      "date": "2026-09-04 15:54:07 +0000 UTC",
+      "difficultyRating": 4,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQzNDA4MzM2",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 43408336,
+      "ratingTags": "Tough grader--Get ready to read--Gives good feedback",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "N",
+      "clarityRating": 1,
+      "class": "BAEN366",
+      "comment": "Literally get ready to memorize the textbook. Her lectures dont help and she rushes you through all exercises sometimes making you stay past class time to finish activities. She also doesnt answer email so asking questions must be done in class.",
+      "createdByUser": false,
+      "date": "2022-02-18 03:14:03 +0000 UTC",
+      "difficultyRating": 5,
+      "flagStatus": "UNFLAGGED",
+      "grade": "",
+      "helpfulRating": 1,
+      "id": "UmF0aW5nLTM1ODY0MjQ0",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 35864244,
+      "ratingTags": "Get ready to read--Skip class? You won't pass.--Hilarious",
+      "teacherNote": null,
+      "textbookUse": 5,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 0
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:50:15.580660+00:00"
+}

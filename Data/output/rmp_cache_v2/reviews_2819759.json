@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "",
+      "clarityRating": 3,
+      "class": "CHEM228",
+      "comment": "Dr. Dey was an ok professor, because he went through the lectures extremely fast and expected students to be on his level. However, at the end of the semester he really tries to help you pass and gives opportunities to bump up your grade.",
+      "createdByUser": false,
+      "date": "2023-01-18 20:18:03 +0000 UTC",
+      "difficultyRating": 5,
+      "flagStatus": "UNFLAGGED",
+      "grade": "C",
+      "helpfulRating": 3,
+      "id": "UmF0aW5nLTM3MzUxNDQ3",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 37351447,
+      "ratingTags": "Test heavy",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": null
+    },
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 1,
+      "class": "CHEM228",
+      "comment": "Dr. Dey is a tough professor. He races through the material and expects you to understand the material immediately. He will call you out by name to answer questions and if you hesitate, he gets upset. If you are failing, he will keep you after class and berate you in front of other students. He did change the grade cutoffs due to low grades. ",
+      "createdByUser": false,
+      "date": "2022-12-16 15:14:41 +0000 UTC",
+      "difficultyRating": 5,
+      "flagStatus": "UNFLAGGED",
+      "grade": "B",
+      "helpfulRating": 1,
+      "id": "UmF0aW5nLTM3MTU0ODEz",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 37154813,
+      "ratingTags": "Tough grader--Test heavy--Graded by few things",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": null
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:49:28.393284+00:00"
+}

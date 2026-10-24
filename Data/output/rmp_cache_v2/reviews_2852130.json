@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "POLS335",
+      "comment": "If Dr. Kim returns to A&M, you MUST take him. His class is fun and interesting, especially since the course is centered around international conflict. I have had him as a TA for 209 and for this class and he is genuinely one of the best professors I have had here at A&M.",
+      "createdByUser": false,
+      "date": "2023-07-31 06:15:02 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTM4MTMzMTQx",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 38133141,
+      "ratingTags": "Inspirational--Caring--Respected",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:13:42.785423+00:00"
+}

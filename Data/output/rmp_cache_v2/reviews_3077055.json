@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 3,
+      "class": "213",
+      "comment": "This professor has a strong understanding of the material, although lectures can move fast. The slides are limited in detail, so take thorough notes during class or review the textbook. Exams were taken online but in class and were generally easy. He assigns pre-lecture quizzes based on the textbook, which aren't difficult. ",
+      "createdByUser": false,
+      "date": "2026-04-22 01:27:28 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 3,
+      "id": "UmF0aW5nLTQyODk1MDMw",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 42895030,
+      "ratingTags": "Clear grading criteria--Caring",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:46:17.578146+00:00"
+}

@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "314",
+      "comment": "Zoran is a certified GOAT. His classes were some of the most challenging courses I have taken, but only because of rigor. At the end of every lecture my brain was completely fried, but you learn so much principles that it is easily worth it. A program head doubling as a professor is not easy, but he does both with maximum effort. ",
+      "createdByUser": false,
+      "date": "2025-04-27 21:36:45 +0000 UTC",
+      "difficultyRating": 4,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQxMDYyMzAz",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 41062303,
+      "ratingTags": "Tough grader--Lots of homework--Lecture heavy",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "314",
+      "comment": "Epic prof. Best lectures I've ever taken.",
+      "createdByUser": false,
+      "date": "2025-04-22 17:37:02 +0000 UTC",
+      "difficultyRating": 4,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQxMDA0NTM2",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 41004536,
+      "ratingTags": "Participation matters--Gives good feedback--Accessible outside class",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:52:52.052058+00:00"
+}

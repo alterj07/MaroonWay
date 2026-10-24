@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 4,
+      "class": "CVEN-365",
+      "comment": "I really liked this guy. He has a good attitude and isn't dull when he is teaching his classes, which is vital when you're a prof assigned to teach an 8 am section. He is a caring guy and wants you to succeed. He does not take attendance in the lectures, but Cven 365 isn't a blowoff class by any means so its worth your time attending.",
+      "createdByUser": false,
+      "date": "2025-01-16 16:54:23 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "B",
+      "helpfulRating": 4,
+      "id": "UmF0aW5nLTQwNTYwNTYz",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 40560563,
+      "ratingTags": "Caring--Accessible outside class",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 4,
+      "class": "CVEN-365",
+      "comment": "He gives pretty good lectures and posts all the slides and hw early in the semester so you could work ahead. Exams are open note and he reviews the homework before the exams in class. Lab is kind of awful and long but that's all up to the TA. Homework is short and pretty easy. He's good at answering questions in office hours",
+      "createdByUser": false,
+      "date": "2024-11-14 21:23:50 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 4,
+      "id": "UmF0aW5nLTM5OTUyMDk1",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 39952095,
+      "ratingTags": "Gives good feedback--Accessible outside class",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:54:34.479667+00:00"
+}

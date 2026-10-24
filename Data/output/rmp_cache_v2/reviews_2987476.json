@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "NUEN330",
+      "comment": "Dr. Ragusa did a great job of thoroughly teaching the fundamentals of the Monte Carlo radiation transport method to students, providing them with insight into the inner workings of the MCNP code, which is used heavily in the majority of this course. He is clear about his expectations for students regarding homework, which is 80% of the total grade.",
+      "createdByUser": false,
+      "date": "2025-12-15 06:07:08 +0000 UTC",
+      "difficultyRating": 4,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQyMjU1ODkz",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 42255893,
+      "ratingTags": "Hilarious--Beware of pop quizzes--Graded by few things",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:09:52.918800+00:00"
+}

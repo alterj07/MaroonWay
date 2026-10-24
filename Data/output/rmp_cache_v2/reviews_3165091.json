@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 1,
+      "class": "303",
+      "comment": "Always checks canvas activity. Paranoid about cheating. Doesn't ask questions straight reporter. Insist on you meeting with her after every quiz quite odd. I know someone she reported didn't even ask questions or talk to them. There is a reason so many people Q dropped her the only time she has taught this course.",
+      "createdByUser": false,
+      "date": "2026-10-24 06:03:02 +0000 UTC",
+      "difficultyRating": 5,
+      "flagStatus": "UNFLAGGED",
+      "grade": "D-",
+      "helpfulRating": 1,
+      "id": "UmF0aW5nLTQzNTE0OTEx",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 43514911,
+      "ratingTags": "Tough grader--Graded by few things--Online Savvy",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 1,
+      "wouldTakeAgain": null
+    },
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 2,
+      "class": "303",
+      "comment": "She literally just reads off of slides, graded off of 6 quizzes and 10% attendance with lowest quiz dropped. Quizzes are nothing like the iclicker in class + questions are very ambiguous, more than 1 answer could be correct. Class averages were low. Many people including myself had to Q-drop. She makes the class way harder than it needs to be. ",
+      "createdByUser": false,
+      "date": "2026-06-15 22:56:14 +0000 UTC",
+      "difficultyRating": 4,
+      "flagStatus": "UNFLAGGED",
+      "grade": "Drop/Withdrawal",
+      "helpfulRating": 2,
+      "id": "UmF0aW5nLTQzMjUxMDkz",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 43251093,
+      "ratingTags": "Tough grader--Test heavy",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 1,
+      "wouldTakeAgain": null
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:00:20.667182+00:00"
+}

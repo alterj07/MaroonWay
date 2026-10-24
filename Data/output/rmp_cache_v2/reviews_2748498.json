@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "CVEN311",
+      "comment": "Dr. Gao was great. The structure of the class was very clear, and the quizzes were copy-paste from the homework. Despite my B in the class, her office hours were very helpful and interactions outside of class were always really nice and funny. Very easy to get a B in the class let alone pass. Love Dr. Gao!!!",
+      "createdByUser": false,
+      "date": "2021-12-07 20:39:06 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "B+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTM1NDAzNjM2",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 35403636,
+      "ratingTags": "Accessible outside class--Clear grading criteria--Caring",
+      "teacherNote": null,
+      "textbookUse": 5,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:54:21.377626+00:00"
+}

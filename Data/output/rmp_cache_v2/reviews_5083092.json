@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "BIOL445",
+      "comment": "Virology with Dr. Ramsey was very fun! We did communication projects where we shared virology concepts with people across campus! Lectures are pretty dense, but she emphasizes important concepts. You need to buy the book to do the homework. She cares about your grade and performance in the course and takes feedback very seriously. Absolute queen.",
+      "createdByUser": false,
+      "date": "2026-10-21 18:23:20 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQzNTA1ODY3",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 43505867,
+      "ratingTags": "Inspirational--Lots of homework--Caring",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:46:46.699058+00:00"
+}

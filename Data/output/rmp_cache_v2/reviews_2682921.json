@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 4,
+      "class": "BMEN469",
+      "comment": "Dr. Maitland is a funny guy. I may have taken this class because of hours, but I'm glad I did. Once a week, 2.5 hours, speakers from all over, it's a broadening experience. It's not a difficult class, there are quizzes based on a free textbook and projects every bit, but you do need to try or he'll kinda catch on, not a massive class to hide in.",
+      "createdByUser": false,
+      "date": "2022-04-21 16:32:20 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 4,
+      "id": "UmF0aW5nLTM2MTIxNjI3",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 36121627,
+      "ratingTags": "Participation matters--Group projects",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "",
+      "clarityRating": 1,
+      "class": "BMEN450",
+      "comment": "Overall a bad person. Very rude to students in emails and does not care to be a teacher. This is only his side job and his lack of care for students is evident.",
+      "createdByUser": false,
+      "date": "2021-04-09 14:46:36 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "Not sure yet",
+      "helpfulRating": 1,
+      "id": "UmF0aW5nLTM0NTI3MDQw",
+      "isForCredit": true,
+      "isForOnlineClass": true,
+      "legacyId": 34527040,
+      "ratingTags": "Graded by few things--Tough grader",
+      "teacherNote": null,
+      "textbookUse": 0,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 1,
+      "wouldTakeAgain": 0
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:47:03.770179+00:00"
+}

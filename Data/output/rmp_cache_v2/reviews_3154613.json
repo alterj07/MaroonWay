@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "ECEN605",
+      "comment": "He provided all the information needed to understand the topics. Homework was long, but doable. Exams were take-home, and the final was in person. Tests were open-everything, except collab. Class was graded on a normalized scale, where having a 75% or above of the top score earned you an A or B. You'll succeed if you try your best on all your work!",
+      "createdByUser": false,
+      "date": "2025-12-24 04:30:17 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "B",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQyMzkwMDg0",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 42390084,
+      "ratingTags": "Amazing lectures --Clear grading criteria--Accessible outside class",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:55:06.525089+00:00"
+}

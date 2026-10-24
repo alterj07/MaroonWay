@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "",
+      "clarityRating": 1,
+      "class": "ECON202",
+      "comment": "She doesnt teach well at all. Grades were all very low!! Dont take her!!!",
+      "createdByUser": false,
+      "date": "2013-02-10 22:55:26 +0000 UTC",
+      "difficultyRating": 5,
+      "flagStatus": "UNFLAGGED",
+      "grade": "",
+      "helpfulRating": 1,
+      "id": "UmF0aW5nLTIxMzMzNzcz",
+      "isForCredit": false,
+      "isForOnlineClass": false,
+      "legacyId": 21333773,
+      "ratingTags": "",
+      "teacherNote": null,
+      "textbookUse": 1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": null
+    },
+    {
+      "attendanceMandatory": "",
+      "clarityRating": 2,
+      "class": "ECON202",
+      "comment": "DO NOT TAKE THIS PROF!!! I learned NOTHING in this class! You basically teach yourself from the book but her tests are way more in-depth than what she teaches or what the book explains. I spent hours studying and went to every class and ended up with a D. I made a B in engineering cal 3. Seriously ridiculous. Save yourself and take someone else.",
+      "createdByUser": false,
+      "date": "2012-12-17 21:14:01 +0000 UTC",
+      "difficultyRating": 5,
+      "flagStatus": "UNFLAGGED",
+      "grade": "",
+      "helpfulRating": 1,
+      "id": "UmF0aW5nLTIxMTA0OTQ5",
+      "isForCredit": false,
+      "isForOnlineClass": false,
+      "legacyId": 21104949,
+      "ratingTags": "",
+      "teacherNote": null,
+      "textbookUse": 5,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 1,
+      "wouldTakeAgain": null
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:42:23.717125+00:00"
+}

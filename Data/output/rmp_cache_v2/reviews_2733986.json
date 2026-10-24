@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "MARB301",
+      "comment": "She will write quizzes mainly based on what she says in the lectures. Attendance is a must. Quiz and test heavy.",
+      "createdByUser": false,
+      "date": "2024-02-09 02:04:52 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTM4OTYzNjI4",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 38963628,
+      "ratingTags": "Test heavy",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 1,
+      "class": "MARB301",
+      "comment": "There are only 4 exams and 4 quizzes, averages were usually 50s and 60s. Loved the lab for this course which is a big part of your grade because everyone does so horrible in lecture exams and quizzes. I went to tutoring and to lectures and so on and I barely passed. I thought I would do amazing on a quiz, understood everything and get an F.",
+      "createdByUser": false,
+      "date": "2021-11-08 18:17:50 +0000 UTC",
+      "difficultyRating": 4,
+      "flagStatus": "UNFLAGGED",
+      "grade": "C",
+      "helpfulRating": 1,
+      "id": "UmF0aW5nLTM1MjA1OTUw",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 35205950,
+      "ratingTags": "Get ready to read--Graded by few things--Test heavy",
+      "teacherNote": null,
+      "textbookUse": 0,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 0
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:16:29.365296+00:00"
+}

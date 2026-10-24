@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "NFSC201",
+      "comment": "Dr. Pillai's an amazing professor who cares about his students. He gives good feedback and is very accessible outside of class. He has lots of experience in the field and uses his stories to provide you with real-world experiences of the material. He pushes you to learn because he wants you to be successful in the real world! Amazing professor!!",
+      "createdByUser": false,
+      "date": "2020-11-23 03:19:35 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTMzODcxMzcz",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 33871373,
+      "ratingTags": "Gives good feedback--Accessible outside class--Amazing lectures",
+      "teacherNote": null,
+      "textbookUse": 0,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "NFSC201",
+      "comment": "Dr. Pillai is the best professor I have ever had. He truly cares about his students and their grades. He has a lot of experience in different fields. He is a great opportunist and provides insightful career opportunities. This class was not hard. Pillai makes it fun to learn and interesting with his stories. There was only 2 exams and 1 project.",
+      "createdByUser": false,
+      "date": "2020-11-09 21:09:56 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTMzNzg5MTUw",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 33789150,
+      "ratingTags": "Accessible outside class--Inspirational--Group projects",
+      "teacherNote": null,
+      "textbookUse": 5,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:00:18.666170+00:00"
+}

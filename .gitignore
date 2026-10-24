@@ -5,6 +5,19 @@ node_modules/
 
 # Expo
 .expo/
+# next.js
+.next/
+out/
+build/
+
+Data/venv/
+Data/.venv/
+**/__pycache__/
+**/.DS_Store
+Data/backup_before_campus_pipeline/
+next-env.d.ts
+
+# production
 dist/
 web-build/
 

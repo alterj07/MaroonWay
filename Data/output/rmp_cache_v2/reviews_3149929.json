@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "MATH308",
+      "comment": "Great prof, homework was difficult and lengthy sometimes but it was completion based and if you put effort into doing them, the exams end up being a breeze. :) Attendance not mandatory but there are pop quizzes so be careful",
+      "createdByUser": false,
+      "date": "2026-04-02 21:15:14 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQyNzc0NDg3",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 42774487,
+      "ratingTags": "Beware of pop quizzes--Caring--Accessible outside class",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "MATH308",
+      "comment": "loved his office hours and super helpful when needing help on clarifications on certain subjects. helped me really understand the topics through hw and lectures, loved having him even if it was at 8 am lol",
+      "createdByUser": false,
+      "date": "2026-03-05 05:54:33 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "Rather not say",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQyNjY4ODE2",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 42668816,
+      "ratingTags": "Beware of pop quizzes--Lecture heavy--Accessible outside class",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:06:30.158389+00:00"
+}

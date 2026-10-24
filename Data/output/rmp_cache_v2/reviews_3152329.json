@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "CVEN302",
+      "comment": "Professor Xin just reads off slides and can be a little hard to follow during lectures. However, those slides and the occasional linked Python script make the hw very easy. Xin also clearly lines out what will be on the exams and lets us make cheat sheets. Whenever I spoke with him outside of class, he was very helpful.",
+      "createdByUser": false,
+      "date": "2025-12-16 23:48:50 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQyMjk1OTE4",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 42295918,
+      "ratingTags": "Clear grading criteria--Caring--Accessible outside class",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:54:08.327401+00:00"
+}

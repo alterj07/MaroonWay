@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 1,
+      "class": "CSCE-221",
+      "comment": "He's a graduate student here at Texas A&M, but the CSCE Department decided that they needed another prof for 221??? All assignments, including Quizzes and Exams, covered material from Dr. Leyk's Lecture slides, despite not covering said slides in class. But, you can't go to Leyk's classes because of quizzes in every single lecture. Have an A rn...",
+      "createdByUser": false,
+      "date": "2024-04-19 04:33:21 +0000 UTC",
+      "difficultyRating": 4,
+      "flagStatus": "UNFLAGGED",
+      "grade": "Not sure yet",
+      "helpfulRating": 1,
+      "id": "UmF0aW5nLTM5MjA5MjEy",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 39209212,
+      "ratingTags": "Beware of pop quizzes",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 1,
+      "wouldTakeAgain": null
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:52:44.029975+00:00"
+}

@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "250",
+      "comment": "Great professor, gave extra credit on every exam and on some homework. Tells you what's on the exam the lecture before. Homework had good feedback and he curved the final grade at the end of the semester. Overall, this guy is my goat.",
+      "createdByUser": false,
+      "date": "2024-05-09 20:31:45 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTM5NDIyODM3",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 39422837,
+      "ratingTags": "EXTRA CREDIT--Gives good feedback--Caring",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:09:38.850929+00:00"
+}

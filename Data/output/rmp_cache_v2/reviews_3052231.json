@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "301",
+      "comment": "Dr. Suzuki is such a sweet person! And extremely caring. She wants YOU to succeed. If you genuinely try to do well, you'll be fine.",
+      "createdByUser": false,
+      "date": "2025-01-21 02:21:10 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQwNTc4NjM2",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 40578636,
+      "ratingTags": "EXTRA CREDIT--Clear grading criteria--Caring",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "301",
+      "comment": "2 exams, 3 case studies, and a final exam. She highlights slides and information that will be on exams. Exams contain MC and case studies, not very difficult. Some extra credit was given for attendance and 3% added to the final grade for course evaluations. She cares a lot about her students' success and is generous with regrades. ",
+      "createdByUser": false,
+      "date": "2024-12-24 02:07:30 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQwNDI3NTk2",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 40427596,
+      "ratingTags": "EXTRA CREDIT--Caring--Graded by few things",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:10:08.969877+00:00"
+}

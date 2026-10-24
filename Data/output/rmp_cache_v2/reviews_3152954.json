@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "OCEN351",
+      "comment": "Fantastic prof! He's very knowledgeable and enjoys sharing the cool details. His lectures are well organized. This course has a lot of material, but he makes the class easy. He annotates assignments with helpful feedback. Much appreciated!",
+      "createdByUser": false,
+      "date": "2026-01-15 01:56:47 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQyNTAwNDg3",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 42500487,
+      "ratingTags": "Amazing lectures --Gives good feedback--Respected",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "OCEN351",
+      "comment": "Dr. Parihar is easily one of the best professors you'll have as an OCEN major. Lectures are clear and he does a great job re-explaining material you may have forgotten or not be experienced with all together. Allowed cheat sheets with anything but worked out problems on every exam and still gave hints on many of the exam questions. ",
+      "createdByUser": false,
+      "date": "2025-12-24 05:16:19 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQyMzkwMzkw",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 42390390,
+      "ratingTags": "Gives good feedback--Caring",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:10:15.023692+00:00"
+}

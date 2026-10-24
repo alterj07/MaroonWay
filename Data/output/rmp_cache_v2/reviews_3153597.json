@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "STAT-315",
+      "comment": "rating came after he cancelled class. Hadi Salman is literally the GOAT... teaching stats but PhD in CS btw (goated). I love this man",
+      "createdByUser": false,
+      "date": "2026-03-30 01:02:26 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQyNzUyODIw",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 42752820,
+      "ratingTags": "Inspirational--Hilarious--Caring",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 2,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:16:05.277680+00:00"
+}

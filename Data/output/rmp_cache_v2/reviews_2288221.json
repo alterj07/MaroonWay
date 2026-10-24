@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 1,
+      "class": "ENGR270",
+      "comment": "Mr. Rogers as a person was funny and fun to listen to; however, as a professor, he is NOT the best. His class was met with confusion on what do with assignments. More than often, he would not respond to emails. He would forget to assign our homework online and instead of giving us the usual week like the other classes had, he would give us a day.",
+      "createdByUser": false,
+      "date": "2017-12-18 15:42:22 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 1,
+      "id": "UmF0aW5nLTI5MjYwMjY1",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 29260265,
+      "ratingTags": "",
+      "teacherNote": null,
+      "textbookUse": 0,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 0
+    },
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 2,
+      "class": "ENGR270",
+      "comment": "Alton is a Professor in Practice of 9 years. He has a degree in Civil Engineering. As far as TEACHING goes, he's not the best. He likes to remind you that as a freshman, you don't know anything. The assignments are an easy 30 minute worksheets. He doesn't know how to work ecampus, so be prepared for that frustration. He does let you turn in late.",
+      "createdByUser": false,
+      "date": "2017-10-19 14:17:14 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 2,
+      "id": "UmF0aW5nLTI4NzYxMjE0",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 28761214,
+      "ratingTags": "GROUP PROJECTS",
+      "teacherNote": null,
+      "textbookUse": 0,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 1,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:58:59.380232+00:00"
+}

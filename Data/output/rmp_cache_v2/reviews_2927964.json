@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "FINC-645",
+      "comment": "Can be difficult to understand at times, but he is highly knowledgeable, very willing to help students succeed in the class, and very forgiving with his grading policies. ",
+      "createdByUser": false,
+      "date": "2024-02-28 22:14:45 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTM5MDA5NzE5",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 39009719,
+      "ratingTags": "Clear grading criteria--Beware of pop quizzes--Graded by few things",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 1,
+      "class": "FINC-645",
+      "comment": "Though the material was interesting and no disprespect to this professor, but it is impossible to understand him. I wish A&M offered a different professor for this course so I could actually try and learn the material. It is way too difficult and the slides are not worded properly nor can I understand him to try and interpret what the sliides mean",
+      "createdByUser": false,
+      "date": "2023-08-31 15:32:22 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "B",
+      "helpfulRating": 1,
+      "id": "UmF0aW5nLTM4MTk3OTQw",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 38197940,
+      "ratingTags": "Lecture heavy--Graded by few things",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": null
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:00:00.604015+00:00"
+}

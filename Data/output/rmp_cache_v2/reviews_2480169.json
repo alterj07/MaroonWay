@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 4,
+      "class": "ENDS105",
+      "comment": "Faulkner was a fun studio professor to have. His projects push design boundaries and really make you think about language and modular flow within a piece. Do know that he can tend to show favoritism from time to time, but no one ever falls through the cracks as far as feedback goes. He is a solid professor, just don't expect him to be your friend.",
+      "createdByUser": false,
+      "date": "2019-11-26 01:38:07 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 4,
+      "id": "UmF0aW5nLTMyNDc4MDc1",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 32478075,
+      "ratingTags": "Gives good feedback--Participation matters--Skip class? You won't pass.",
+      "teacherNote": null,
+      "textbookUse": 0,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 4,
+      "class": "ENDS105",
+      "comment": "Faulkner is a good choice, especially if you dont know if you want to pursue architecture/dont want to work the hardest. He isnt the easiest of the studio professors, but he also gives good insight on the profession. he will push you if you want to be pushed. no matter what you show him he is never negative. he will fail you if you dont show up",
+      "createdByUser": false,
+      "date": "2019-06-29 19:35:53 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A+",
+      "helpfulRating": 4,
+      "id": "UmF0aW5nLTMyMDY3NDA2",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 32067406,
+      "ratingTags": "Gives good feedback--Accessible outside class",
+      "teacherNote": null,
+      "textbookUse": 0,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:44:17.108878+00:00"
+}

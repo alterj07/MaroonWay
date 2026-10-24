@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 3,
+      "class": "MGMT466",
+      "comment": "Heavily graded on group work. Horrible group memebers? Dr. Pace's recommendation was always basically 'figure it out, it's life.' Very ambiguous when you ask Qs about assignments you'll get a 'well, what do you think?' so don't bother. Aside from that this is a typical class. Read, take quizzes, discussion posts, essays, no tests though.",
+      "createdByUser": false,
+      "date": "2020-07-22 09:28:46 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 3,
+      "id": "UmF0aW5nLTMzNTI1MTI3",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 33525127,
+      "ratingTags": "Participation matters--Group projects",
+      "teacherNote": null,
+      "textbookUse": 5,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 1,
+      "wouldTakeAgain": 0
+    },
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 4,
+      "class": "MGMT105",
+      "comment": "Dr. Pace is an amazing professor. He makes you work for your grade by using Cengage with small homework with the reading, but if you do the reading and take decent notes you should not struggle too much in this class. As long as you keep up with the homework and the reading you're pretty much set. He is a very understanding prof who wants to help.",
+      "createdByUser": false,
+      "date": "2019-12-04 14:59:57 +0000 UTC",
+      "difficultyRating": 4,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A-",
+      "helpfulRating": 4,
+      "id": "UmF0aW5nLTMyNTIwNTkx",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 32520591,
+      "ratingTags": "Gives good feedback--Lots of homework--Get ready to read",
+      "teacherNote": null,
+      "textbookUse": 5,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:03:05.410166+00:00"
+}

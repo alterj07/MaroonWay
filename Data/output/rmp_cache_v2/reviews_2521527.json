@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "CHEM362",
+      "comment": "Dr Dunbar is one of the best professors at TAMU. She is very passionate about her work and it shows while she lectures that she loves Chemistry. She really cares for her students, there is pltl sessions EVERY SINGLE DAY! And if thats still not enough and despite that she is a very busy lady, shell reinforce the material during her office hours.",
+      "createdByUser": false,
+      "date": "2019-11-15 08:53:31 +0000 UTC",
+      "difficultyRating": 4,
+      "flagStatus": "REVIEWED",
+      "grade": "Rather not say",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTMyNDIwNDQ2",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 32420446,
+      "ratingTags": "Respected--Inspirational--Caring",
+      "teacherNote": null,
+      "textbookUse": 5,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 2,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "",
+      "clarityRating": 1,
+      "class": "CHEM362",
+      "comment": "Dr. Dunbar is an accomplished chemist. However, her undergraduate teaching is unforgivable. Material is presented in convoluted ways where she often derails into dubiously related tangents. For the majority of lectures Dr. Dunbar was either late or absent. She will leave you with a superficial understanding inorganic chemistry.",
+      "createdByUser": false,
+      "date": "2019-10-08 19:23:35 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "REVIEWED",
+      "grade": "A",
+      "helpfulRating": 1,
+      "id": "UmF0aW5nLTMyMjcxMDc3",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 32271077,
+      "ratingTags": "",
+      "teacherNote": null,
+      "textbookUse": 5,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 0
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:49:44.378061+00:00"
+}

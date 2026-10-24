@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 2,
+      "class": "ECON410",
+      "comment": "There wasn't much of a reason to go to class except for the short-answer problems. Professor Bai wasn't bad or anything, but I was able to self-teach everything from the PowerPoints she uploaded. Tests are chill and mostly \"based\" on the problems she gives as voluntary, ungraded homework.",
+      "createdByUser": false,
+      "date": "2022-03-31 16:30:28 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A+",
+      "helpfulRating": 2,
+      "id": "UmF0aW5nLTM2MDAyMjIy",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 36002222,
+      "ratingTags": "Clear grading criteria--Test heavy",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 2,
+      "class": "ECON410",
+      "comment": "The professor is really nice, and a current Ph.D. student. She is smart for sure, but she really needs to improve her presentation skills. She reads off a printed-out script every class and it is word for word off of the PowerPoint. Very monotonous. Does not teach the material, but the tests are not bad. Ungraded hw that goes straight on the test.",
+      "createdByUser": false,
+      "date": "2021-11-02 16:05:35 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 2,
+      "id": "UmF0aW5nLTM1MTc5NDc1",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 35179475,
+      "ratingTags": "Test heavy--Clear grading criteria--Lecture heavy",
+      "teacherNote": null,
+      "textbookUse": 5,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 1,
+      "wouldTakeAgain": 0
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:55:39.704293+00:00"
+}

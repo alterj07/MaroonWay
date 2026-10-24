@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "BIOL-349",
+      "comment": "Dr. Jiang was amazing. While bioinformatics was not a topic that I'd thought to have cared much about, he made the field much more applicable and digestible for us. The class is pretty much exam-only. Lectures had random attendance points and before every exam, he'd go over all of the material needed for it. I'd 100% recommend him!",
+      "createdByUser": false,
+      "date": "2025-12-29 20:48:46 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQyNDE0MTc3",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 42414177,
+      "ratingTags": "Caring--Graded by few things--Online Savvy",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:46:30.660776+00:00"
+}

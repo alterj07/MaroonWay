@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "MATH167",
+      "comment": "Matthew is a great instructor! He can calculate in head the math it takes to get us to Mars, and he doesn't use it to intimidate his 100-level students. He genuinely cares about his students understanding the material. He makes him self available outside of class. I am terrible at math, and he makes it relatable. Treat this man with respect. ",
+      "createdByUser": false,
+      "date": "2023-12-09 22:50:17 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "C+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTM4NTkxNjI5",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 38591629,
+      "ratingTags": "Gives good feedback--Caring--Accessible outside class",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:05:06.872982+00:00"
+}

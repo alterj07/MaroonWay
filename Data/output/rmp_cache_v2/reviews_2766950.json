@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "105",
+      "comment": "Very good, willings to help students, wants you to do well, best prof ",
+      "createdByUser": false,
+      "date": "2023-04-12 15:00:26 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTM3NjE2NzY3",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 37616767,
+      "ratingTags": "Participation matters--Clear grading criteria--Respected",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:43:46.047030+00:00"
+}

@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "",
+      "clarityRating": 1,
+      "class": "SOCI420",
+      "comment": "I thought that the course was pretty hard so I would say you should try to find another class to take. Honestly, each subject wasn't really gone in-depth so prepare to do a lot of self-learning",
+      "createdByUser": false,
+      "date": "2018-05-18 02:44:22 +0000 UTC",
+      "difficultyRating": 5,
+      "flagStatus": "UNFLAGGED",
+      "grade": "",
+      "helpfulRating": 1,
+      "id": "UmF0aW5nLTMwMTQzNDE2",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 30143416,
+      "ratingTags": "",
+      "teacherNote": null,
+      "textbookUse": 5,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 0
+    },
+    {
+      "attendanceMandatory": "",
+      "clarityRating": 1,
+      "class": "SOCI420",
+      "comment": "I would not take this class if possible, the structure of the class is kind of confusing and it was overall way too hard. Try to find another professor!",
+      "createdByUser": false,
+      "date": "2018-05-07 22:54:54 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "",
+      "helpfulRating": 1,
+      "id": "UmF0aW5nLTMwMDE4NTE1",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 30018515,
+      "ratingTags": "",
+      "teacherNote": null,
+      "textbookUse": 5,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 0
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:15:01.057344+00:00"
+}

@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "HIST-106",
+      "comment": "Cool professor who seems genuinely interested in teaching and makes lectures entertaining to attend. Attendance not mandatory but is recommended because the test basically comes straight out of his lectures if you take notes. There are four exams and one essay/video presentation, no homework. His tests are very straightforward if you study.  ",
+      "createdByUser": false,
+      "date": "2026-08-03 07:52:54 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQzMzQxNDk1",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 43341495,
+      "ratingTags": "Amazing lectures --Clear grading criteria",
+      "teacherNote": null,
+      "textbookUse": null,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "HIST-106",
+      "comment": "He is an awesome professor, super chill and funny, and he makes his exams very doable if you study a good amount. Overall, a great professor and would definitely recommend him to people taking Hist 106 with him. GO TO LECTURE, it helps a lot, especially for the exams, and emphasizes important details in the lectures. He gives 10 pts of extra credit",
+      "createdByUser": false,
+      "date": "2026-05-02 21:22:30 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "REVIEWED",
+      "grade": "A+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQzMDA1NzY2",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 43005766,
+      "ratingTags": "EXTRA CREDIT--Hilarious--Test heavy",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:02:29.287181+00:00"
+}

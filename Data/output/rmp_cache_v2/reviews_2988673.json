@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "AERO401",
+      "comment": "Great Professor with a lifetime of fascinating experience to draw from. Lectures were really interesting.",
+      "createdByUser": false,
+      "date": "2026-03-16 22:48:27 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQyNzA0Njcw",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 42704670,
+      "ratingTags": "Group projects--Amazing lectures --Gives good feedback",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "AERO401",
+      "comment": "Great lectures and you can really tell he loves what he's teaching. He worked at NASA for more than 30 years, so he's very knowledgeable about aerospace.",
+      "createdByUser": false,
+      "date": "2024-02-26 18:59:23 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTM5MDAxNzc0",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 39001774,
+      "ratingTags": "Group projects--Amazing lectures --Caring",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:41:58.632362+00:00"
+}

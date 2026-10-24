@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "HIST462",
+      "comment": "Professor Cobbs is so sweet! She is one of the best profs I have had at A&M and you can tell she really loves what she teaches! Her lectures are interesting and she will throw in fun facts and stories to keep you listening. Her class is really lecture & reading heavy so if you skip a ton the tests will be difficult but overall she is awesome!",
+      "createdByUser": false,
+      "date": "2022-05-06 06:06:10 +0000 UTC",
+      "difficultyRating": 4,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTM2MjYyMTky",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 36262192,
+      "ratingTags": "Get ready to read--Caring--Lecture heavy",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "ENC0027",
+      "comment": "Mrs. Cobbs is such a good teacher. She gives some really helpful feedback. She is always available when needed. I would recommend her 1,000 times over. Shes such a sweet and caring woman when it comes to her students. Shes helped me so much to become a college level writer. Thank you Mrs. Cobbs!!",
+      "createdByUser": false,
+      "date": "2019-10-29 21:57:09 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTMyMzMzMDE5",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 32333019,
+      "ratingTags": "",
+      "teacherNote": null,
+      "textbookUse": 5,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:02:51.402160+00:00"
+}

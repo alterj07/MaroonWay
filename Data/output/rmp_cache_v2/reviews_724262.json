@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "",
+      "clarityRating": 5,
+      "class": "PHYS638",
+      "comment": "Excellent class.",
+      "createdByUser": false,
+      "date": "2011-07-13 02:33:15 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTE4ODE0MjEz",
+      "isForCredit": false,
+      "isForOnlineClass": false,
+      "legacyId": 18814213,
+      "ratingTags": "",
+      "teacherNote": null,
+      "textbookUse": 5,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": null
+    },
+    {
+      "attendanceMandatory": "",
+      "clarityRating": 5,
+      "class": "PHYS208",
+      "comment": "great teacher",
+      "createdByUser": false,
+      "date": "2005-10-12 21:47:24 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTEwNTgxODE5",
+      "isForCredit": false,
+      "isForOnlineClass": false,
+      "legacyId": 10581819,
+      "ratingTags": "",
+      "teacherNote": null,
+      "textbookUse": null,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": null
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:44:40.193793+00:00"
+}

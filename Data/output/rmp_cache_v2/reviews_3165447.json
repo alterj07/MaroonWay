@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 4,
+      "class": "ENTO-322",
+      "comment": "Professor Kilpatrick is supportive and provides many resources for success. Assignments are varied, quizzes are open-book, and quantitative work includes detailed examples. Instructions are very clear, extra credit is available, and academic integrity policies are strongly enforced.",
+      "createdByUser": false,
+      "date": "2026-05-13 02:13:30 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "REVIEWED",
+      "grade": "B",
+      "helpfulRating": 4,
+      "id": "UmF0aW5nLTQzMTExMzc1",
+      "isForCredit": false,
+      "isForOnlineClass": false,
+      "legacyId": 43111375,
+      "ratingTags": "Tough grader--EXTRA CREDIT--Clear grading criteria",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": null
+    },
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "ENTO-322",
+      "comment": "She was a great professor! No exams in the class and just a few projects, so it was extremely manageable. There was a semester-long project where you had to take pictures of different insects, but she organized a lot of field trips at different times throughout the semester and gave a huge list of local locations you could go to to find insects.",
+      "createdByUser": false,
+      "date": "2026-05-04 19:07:51 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQzMDIwOTk4",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 43020998,
+      "ratingTags": "EXTRA CREDIT--Clear grading criteria--Caring",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:59:18.447716+00:00"
+}

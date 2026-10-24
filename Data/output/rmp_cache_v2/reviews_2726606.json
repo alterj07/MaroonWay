@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "AERO222",
+      "comment": "Dr. Mortari is one of the top 5 Italian dudes of all time. Always telling random stories in lecture, super nice guy. This class certainly isn't the easiest but if you pay attention in lab and take a little time to understand the material it's not too bad.",
+      "createdByUser": false,
+      "date": "2023-05-12 00:19:31 +0000 UTC",
+      "difficultyRating": 4,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTM3OTAzMzA4",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 37903308,
+      "ratingTags": "Hilarious--Test heavy--Graded by few things",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 3,
+      "class": "AERO222",
+      "comment": "Dr. Mortari is a really funny and charismatic person, but he could be a much, much better professor. Homework is very time consuming and 40% of your grade, remaining 60% is 3 non-cumulative exams. He's not good at preparing you for exams, only asks for questions on X topic and half solves examples without using any numbers. The TA carried the class",
+      "createdByUser": false,
+      "date": "2023-05-10 23:28:59 +0000 UTC",
+      "difficultyRating": 4,
+      "flagStatus": "UNFLAGGED",
+      "grade": "B",
+      "helpfulRating": 3,
+      "id": "UmF0aW5nLTM3ODkwOTI0",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 37890924,
+      "ratingTags": "Lots of homework--Hilarious--Graded by few things",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:41:42.516273+00:00"
+}

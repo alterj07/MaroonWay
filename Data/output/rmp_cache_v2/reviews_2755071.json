@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 4,
+      "class": "MGMT466",
+      "comment": "Great prof. Does best to keep the class awake even when everyone is not really responsive. Cares about students. Group project for honors is a big part of grade but it is not too stressful. There are case studies, but only really need to focus on one for assignment. Overall, goofy guy who is understanding. Expect an A with a bit of work.",
+      "createdByUser": false,
+      "date": "2021-12-15 13:39:02 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 4,
+      "id": "UmF0aW5nLTM1NTM1OTU0",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 35535954,
+      "ratingTags": "Group projects--Hilarious--Caring",
+      "teacherNote": null,
+      "textbookUse": 0,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:08:47.672018+00:00"
+}

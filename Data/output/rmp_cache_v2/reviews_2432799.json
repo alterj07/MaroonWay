@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 1,
+      "class": "PHYS606",
+      "comment": "He neither answer your email nor talk about the homework. The class is bad, he has accent and is not good at teaching.",
+      "createdByUser": false,
+      "date": "2020-11-13 13:36:42 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "",
+      "helpfulRating": 1,
+      "id": "UmF0aW5nLTMzODEyMzIz",
+      "isForCredit": false,
+      "isForOnlineClass": false,
+      "legacyId": 33812323,
+      "ratingTags": "",
+      "teacherNote": null,
+      "textbookUse": 0,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 5,
+      "wouldTakeAgain": 0
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:12:24.522568+00:00"
+}

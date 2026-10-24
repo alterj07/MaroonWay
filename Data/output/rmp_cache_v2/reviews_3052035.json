@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 4,
+      "class": "MEEN605",
+      "comment": "Excellent professor and good lecturer. The tests are difficult but fair. Be sure to know the ins and outs of the material or else you will not finish in time! The homework is difficult, but the professor is accessible outside of his scheduled office hours. The textbook supplements the lecture well and has exercises at the end of each chapter.  ",
+      "createdByUser": false,
+      "date": "2024-12-02 18:36:34 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "B",
+      "helpfulRating": 4,
+      "id": "UmF0aW5nLTQwMDY2NDcy",
+      "isForCredit": true,
+      "isForOnlineClass": true,
+      "legacyId": 40066472,
+      "ratingTags": "Amazing lectures --Respected--Graded by few things",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:08:03.519000+00:00"
+}

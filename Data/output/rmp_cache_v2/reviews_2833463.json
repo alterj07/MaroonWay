@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 3,
+      "class": "ARCH216",
+      "comment": "He genuinely cares about his students and is a great professor, but his class is a second studio. Don't take it if you're not willing to put in extra hours.While learning Revit is beneficial, it may be better to learn it elsewhere. This class isn't easy, and if you're taking it as a directed elective, there are other options that are less demanding",
+      "createdByUser": false,
+      "date": "2024-11-12 21:15:58 +0000 UTC",
+      "difficultyRating": 4,
+      "flagStatus": "UNFLAGGED",
+      "grade": "Drop/Withdrawal",
+      "helpfulRating": 3,
+      "id": "UmF0aW5nLTM5OTMzNzI1",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 39933725,
+      "ratingTags": "Participation matters--Lots of homework--Caring",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": null
+    },
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 3,
+      "class": "ARCH205",
+      "comment": "Professor Clayton is very Revit-heavy, which is amazing since Revit automates all your drawings. He cares about your growth and is easy to talk to. On the flip side, he doesn't focus on theory or abstraction and will only challenge you if you ask for it. His critiques are okay, but he is very knowledgeable due to his long career in architecture.",
+      "createdByUser": false,
+      "date": "2022-10-22 22:25:46 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "",
+      "helpfulRating": 3,
+      "id": "UmF0aW5nLTM2NzI2MjU5",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 36726259,
+      "ratingTags": "Caring",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": null
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:43:51.008000+00:00"
+}

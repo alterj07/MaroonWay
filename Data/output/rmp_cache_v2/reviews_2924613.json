@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "ENGL104",
+      "comment": "She is very helpful with her feedback on papers. She also makes major assignments to be based on your interests, which makes those assignments more fun to do. She is also a super easy grader. If you just do the assignments you'll get an A. ",
+      "createdByUser": false,
+      "date": "2023-12-21 21:05:19 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTM4NzY5ODA0",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 38769804,
+      "ratingTags": "Participation matters--Group projects--Gives good feedback",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "ENGL104",
+      "comment": "I took ENGL104 as a core curriculum class and just wanted it to be easy. Professor Batterson was perfect! She was so understanding and caring, and she wanted us all to succeed in the class. Her grading is pretty lenient if you do all the required steps for an assignment. We only had one group project which was nice. She's awesome--take her!!",
+      "createdByUser": false,
+      "date": "2023-12-11 18:23:38 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTM4NjEwODUw",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 38610850,
+      "ratingTags": "Participation matters--Gives good feedback--Caring",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:56:07.799239+00:00"
+}

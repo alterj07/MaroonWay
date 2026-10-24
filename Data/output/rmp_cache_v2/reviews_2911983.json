@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "POLS312",
+      "comment": "10/10 GOAT. 99 for the class. The class was heavy on participation but he only counted your best weeks. Another large portion was attendance, but very focused that you learn the content. No exams. Two papers- one which had a three-minute presentation. Put in some effort and follow the rubric, an A is there. Literally just show up to class.",
+      "createdByUser": false,
+      "date": "2023-05-18 20:47:51 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTM3OTU1NjMx",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 37955631,
+      "ratingTags": "Participation matters--Caring--Graded by few things",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:13:30.729445+00:00"
+}

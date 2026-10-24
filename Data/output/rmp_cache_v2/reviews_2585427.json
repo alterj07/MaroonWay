@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 1,
+      "class": "STAT211",
+      "comment": "Don't recommend her. She is new to teaching and is not prepared or organized. Going to lecture confused me even more so I stopped going. Homework can be found online and exams were online and open internet so its the easiest A of college, but I didn't learn anything... she's very nice just not a great teacher!",
+      "createdByUser": false,
+      "date": "2020-05-01 21:04:59 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 1,
+      "id": "UmF0aW5nLTMzMTc4OTU3",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 33178957,
+      "ratingTags": "",
+      "teacherNote": null,
+      "textbookUse": 0,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 0
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:16:16.316818+00:00"
+}

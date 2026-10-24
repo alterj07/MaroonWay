@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "ARCH106",
+      "comment": "Chenjie was genuinely such a blessing to have for Spring first year studio. He usually teaches second year, which I would also recommend. He is so caring and kind, but still offers somewhat blunt constructive feedback. You will have to work hard and learn Adobe illustrator but your portfolio will look so great after taking his class.",
+      "createdByUser": false,
+      "date": "2026-10-09 16:10:15 +0000 UTC",
+      "difficultyRating": 4,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQzNDc1MDc0",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 43475074,
+      "ratingTags": "Group projects--Gives good feedback--Caring",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:43:49.002272+00:00"
+}

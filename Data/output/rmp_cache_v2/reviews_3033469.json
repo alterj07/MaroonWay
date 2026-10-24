@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 1,
+      "class": "MKTG-638",
+      "comment": "Professor Srini's class felt like a joke. The semester-long group project had nothing to do with E-Commerce and turned into a popularity contest over a fake video game political campaign. He constantly made last-minute changes, leaving teams scrambling. Smaller, more focused projects on E-Commerce strategies would've been far more valuable.",
+      "createdByUser": false,
+      "date": "2025-01-08 19:32:58 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 1,
+      "id": "UmF0aW5nLTQwNTA5ODI3",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 40509827,
+      "ratingTags": "EXTRA CREDIT--Group projects--Hilarious",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": null
+    },
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 4,
+      "class": "MKTG-638",
+      "comment": "Dr. Vijayaraghavan's grad level digital marketing course was alright. This is the first time he has taught this and you can tell. I would have preferred less group project work and more hands on work within e-commerce and digital marketing rather than trying to sell our political candidate. He was very responsive in his emails however. Easy exams!",
+      "createdByUser": false,
+      "date": "2024-11-14 18:01:19 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A+",
+      "helpfulRating": 4,
+      "id": "UmF0aW5nLTM5OTQ5NjY0",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 39949664,
+      "ratingTags": "Group projects--Hilarious--Online Savvy",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:09:21.804356+00:00"
+}

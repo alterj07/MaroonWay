@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 4,
+      "class": "101",
+      "comment": "Griffith is a boring lecturer, and the material is already boring to learn. She allows students to have 5 pages of notes for the tests and informs you when there is an in-class activity. I rarely attended class and learned nothing, but still easily got a B. She posts her lecture notes, which allows you to make good notes without attending class.",
+      "createdByUser": false,
+      "date": "2025-01-27 00:51:02 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "B",
+      "helpfulRating": 4,
+      "id": "UmF0aW5nLTQwNjA1NDU4",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 40605458,
+      "ratingTags": "Group projects--Clear grading criteria--Graded by few things",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:01:09.994215+00:00"
+}

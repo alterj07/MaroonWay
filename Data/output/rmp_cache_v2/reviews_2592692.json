@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 1,
+      "class": "NFSC401",
+      "comment": "He grades on a whim. He doesn't have any sort of rubric or clear grading criteria. It seems like he just takes points off whoever he wants to. Lectures were kind of scattered and disorganized. Personally, I thought the class wan't taught well and wouldn't take it again.",
+      "createdByUser": false,
+      "date": "2020-05-03 04:17:18 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "B",
+      "helpfulRating": 1,
+      "id": "UmF0aW5nLTMzMTg3NDQ2",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 33187446,
+      "ratingTags": "Clear grading criteria",
+      "teacherNote": null,
+      "textbookUse": 0,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 0
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:00:16.800951+00:00"
+}

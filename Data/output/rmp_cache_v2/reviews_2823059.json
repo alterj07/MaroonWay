@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "NUEN201",
+      "comment": "The only downside to this class is that there aren't very many grades. We'd have 4 homework and 4 exams with \"math moments\" (simple math questions that are graded on completion) that were extra credit. You get a 1 page cheat sheet on tests and review sessions cover all of the homework problems. If it ever comes up, Carlo's chain is in fact drippy.\n",
+      "createdByUser": false,
+      "date": "2024-04-11 18:02:43 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "Not sure yet",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTM5MTU2ODI4",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 39156828,
+      "ratingTags": "EXTRA CREDIT--Caring--Graded by few things",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "NUEN101",
+      "comment": "I took Dr. Peddicord my first semester at this university. I went in thinking I wanted to be aerospace engineering. I left with a burning passion for nuclear engineering and have continued to pursue it ever since. This man is amazing. He grades so easy, he's passionate about what he's lecturing about, each class was like a movie. Amazing prof.",
+      "createdByUser": false,
+      "date": "2023-11-28 02:56:39 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTM4NDQ4MTM1",
+      "isForCredit": false,
+      "isForOnlineClass": false,
+      "legacyId": 38448135,
+      "ratingTags": "Amazing lectures --Inspirational--Hilarious",
+      "teacherNote": null,
+      "textbookUse": null,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:09:45.885749+00:00"
+}

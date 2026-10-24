@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 3,
+      "class": "BICH101",
+      "comment": "He is very research oriented, I definitely wasn't prepared to understand anything in class as it was a bit more sophisticated than what I know, but the course's main purpose was to introduce the field of study more than learning the material.",
+      "createdByUser": false,
+      "date": "2022-12-01 22:50:39 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 3,
+      "id": "UmF0aW5nLTM2OTQwNjk2",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 36940696,
+      "ratingTags": "",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 3,
+      "class": "BICH101",
+      "comment": "Compared to other BICH101 profs, Dr. Zhang's class was very simple; I could tell that he focuses on his research instead of teaching. Lectures entire class over interesting info from his research and the CPT. Had only 1-2 easy homework assignments, an attendance question once in a blue moon, and an easy, informal end-of-semester group presentation.",
+      "createdByUser": false,
+      "date": "2022-03-31 20:00:58 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 3,
+      "id": "UmF0aW5nLTM2MDAzNzUx",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 36003751,
+      "ratingTags": "Group projects--Clear grading criteria--Graded by few things",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:45:06.301538+00:00"
+}

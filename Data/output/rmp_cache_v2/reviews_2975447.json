@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 3,
+      "class": "ECON449",
+      "comment": "Prof. Zhang is a super caring professor, yet her lectures were sometimes difficult to follow since she is a new professor and somewhat struggled to engage with the classroom. However, the material's pretty straightforward with easy assignments and tests, so you should not have issues understanding it. I'm certain that she will improve over time.",
+      "createdByUser": false,
+      "date": "2024-01-01 23:16:31 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 3,
+      "id": "UmF0aW5nLTM4ODE3NDk2",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 38817496,
+      "ratingTags": "Caring--Graded by few things",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:55:57.750757+00:00"
+}

@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 4,
+      "class": "AERO423",
+      "comment": "Kelly was very organized his lectures are clear and understandable. 8 HWs that are typically pretty challenging (on average would take me 8-10 hours of work). Exams are hard but he grades on a curve. Most important thing is show up to class EVERY DAY because he has note packets he expects you to fill out to be able to solve the homeworks/exams. ",
+      "createdByUser": false,
+      "date": "2024-01-16 22:31:04 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "C",
+      "helpfulRating": 4,
+      "id": "UmF0aW5nLTM4ODg5MjMy",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 38889232,
+      "ratingTags": "Clear grading criteria--Lots of homework",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:42:04.745488+00:00"
+}

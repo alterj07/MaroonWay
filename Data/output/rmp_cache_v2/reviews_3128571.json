@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "ECON-459",
+      "comment": "One of the BEST professors. Lectures were so clear. Plenty of hw and online quizs to keep your grade afloat. Exams werent weighted heavy. TAKE HIM. He encourages attendance through giving credit which is only available if you come to class. Extra credit is given too",
+      "createdByUser": false,
+      "date": "2025-12-09 02:34:43 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "B",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQyMTEwNzUw",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 42110750,
+      "ratingTags": "Inspirational--Caring--Respected",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:55:58.799159+00:00"
+}

@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 2,
+      "class": "MATH-304",
+      "comment": "She didn't explain concepts well but she's a nice person. As an engineering student, it's hard to understand when all she writes on the board are proofs and theorems. I bet math majors would find it easier. The good thing is the first exam is easy, the final was very similar to the review (can't guarantee that will happen again), and she curves.",
+      "createdByUser": false,
+      "date": "2026-05-12 20:35:05 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 2,
+      "id": "UmF0aW5nLTQzMTA3NTg5",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 43107589,
+      "ratingTags": "Test heavy",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": null
+    },
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "MATH415",
+      "comment": "Dr. Klien is a tough prof but a sweetheart. I was on the verge of failing her class and she worked with me every week to make sure I understood the material. Go to class, go to office hours, ask for help when you need it and you will be fine. She is also very accommodating to those with disabilities and actually cares about her students.",
+      "createdByUser": false,
+      "date": "2023-11-14 00:29:41 +0000 UTC",
+      "difficultyRating": 5,
+      "flagStatus": "UNFLAGGED",
+      "grade": "C",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTM4Mzg0OTM4",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 38384938,
+      "ratingTags": "Participation matters--Accessible outside class--Online Savvy",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:06:08.092815+00:00"
+}

@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "MEEN454",
+      "comment": "Dr. Erdemir is a legend. Very intelligent guy who clearly cares and knows everything about tribology. Class itself is dry and pretty dull, but content is practical for MEEN. Hw are free and exams are straightforward. Group project was interesting and had a long timeline which was nice. Take him if you get the chance, he's a king.",
+      "createdByUser": false,
+      "date": "2025-05-16 16:45:17 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQxMzA0MjU0",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 41304254,
+      "ratingTags": "Respected--Graded by few things",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 4,
+      "class": "MEEN454",
+      "comment": "Legend. Lectures are dry but he tries to make them funny. We had a couple strange kids in the class constantly ask him weird questions which made it better. Tests are really easy HW is all short answer free 100. ",
+      "createdByUser": false,
+      "date": "2025-04-15 18:36:56 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "Not sure yet",
+      "helpfulRating": 4,
+      "id": "UmF0aW5nLTQwOTQ2ODg2",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 40946886,
+      "ratingTags": "",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:07:56.532074+00:00"
+}

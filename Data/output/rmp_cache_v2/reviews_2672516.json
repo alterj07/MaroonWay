@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "ALED440",
+      "comment": "Probably my favorite professor. She cares for her students and wants her students to succeed. She can grade hard sometimes but provides excellent feedback. It was her first time doing an ALED course, but I know she is respect in both Leadership and Business majors. Whatever you do, take her if you have the opportunity. Can not recommend her enough.",
+      "createdByUser": false,
+      "date": "2023-04-04 16:07:04 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTM3NTc4OTQy",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 37578942,
+      "ratingTags": "Hilarious--Caring--Respected",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 4,
+      "class": "BUSN101",
+      "comment": "She made class so fun! Created a very informal environment and made learning enjoyable.",
+      "createdByUser": false,
+      "date": "2021-02-22 20:28:30 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A-",
+      "helpfulRating": 4,
+      "id": "UmF0aW5nLTM0MzgxMjMx",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 34381231,
+      "ratingTags": "Gives good feedback--Respected--Hilarious",
+      "teacherNote": null,
+      "textbookUse": 0,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:47:27.881098+00:00"
+}

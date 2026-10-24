@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "ECEN340",
+      "comment": "Fall 2021 was Dr. Lius first semester teaching. I felt that she did a good job and she really wanted us to all do good and accommodated us the best she could . ECEN 340 has some tough topics , but its definitely doable especially with a prof like Dr. Liu. She cares a lot.",
+      "createdByUser": false,
+      "date": "2021-12-16 06:23:15 +0000 UTC",
+      "difficultyRating": 4,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTM1NTUzNzk2",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 35553796,
+      "ratingTags": "Gives good feedback--Caring--EXTRA CREDIT",
+      "teacherNote": null,
+      "textbookUse": 5,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:09:49.889096+00:00"
+}

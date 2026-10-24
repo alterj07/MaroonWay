@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "203",
+      "comment": "I took this during the summer and Professor Ottinger was great! She was really quick to answer emails and provide super useful feedback. She puts in grades fast and is not a hard grader. She also leaves super helpful feedback on most submissions and was always super willing to answer questions. I would really recommend taking her!",
+      "createdByUser": false,
+      "date": "2024-07-04 02:33:35 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTM5NjA4NjIx",
+      "isForCredit": true,
+      "isForOnlineClass": true,
+      "legacyId": 39608621,
+      "ratingTags": "Clear grading criteria--Gives good feedback--Accessible outside class",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "203",
+      "comment": "Take professor Ottinger for your communications class! She is the sweetest person and is always willing to help come up with speech ideas. She even checks gives feedback that is very useful. Overall easy class just make sure to turn everything on time. I took this class during the summer and the work was doable.",
+      "createdByUser": false,
+      "date": "2024-06-28 01:36:33 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTM5NTk4MDg0",
+      "isForCredit": true,
+      "isForOnlineClass": true,
+      "legacyId": 39598084,
+      "ratingTags": "Gives good feedback--Caring--Accessible outside class",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:50:56.047991+00:00"
+}

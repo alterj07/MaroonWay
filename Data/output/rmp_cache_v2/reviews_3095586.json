@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "ATMO201",
+      "comment": "She's very kind and understanding with excused absences. The class includes four exams, iClickers, and attendance (15% of your grade), so showing up matters. She's passionate, though lectures can feel overwhelming if you're not into weather. Tests are easy if you study, most questions come from the powerpoints which are posted on canvas. ",
+      "createdByUser": false,
+      "date": "2026-04-28 17:53:41 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "B",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQyOTU3MDM3",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 42957037,
+      "ratingTags": "Participation matters--Graded by few things",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:44:49.234422+00:00"
+}

@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "431",
+      "comment": "I admire and respect Dr. Flint immensely. She is very kind and understanding. Although she takes a little while to grade assignments, I have nothing negative to say. Take Dr. Flint if you can! ",
+      "createdByUser": false,
+      "date": "2024-12-07 22:30:32 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQwMTUzNTYz",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 40153563,
+      "ratingTags": "Participation matters--Clear grading criteria--Respected",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 1,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:59:21.487445+00:00"
+}

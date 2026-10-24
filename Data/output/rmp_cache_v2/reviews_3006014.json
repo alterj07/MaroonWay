@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "FINC-685",
+      "comment": "BR is probably the best Professor in the finance department if you want to do anything related to capital markets. Rev/Sinn fund is one of the best orgs at the school and can't recommend enough",
+      "createdByUser": false,
+      "date": "2026-05-07 14:36:43 +0000 UTC",
+      "difficultyRating": 4,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQzMDU4NTIw",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 43058520,
+      "ratingTags": "Get ready to read--Participation matters--Amazing lectures ",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:59:56.596835+00:00"
+}

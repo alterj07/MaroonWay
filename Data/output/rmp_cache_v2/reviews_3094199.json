@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "CSCE310",
+      "comment": "His old ratings from Northwestern University are wack. His databases course is incredible! Very personable professor. Hard deadlines, no extra credit but gives you a lot of time and tends to make finals pretty forgiving. Had him for a few courses, 411 was a bit too easy but besides that, super easy to learn from. ",
+      "createdByUser": false,
+      "date": "2025-04-27 21:29:17 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQxMDYyMjM1",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 41062235,
+      "ratingTags": "Clear grading criteria--Gives good feedback--Caring",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:52:59.085158+00:00"
+}

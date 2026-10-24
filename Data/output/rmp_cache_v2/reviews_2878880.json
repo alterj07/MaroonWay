@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 2,
+      "class": "MEEN461",
+      "comment": "This guy is clearly unaware of how to teach/motivate students. Quiz/hw answers are required to list monotonous details such as a million assumptions and a problem 'reflection' to discuss what you learned on every problem. He rushes thru lecture and refuses to post his notes so good luck if you miss a key detail. As soon as I show up I want to leave",
+      "createdByUser": false,
+      "date": "2023-01-30 22:21:42 +0000 UTC",
+      "difficultyRating": 4,
+      "flagStatus": "UNFLAGGED",
+      "grade": "B",
+      "helpfulRating": 2,
+      "id": "UmF0aW5nLTM3MzkyOTEy",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 37392912,
+      "ratingTags": "Get ready to read--Beware of pop quizzes--So many papers",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": null
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:08:01.511713+00:00"
+}

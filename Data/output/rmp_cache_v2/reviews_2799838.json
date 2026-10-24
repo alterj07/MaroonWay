@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 4,
+      "class": "MEEN404",
+      "comment": "Dr Subramanian is a decent 404 professor, he gives good feedback about projects and ensures you are prepared for the final presentation. Sometimes his feedback can be a little harsh but it's not as bad as you will see from the external grader.",
+      "createdByUser": false,
+      "date": "2024-04-23 15:36:06 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 4,
+      "id": "UmF0aW5nLTM5MjM3MTg4",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 39237188,
+      "ratingTags": "",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:07:12.329200+00:00"
+}

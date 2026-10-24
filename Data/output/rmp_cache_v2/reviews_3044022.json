@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "phil-251",
+      "comment": "Great prof and easy class. Every thing was graded very clearly and there were multiple opportunities for extra credit. There are weekly readings that are a bit time consuming but as long as you do those the class will be very easy. He explains every concept very well and is always willing to meet outside of class if you don't understand. Love him!",
+      "createdByUser": false,
+      "date": "2026-01-03 06:30:36 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQyNDMwMzUw",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 42430350,
+      "ratingTags": "Participation matters--Clear grading criteria--Accessible outside class",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "phil-251",
+      "comment": "12 quizzes 2pt each. arguably the hardest part of the class. But if you read and pay attention then easy 9/10 per quiz. Ex cred toward end of sem. Exam ques were just quiz ques with a short answer response for quotes that we get prior. You also need to talk 20 times in class to get the 10 points for participation. Also easy recorded presentation.",
+      "createdByUser": false,
+      "date": "2025-12-20 06:27:26 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQyMzU3Njg1",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 42357685,
+      "ratingTags": "Get ready to read--Participation matters--EXTRA CREDIT",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:11:10.231660+00:00"
+}

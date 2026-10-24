@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 4,
+      "class": "CVEN454",
+      "comment": "He's not super interesting for lectures but he does a good job trying to be concise and explain problems step by step. Labs are all group work in excel and he basically walks you through how to do them. One exam and a final project are 60% of grade. He definitely likes when you engage with guest speakers/participate in class.",
+      "createdByUser": false,
+      "date": "2025-11-11 21:20:35 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 4,
+      "id": "UmF0aW5nLTQxODQ0NDcx",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 41844471,
+      "ratingTags": "",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 1,
+      "class": "cven632",
+      "comment": "Instead of having a textbook, he prints random papers for everyone in the class. His tests are not creative or interesting like his character. He would mock you if he could especially if your home is more than 2000 miles away. DO NOT CHOOSE HIM AS YOUR ADVISOR. YOU WILL REGRET IT. ",
+      "createdByUser": false,
+      "date": "2025-04-02 19:28:21 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 1,
+      "id": "UmF0aW5nLTQwODYwMDEy",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 40860012,
+      "ratingTags": "",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": null
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:54:46.532382+00:00"
+}

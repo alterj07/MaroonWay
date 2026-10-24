@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "117",
+      "comment": "An Aggie Legend.",
+      "createdByUser": false,
+      "date": "2026-04-23 23:45:31 +0000 UTC",
+      "difficultyRating": 5,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQyOTE5Mjk3",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 42919297,
+      "ratingTags": "Amazing lectures --Respected",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:42:44.732486+00:00"
+}

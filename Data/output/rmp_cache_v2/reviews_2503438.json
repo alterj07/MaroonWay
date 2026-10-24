@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "",
+      "clarityRating": 5,
+      "class": "ENDS108",
+      "comment": "In all honesty, Tate is one of the best professors Ive had since starting college. Hes extremely knowledgeable about architecture, never makes you feel stupid about your designs/ideas, and always gives great feedback on how to improve your work. If you have a chance to take him for any of your studios, do not pass on the opportunity!",
+      "createdByUser": false,
+      "date": "2019-11-06 17:45:18 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTMyMzY4NTU0",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 32368554,
+      "ratingTags": "Gives good feedback--Respected--Caring",
+      "teacherNote": null,
+      "textbookUse": 0,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:43:54.018864+00:00"
+}

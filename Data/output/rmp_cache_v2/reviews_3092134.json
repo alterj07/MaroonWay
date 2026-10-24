@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 4,
+      "class": "ocen-221",
+      "comment": "He's great and makes lectures fun with props and jokes. Sometimes his slides are a little lacking or he skims past things and says they aren't important, but overall a good prof. Homework is not bad, and he gives lots of examples to prepare you for exams (and a final review). He's very understanding and will help you out.",
+      "createdByUser": false,
+      "date": "2026-01-14 19:40:10 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "B",
+      "helpfulRating": 4,
+      "id": "UmF0aW5nLTQyNDk3Nzg0",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 42497784,
+      "ratingTags": "",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "ocen-221",
+      "comment": "roger is the goat",
+      "createdByUser": false,
+      "date": "2025-12-12 03:07:04 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQyMTk3NDgy",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 42197482,
+      "ratingTags": "Gives good feedback--Hilarious--Accessible outside class",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:10:16.071189+00:00"
+}

@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "mtde380",
+      "comment": "This seminar was pretty easy and the speakers that came in to speak were pretty interesting. Get ready to write 4 1-2 page reports on the speakers. Also there is a 5-10 page essay that you need to write about something project management related. But, it's not a writing course so the grading is fairly easy. ",
+      "createdByUser": false,
+      "date": "2025-08-26 15:55:27 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQxNjAxMDc2",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 41601076,
+      "ratingTags": "Amazing lectures --So many papers",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "MTDE333",
+      "comment": "Took this on a France study abroad trip, and it was super easy. If you take it with him, he'll make sure you know everything you need to do well on his test. Super quiet and not very talkative but it was still a fun trip.",
+      "createdByUser": false,
+      "date": "2025-08-26 15:51:18 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQxNjAxMDYz",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 41601063,
+      "ratingTags": "Caring",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:09:42.857380+00:00"
+}

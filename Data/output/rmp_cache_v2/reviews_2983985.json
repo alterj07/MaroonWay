@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 3,
+      "class": "MEEN432",
+      "comment": "Lectures were confusing at times and the projects were difficult, but the professor was friendly and approachable.",
+      "createdByUser": false,
+      "date": "2024-02-02 20:37:00 +0000 UTC",
+      "difficultyRating": 4,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 3,
+      "id": "UmF0aW5nLTM4OTQ4MDQ5",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 38948049,
+      "ratingTags": "Group projects--Graded by few things",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": null
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:07:38.430673+00:00"
+}

@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "BMEN344",
+      "comment": "Professor Clevenger is AMAZING! It was her first year teaching this year, but you would never be able to tell. She is wise beyond her years and genuinely cares about her students success and understanding of the material. She takes a difficult subject and explains it in a way that makes so much sense. She is very accessible outside of class as well",
+      "createdByUser": false,
+      "date": "2023-05-11 21:37:18 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTM3OTAxNTky",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 37901592,
+      "ratingTags": "Amazing lectures --Gives good feedback--Accessible outside class",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:47:07.832612+00:00"
+}

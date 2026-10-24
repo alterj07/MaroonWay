@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "NUTR301",
+      "comment": "Lectures are what is on exams, so attendance isn't mandatory. Miss at your own risk. I missed a few times and it wasn't a big deal. Entire class is 2 exams, 2 case studies, and a final, but he is a very easy grader. Study a lot for the exams and you will be totally fine. You can tell he really enjoys what he does. Easy B, work for the A. ",
+      "createdByUser": false,
+      "date": "2025-05-27 20:48:39 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQxMzcxMDc1",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 41371075,
+      "ratingTags": "Clear grading criteria--Lecture heavy--Graded by few things",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:10:09.977340+00:00"
+}

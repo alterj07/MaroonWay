@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 4,
+      "class": "204",
+      "comment": "This class wasn't too bad I definitely would stay away if you don't want to study for tests because you have to if you want to pass. The lectures are tough to sit through and there are some pop quizzes but they were all super easy as long as you were somewhat paying attention.",
+      "createdByUser": false,
+      "date": "2024-03-25 23:22:59 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A-",
+      "helpfulRating": 4,
+      "id": "UmF0aW5nLTM5MDg2MTk0",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 39086194,
+      "ratingTags": "Group projects--Beware of pop quizzes--Lecture heavy",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "204",
+      "comment": "The class was very lecture heavy but you could tell professor Bentley knew a lot about the subject and cared about teaching. ",
+      "createdByUser": false,
+      "date": "2024-01-24 23:39:36 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "B+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTM4OTIxODk1",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 38921895,
+      "ratingTags": "Group projects--Caring--Lecture heavy",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:42:59.916328+00:00"
+}

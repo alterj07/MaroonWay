@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "CVEN207",
+      "comment": "The course was mainly guest speakers. The speakers were employees from businesses in the industry. Dr. Autenrieth was gone for many of the lectures b/c she is the department head. When she was there she did not talk much but is very sweet.",
+      "createdByUser": false,
+      "date": "2019-11-19 12:54:44 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTMyNDM3NzQx",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 32437741,
+      "ratingTags": "Respected",
+      "teacherNote": null,
+      "textbookUse": 0,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:53:48.339264+00:00"
+}

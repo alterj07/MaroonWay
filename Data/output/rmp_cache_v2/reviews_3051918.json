@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "SPMT360",
+      "comment": "Dr. Kim was a fantastic professor. She is super chill and is easily accessible outside of the classroom. There were not many assignments throughout the semester, however she is extremely lenient with grading. I would highly recommend anyone to take her courses, she's great!",
+      "createdByUser": false,
+      "date": "2024-12-02 16:10:23 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQwMDYzNzQy",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 40063742,
+      "ratingTags": "Participation matters--Amazing lectures --Clear grading criteria",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:15:07.065860+00:00"
+}

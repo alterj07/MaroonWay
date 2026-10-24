@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "ANSC498",
+      "comment": "Dr. Osburn is an amazing professor that actually cares about his students. He tries to cater to each student, and I appreciated that. Lots of papers, but lots of good feedback and easy grading. Take this professor!",
+      "createdByUser": false,
+      "date": "2023-01-28 04:19:31 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTM3Mzg3MjM3",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 37387237,
+      "ratingTags": "Participation matters--So many papers--Caring",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:42:46.743240+00:00"
+}

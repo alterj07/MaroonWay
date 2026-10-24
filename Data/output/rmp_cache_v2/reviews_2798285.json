@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "SPMT319",
+      "comment": "Class materials were interesting. You do have to study the textbook aside from the lectures. Tests weren't too bad, but there is some definite vagueness to terms in the exams. Professor Alanis was great about emailing back in a timely manner. ",
+      "createdByUser": false,
+      "date": "2022-05-10 01:17:19 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTM2MjkyNTE4",
+      "isForCredit": true,
+      "isForOnlineClass": true,
+      "legacyId": 36292518,
+      "ratingTags": "Get ready to read--Online Savvy",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:15:10.106153+00:00"
+}

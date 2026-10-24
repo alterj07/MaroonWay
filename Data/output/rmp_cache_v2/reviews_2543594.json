@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "MATH308",
+      "comment": "The Fall 2019 semester was Dr. Xus first semester at TAMU. Hes a really good prof. His teaching is okay and I had to go get extra tutoring to clarify things. But as for his exams they are the EXACT same as his homework . He picks about 6 problems from the homework and makes that the exam . Only grades in this class is HW and Exams. Take him!!!",
+      "createdByUser": false,
+      "date": "2019-11-26 16:37:09 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTMyNDgwNjY1",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 32480665,
+      "ratingTags": "Gives good feedback--Accessible outside class--Caring",
+      "teacherNote": null,
+      "textbookUse": 5,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:06:20.178911+00:00"
+}

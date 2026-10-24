@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "MATH147",
+      "comment": "love her she tried her absolute best to help and she helped me through some mental issues as well and really cared and taught well I'm just not good at math",
+      "createdByUser": false,
+      "date": "2026-05-12 15:57:46 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "C-",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQzMTA0MTQw",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 43104140,
+      "ratingTags": "Participation matters",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "MATH147",
+      "comment": "Professor Klein is hands down one of the best professors I've had! Her lectures are very helpful and she's easy to reach outside of class. She's also an advisor for the math department, so she gives helpful advising tips too! Highly recommend everyone to take her class",
+      "createdByUser": false,
+      "date": "2026-01-15 17:03:31 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQyNTAzMjk4",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 42503298,
+      "ratingTags": "Participation matters--Amazing lectures --Accessible outside class",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:04:36.777504+00:00"
+}

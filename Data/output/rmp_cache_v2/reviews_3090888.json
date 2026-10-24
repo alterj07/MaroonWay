@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 4,
+      "class": "Mgmt466",
+      "comment": "Boivie is a great professor, he's interested in what he teaches and also funny so that lectures aren't too boring. Discussions are a big part of the class, if you don't want to participate it's fine if you just want a B. Graded by discussion participation, mid-term paper, 3 quizzes and final group project.",
+      "createdByUser": false,
+      "date": "2025-04-20 00:48:00 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "B",
+      "helpfulRating": 4,
+      "id": "UmF0aW5nLTQwOTgzOTE0",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 40983914,
+      "ratingTags": "Participation matters--Group projects--Lecture heavy",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:08:44.661550+00:00"
+}

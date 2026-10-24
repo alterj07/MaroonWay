@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 5,
+      "class": "Soci-230",
+      "comment": "Prof Maich is one of the best I have had at TAMU. She truly cares about her students' success, and works to create a fun environment where you still learn. Participation really matters in her class, but if you can take her, I couldn't recommend her enough. ",
+      "createdByUser": false,
+      "date": "2026-05-04 18:52:06 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQzMDIwNzUz",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 43020753,
+      "ratingTags": "Participation matters--Gives good feedback--Accessible outside class",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:14:29.932865+00:00"
+}

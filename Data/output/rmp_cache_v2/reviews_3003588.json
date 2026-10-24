@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "MEEN-431",
+      "comment": "Advanced Dynamic Systems and Controls. Dr. Palazzolo is very funny and extremely nice. He easily relates to students and is very understanding. Attendance isn't mandatory, but you should go. Course material isn't easy, but for a class like this, idk how it could be. You wont regret taking this class.",
+      "createdByUser": false,
+      "date": "2026-04-28 15:47:29 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "REVIEWED",
+      "grade": "A+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQyOTU0OTE3",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 42954917,
+      "ratingTags": "Participation matters--Inspirational--Caring",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:07:36.421495+00:00"
+}

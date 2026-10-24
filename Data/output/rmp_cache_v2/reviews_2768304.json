@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 3,
+      "class": "MATH168",
+      "comment": "Prof Li was an okay lecturer. It was clear that he knew what he was talking about but he conveyed topics really poorly. Homework was usually the only way to really understand the material as the notes in class were super hard to follow. He is accessible out of class and willing to stay behind after lecture to help out with questions.",
+      "createdByUser": false,
+      "date": "2022-08-16 19:43:37 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 3,
+      "id": "UmF0aW5nLTM2NTkwNjQ3",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 36590647,
+      "ratingTags": "Tough grader--Lots of homework--Beware of pop quizzes",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": null
+    },
+    {
+      "attendanceMandatory": "N",
+      "clarityRating": 3,
+      "class": "MATH168",
+      "comment": "I think he is a new prof. Hes nice and seems like a good person but hes not the best instructor. He moves fast so you either pay attention or write notes. He said he will offer extra credit tho. Helps with hw and moves hw due dates when asked. Quizzes on friday, sometimes theyre take home, or we can work as a group, or he does it with us.",
+      "createdByUser": false,
+      "date": "2022-03-28 02:46:52 +0000 UTC",
+      "difficultyRating": 5,
+      "flagStatus": "UNFLAGGED",
+      "grade": "",
+      "helpfulRating": 3,
+      "id": "UmF0aW5nLTM1OTgyNTI0",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 35982524,
+      "ratingTags": "Test heavy--Caring--Clear grading criteria",
+      "teacherNote": null,
+      "textbookUse": 0,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:05:08.895261+00:00"
+}

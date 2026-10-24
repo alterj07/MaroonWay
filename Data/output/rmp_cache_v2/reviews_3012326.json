@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "stat211",
+      "comment": "Dr. Brubaker was a great professor. His slides were easy to understand, he had many examples in his lecture, and he was very easy to reach outside of class. He records his lectures so you can revisit them later and his homework is via Cengage. You get plenty of time to do the homework and he also explains all the RStudio commands you will need.",
+      "createdByUser": false,
+      "date": "2025-05-13 02:25:43 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "B+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTM5NjEzMTI0",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 39613124,
+      "ratingTags": "Gives good feedback--Caring--Accessible outside class",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "stat211",
+      "comment": "He was an interim professor so he probably won't be teaching stats again, but if you can take him, DO IT! He makes the class so much easier than other professors, but his lectures are so clear and coherent that he makes you want to learn. As my first time taking statistics, he made sure everything made sense and was always available at office hours",
+      "createdByUser": false,
+      "date": "2024-05-12 16:38:39 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTM5NDQzNTc4",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 39443578,
+      "ratingTags": "EXTRA CREDIT--Caring--Accessible outside class",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 1,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:15:30.148176+00:00"
+}

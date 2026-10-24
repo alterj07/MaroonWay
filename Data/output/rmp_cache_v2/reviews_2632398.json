@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 2,
+      "class": "COSC475",
+      "comment": "McGinn is very repetitive. This class isn't as hard as Boldt's 375 class but you'll have to work. The work is manageable yet some of the tests and quizzes were quite the challenge. Overall, McGinn is cool yet he can come off as annoying and monotone. I've skipped his class plenty of times as I found his lectures to be a waste of my time. Sleep >  ",
+      "createdByUser": false,
+      "date": "2022-04-12 18:56:57 +0000 UTC",
+      "difficultyRating": 4,
+      "flagStatus": "UNFLAGGED",
+      "grade": "C",
+      "helpfulRating": 2,
+      "id": "UmF0aW5nLTM2MDYzOTgw",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 36063980,
+      "ratingTags": "Beware of pop quizzes--Lecture heavy",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": null
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:52:11.922069+00:00"
+}

@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "ECON-323",
+      "comment": "Strange class. I went to try and pay attention but the language barrier was huge. Didn't matter though because everything was so easy and he was extremely helpful if you ask him questions after or before class.",
+      "createdByUser": false,
+      "date": "2022-08-08 21:26:05 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A+",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTM2NTcyMzEw",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 36572310,
+      "ratingTags": "EXTRA CREDIT--Test heavy--Graded by few things",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:55:33.635662+00:00"
+}

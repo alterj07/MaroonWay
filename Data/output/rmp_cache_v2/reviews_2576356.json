@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 1,
+      "class": "COMM354",
+      "comment": "Do not recommend. The entire course is based on 3 exams that are worth most of your grade and are only 25 questions making the grade fluctuate heavily. There will be a group presentation once a week so that he only has to lecture once a week. He will not work with you for scheduling conflicts and does not reply quickly to emails. Very boring. ",
+      "createdByUser": false,
+      "date": "2022-12-19 21:10:42 +0000 UTC",
+      "difficultyRating": 4,
+      "flagStatus": "UNFLAGGED",
+      "grade": "C",
+      "helpfulRating": 1,
+      "id": "UmF0aW5nLTM3MTkyNDA0",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 37192404,
+      "ratingTags": "Get ready to read--Lecture heavy--Test heavy",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": null
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:51:40.842910+00:00"
+}

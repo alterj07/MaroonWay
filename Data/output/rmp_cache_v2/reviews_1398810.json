@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 3,
+      "class": "PETE321",
+      "comment": "First of all this guy knows what he knows, he is an expert in many matters of formation evaluation. Because of this he is very busy with meetings and doesn't devote the time he could to making his class clear. This leads to very ambiguous  test/quiz questions in a very ambiguous class. In addition he is very concerned with shafting past exam kids.",
+      "createdByUser": false,
+      "date": "2016-10-27 11:19:29 +0000 UTC",
+      "difficultyRating": 4,
+      "flagStatus": "UNFLAGGED",
+      "grade": "",
+      "helpfulRating": 3,
+      "id": "UmF0aW5nLTI3MDg2OTkz",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 27086993,
+      "ratingTags": "Tough Grader--Respected--Get ready to read",
+      "teacherNote": null,
+      "textbookUse": 5,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 1,
+      "wouldTakeAgain": 0
+    },
+    {
+      "attendanceMandatory": "",
+      "clarityRating": 4,
+      "class": "PETE321",
+      "comment": "he is ok",
+      "createdByUser": false,
+      "date": "2010-12-23 13:34:20 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "",
+      "helpfulRating": 2,
+      "id": "UmF0aW5nLTE4MDMxOTk0",
+      "isForCredit": false,
+      "isForOnlineClass": false,
+      "legacyId": 18031994,
+      "ratingTags": "",
+      "teacherNote": null,
+      "textbookUse": 3,
+      "thumbsDownTotal": 1,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": null
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:10:35.068355+00:00"
+}

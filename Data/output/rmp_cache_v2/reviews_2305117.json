@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "non mandatory",
+      "clarityRating": 5,
+      "class": "PHYS647",
+      "comment": "I can listen to this man talks all day. His British intonation is charming and put your mind at ease. Strongly recommend bringing a head rest in case you want to sneak a quick nap in. Afraid that you won't be able to follow the material cause you sleep in class? No worries, his lecture notes are pristine and easy to follow. ",
+      "createdByUser": false,
+      "date": "2026-03-03 21:22:12 +0000 UTC",
+      "difficultyRating": 3,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 5,
+      "id": "UmF0aW5nLTQyNjYyNjg4",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 42662688,
+      "ratingTags": "Gives good feedback--Respected--Accessible outside class",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjA=",
+  "complete": true,
+  "fetched_at": "2026-10-24T23:12:23.490495+00:00"
+}

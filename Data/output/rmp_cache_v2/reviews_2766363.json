@@ -1,0 +1,51 @@
+{
+  "reviews": [
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 3,
+      "class": "ENGL333",
+      "comment": "Prof Cho is very considerate of situations & likes to know students and have good discussions. There is a lotttt of reading, so don't take this class during a heavy course load or you will not keep up. The papers are relatively easy, but they rly only gave feedback on the first couple, so I was kind of flying blind towards the end of the semester.",
+      "createdByUser": false,
+      "date": "2025-05-20 14:50:01 +0000 UTC",
+      "difficultyRating": 2,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A",
+      "helpfulRating": 3,
+      "id": "UmF0aW5nLTQxMzI5NzQ5",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 41329749,
+      "ratingTags": "",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    },
+    {
+      "attendanceMandatory": "mandatory",
+      "clarityRating": 4,
+      "class": "ENGL333",
+      "comment": "I took her as LGBTQ class and it was easy. There are 10 400-700 word Response Paper's, 1 1200-2400 word Research Paper and that is it! It is easy, you just have to sit through lectures talking about LGBTQ. You do need to show up to class and particpate a little. She does not ask for much but if you absolutely have to take it, take it with prof Cho.",
+      "createdByUser": false,
+      "date": "2023-12-08 01:17:44 +0000 UTC",
+      "difficultyRating": 1,
+      "flagStatus": "UNFLAGGED",
+      "grade": "A+",
+      "helpfulRating": 4,
+      "id": "UmF0aW5nLTM4NTY3Mjkw",
+      "isForCredit": true,
+      "isForOnlineClass": false,
+      "legacyId": 38567290,
+      "ratingTags": "Participation matters--Clear grading criteria--So many papers",
+      "teacherNote": null,
+      "textbookUse": -1,
+      "thumbsDownTotal": 0,
+      "thumbsUpTotal": 0,
+      "wouldTakeAgain": 1
+    }
+  ],
+  "cursor": "YXJyYXljb25uZWN0aW9uOjE=",
+  "complete": true,
+  "fetched_at": "2026-10-24T22:56:14.827366+00:00"
+}
