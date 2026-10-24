@@ -17,8 +17,10 @@ def make_engine(settings: Settings) -> AsyncEngine:
         settings.database_url,
         echo=settings.db_echo,
         pool_pre_ping=True,
-        # Supabase's pooler does its own statement caching; asyncpg's prepared
-        # statement cache fights it and raises DuplicatePreparedStatementError.
+        # Harmless on the session pooler, required on the transaction one: in
+        # transaction mode asyncpg's prepared statement cache outlives the
+        # connection it was built for and raises
+        # DuplicatePreparedStatementError. Off by default so either pooler works.
         connect_args={"statement_cache_size": 0},
     )
 

@@ -28,9 +28,10 @@ uv venv --python 3.13 && uv pip install -e ".[dev]"   # or: python3 -m venv .ven
 cp .env.example .env                                   # then fill in DATABASE_URL
 ```
 
-Create the Supabase project, copy the **session pooler** connection string
-(port 6543) into `DATABASE_URL` with the `postgresql+asyncpg://` scheme, and
-apply the schema — either paste `sql/001_schema.sql` and `sql/002_indexes.sql`
+Create the Supabase project, click **Connect** at the top of the dashboard, copy
+the **Session pooler** string (port 5432 — session mode keeps the prepared
+statements and session state that the transaction pooler on 6543 drops) into
+`DATABASE_URL` with the `postgresql+asyncpg://` scheme, and apply the schema — either paste `sql/001_schema.sql` and `sql/002_indexes.sql`
 into the Supabase SQL editor, or:
 
 ```bash
