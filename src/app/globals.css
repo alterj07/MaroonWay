@@ -1,0 +1,96 @@
+@import 'tailwindcss';
+
+/*
+ * Design tokens. Everything the UI renders comes from here, so changing a
+ * value below changes it everywhere.
+ *
+ * @theme registers a token with Tailwind, which turns it into utilities:
+ * --color-maroon gives you bg-maroon, text-maroon, border-maroon, and so on.
+ */
+@theme {
+  /* Brand palette — the same in light and dark mode. */
+  --color-maroon: #500000;
+  --color-maroon-dark: #3a0000;
+  --color-maroon-light: #8e2436;
+  --color-rose: #d86b78;
+  --color-gold: #e0b35c;
+
+  --font-sans:
+    system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji',
+    'Segoe UI Emoji';
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+
+  /* Max content width, so the site does not sprawl on big monitors: max-w-page. */
+  --container-page: 65rem;
+
+  /* Card/surface corner radius: rounded-card. */
+  --radius-card: 1.25rem;
+}
+
+/*
+ * Semantic colors. These are plain CSS variables rather than @theme tokens so
+ * the media query below can swap them for dark mode at runtime.
+ */
+:root {
+  --background: #ffffff;
+  --surface: #faf7f7;
+  --surface-alt: #f3ebec;
+  --foreground: #1b1416;
+  --muted: #6e6065;
+  --line: #e7ddde;
+  --primary: var(--color-maroon);
+  --primary-hover: var(--color-maroon-dark);
+  --on-primary: #ffffff;
+  --accent: var(--color-gold);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #141011;
+    --surface: #1d1719;
+    --surface-alt: #272023;
+    --foreground: #f5eff0;
+    --muted: #a99da1;
+    --line: #332a2d;
+    --primary: var(--color-maroon-light);
+    --primary-hover: var(--color-rose);
+    --on-primary: #ffffff;
+    --accent: var(--color-gold);
+  }
+}
+
+/*
+ * `inline` keeps the var() reference in the generated utility instead of
+ * resolving it at build time, which is what lets the swap above take effect.
+ */
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-alt: var(--surface-alt);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-on-primary: var(--on-primary);
+  --color-accent: var(--accent);
+}
+
+@layer base {
+  html {
+    /* Native scrollbars and form controls follow the active scheme. */
+    color-scheme: light dark;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background-color: var(--color-maroon);
+    color: #ffffff;
+  }
+}
