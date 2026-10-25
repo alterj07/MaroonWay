@@ -155,6 +155,13 @@ def test_an_unparseable_time_does_not_become_a_meeting(client, written):
     assert written[0].meetings == []
 
 
+def test_missing_delivery_and_times_do_not_invent_an_online_section(client, written):
+    body = post(client, [section(delivery=None, meetings=[])]).json()
+    assert body["skipped"]["no_meeting_time"] == 1
+    assert written[0].delivery is None
+    assert written[0].meetings == []
+
+
 def test_a_backwards_time_is_rejected(client, written):
     post(client, [section(meetings=[{"days": "MON", "start": "15:00", "end": "09:00"}])])
     assert written[0].meetings == []

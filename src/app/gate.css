@@ -706,6 +706,67 @@
   opacity: 0.6;
   max-width: 62ch;
 }
+.explore-layout,
+.course-list,
+.course-detail,
+.prof-table {
+  min-width: 0;
+}
+.course-list > button > span {
+  min-width: 0;
+}
+.course-list > button {
+  height: auto;
+  min-height: 90px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+.prof-table {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.detail-code {
+  flex-wrap: wrap;
+}
+@media (max-width: 900px) {
+  .explore-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 640px) {
+  .top {
+    display: flex !important;
+    flex-wrap: wrap;
+    height: auto !important;
+    gap: 10px;
+    padding: 12px 16px !important;
+  }
+  .top .brand {
+    flex: 1;
+  }
+  .top .account > div {
+    display: none !important;
+  }
+  .top nav {
+    display: flex !important;
+    order: 3;
+    width: 100%;
+    justify-content: space-between;
+    gap: 4px;
+  }
+  .top nav button {
+    padding: 8px 4px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .course-detail {
+    max-width: 100%;
+  }
+  .detail-head .use {
+    font-size: 12px !important;
+  }
+}
+
 
 /* ---- confirming a removal ---- */
 
@@ -1653,4 +1714,12 @@ a,
   align-self: start;
   padding-top: 4px;
   transform: none;
+}
+
+/* Keep the narrow calendar scrollable after the desktop overflow rules above. */
+@media (max-width: 860px) {
+  .cal-scroll {
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
 }

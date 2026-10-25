@@ -330,7 +330,7 @@ EARLY_CUTOFF = 9 * 60 + 30
 def score_schedule(
     schedule: Schedule,
     preferences: Preferences,
-    traits: Mapping[int, Traits] | None = None,
+    traits: Mapping[tuple[int, int | None], Traits] | None = None,
 ) -> RankedSchedule:
     """Score one schedule against what the student asked for.
 
@@ -339,6 +339,9 @@ def score_schedule(
     ranking around. Unknown data (a professor with no reviews) is skipped
     instead of being scored as zero, which would punish professors for our
     missing data.
+
+    Traits are keyed by (instructor_id, course_id). An exact course row wins;
+    only a missing course row falls back to (instructor_id, None).
 
     Evidence is the exception, and deliberately so. Not knowing a professor's
     rating is no reason to mark that professor down -- but a schedule a student
@@ -350,7 +353,10 @@ def score_schedule(
     """
     traits = traits or {}
     per_section = [
-        traits.get(s.instructor_id, NO_TRAITS) if s.instructor_id else NO_TRAITS
+        traits.get(
+            (s.instructor_id, s.course_id),
+            traits.get((s.instructor_id, None), NO_TRAITS),
+        ) if s.instructor_id else NO_TRAITS
         for s in schedule.sections
     ]
 
@@ -481,7 +487,7 @@ def score_schedule(
 def rank(
     schedules: Sequence[Schedule],
     preferences: Preferences | None = None,
-    traits: Mapping[int, Traits] | None = None,
+    traits: Mapping[tuple[int, int | None], Traits] | None = None,
 ) -> list[RankedSchedule]:
     """Rank schedules by preference, falling back to the doc's own rule.
 

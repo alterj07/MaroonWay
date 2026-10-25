@@ -2,9 +2,9 @@
 
 import { revalidatePath } from 'next/cache';
 
-import { getTerms, saveSchedule, saveStudentPreferences } from '@/lib/api';
+import { ApiError, getTerms, saveSchedule, saveStudentPreferences } from '@/lib/api';
 import type { Plan } from '@/components/planner';
-import { emptyPlan, plansFor } from '@/lib/plans';
+import { emptyPlan, normalizeCourseCodes, plansFor } from '@/lib/plans';
 import { currentStudent, studentHeaders } from '@/lib/session';
 
 /**
@@ -62,16 +62,15 @@ export async function buildPlans(
     };
   }
 
-  const codes = courses
-    .map((code) => code.trim().toUpperCase().replace(/\s+/g, ''))
-    .filter(Boolean);
+  const codes = normalizeCourseCodes(courses);
+  if (codes.length > 10) return { plans: emptyPlan('Too many classes', 'Choose up to 10 classes at a time'), relaxed: [] };
 
   const student = await currentStudent();
   if (student) {
     await saveStudentPreferences(studentHeaders(student), {
       courses: codes,
       term: chosen,
-      ...(wants.trim() ? { wants } : {}),
+      wants: wants.trim(),
     }).catch(() => undefined);
   }
 
@@ -80,7 +79,8 @@ export async function buildPlans(
     return { plans: result.plans, relaxed: result.relaxed ?? [] };
   } catch (error) {
     return {
-      plans: emptyPlan('Could not reach the backend', String(error)),
+      plans: emptyPlan('Could not build schedules', error instanceof ApiError
+        ? error.message : 'The schedule service is unavailable. Please try again.'),
       relaxed: [],
     };
   }
@@ -97,7 +97,7 @@ export async function useSchedule(term: string, label: string, payload: Plan) {
   const student = await currentStudent();
   if (!student) return { saved: false, reason: 'not signed in' as const };
 
-  await saveSchedule(studentHeaders(student), {
+  const schedule = await saveSchedule(studentHeaders(student), {
     term,
     label,
     // The plan as the UI holds it, so a saved schedule can be shown again
@@ -105,5 +105,5 @@ export async function useSchedule(term: string, label: string, payload: Plan) {
     payload: payload as unknown as Record<string, unknown>,
   });
   revalidatePath('/');
-  return { saved: true as const };
+  return { saved: true as const, schedule };
 }

@@ -127,15 +127,13 @@ async def write_preferences(
                         cast(:weights as jsonb), cast(:engine as text),
                         cast(:courses as jsonb), cast(:term as text), now())
                 on conflict (student_id) do update
-                    set wants = coalesce(excluded.wants, student_preferences.wants),
+                    set wants = case when :has_wants then excluded.wants else student_preferences.wants end,
                         weights = case
-                            when excluded.weights = '{}'::jsonb then student_preferences.weights
-                            else excluded.weights
+                            when :has_weights then excluded.weights else student_preferences.weights
                         end,
                         engine = coalesce(excluded.engine, student_preferences.engine),
                         courses = case
-                            when excluded.courses = '[]'::jsonb then student_preferences.courses
-                            else excluded.courses
+                            when :has_courses then excluded.courses else student_preferences.courses
                         end,
                         term = coalesce(excluded.term, student_preferences.term),
                         updated_at = now()
@@ -149,6 +147,9 @@ async def write_preferences(
                 "engine": request.engine,
                 "courses": json.dumps(request.courses),
                 "term": request.term,
+                "has_wants": "wants" in request.model_fields_set,
+                "has_weights": "weights" in request.model_fields_set,
+                "has_courses": "courses" in request.model_fields_set,
             },
         )
     ).mappings().one()

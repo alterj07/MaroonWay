@@ -5,6 +5,7 @@ import {
   backendStatus,
   exploreCourses,
   getCourseOptions,
+  getSavedSchedules,
   getStudentPreferences,
   getTerms,
 } from '@/lib/api';
@@ -57,15 +58,20 @@ export default async function Home({
         onBuildPlans={buildPlans}
         terms={[]}
         onUseSchedule={useSchedule}
+        savedSchedulesError="Could not load your saved schedules while the backend is unavailable."
+        serviceError="Course data is temporarily unavailable. Please try again in a moment."
       />
     );
   }
 
-  const headers = student ? studentHeaders(student) : null;
-  const [courses, terms, saved] = await Promise.all([
+  const headers = studentHeaders(student);
+  const [courses, terms, saved, savedList] = await Promise.all([
     exploreCourses('', 200).catch(() => []),
     getTerms().catch(() => []),
-    headers ? getStudentPreferences(headers).catch(() => null) : Promise.resolve(null),
+    getStudentPreferences(headers).catch(() => null),
+    getSavedSchedules(headers).then((schedules) => ({ schedules, error: null })).catch(() => ({
+      schedules: [], error: 'Could not load your saved schedules. Try refreshing the page.',
+    })),
   ]);
 
   const term = saved?.term ?? terms.find((t) => t.with_times > 0)?.term ?? terms[0]?.term;
@@ -73,7 +79,7 @@ export default async function Home({
   // A signed-in student's own courses come first; otherwise lead with courses
   // that actually have sections this term, so the first paint is not empty.
   let chosen = saved?.courses ?? [];
-  if (!chosen.length && term) {
+  if (!chosen.length && !saved?.updated_at && term) {
     const options = await getCourseOptions(term, 120).catch(() => []);
     chosen = leadCourses(options, 4);
   }
@@ -87,7 +93,7 @@ export default async function Home({
     plans = (await plansFor(
       term,
       chosen,
-      saved?.wants || DEFAULT_PRIORITIES.join(', ')
+      saved?.wants ?? DEFAULT_PRIORITIES.join(', ')
     ).catch(() => ({
       plans: emptyPlan('Could not build schedules', 'The backend returned an error'),
     }))).plans;
@@ -99,10 +105,13 @@ export default async function Home({
       courses={courses}
       student={student}
       savedCourses={chosen}
-      savedWants={saved?.wants ?? ''}
+      savedWants={saved?.wants ?? DEFAULT_PRIORITIES.join(', ')}
       onSaveCourses={saveCourses}
       onBuildPlans={buildPlans}
       terms={terms.map((t) => t.term)}
+      initialTerm={term}
+      savedSchedules={savedList.schedules}
+      savedSchedulesError={savedList.error}
       onUseSchedule={useSchedule}
     />
   );

@@ -168,7 +168,7 @@ def parse_row(row: dict[str, str], cmap: ColumnMap) -> tuple[ParsedRow | None, s
             section_code=section_code,
             instructor=cmap.get(row, "instructor"),
             campus=normalize_campus(cmap.get(row, "campus")),
-            delivery=delivery or ("WEB" if not meetings else "F2F"),
+            delivery=delivery or ("F2F" if meetings else None),
             honors=_bool(cmap.get(row, "honors")),
             seats=_int(cmap.get(row, "seats")),
             seats_open=_int(cmap.get(row, "seats_open")),

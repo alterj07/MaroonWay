@@ -26,8 +26,37 @@ export const SCHEDULE_OPTIONS = 10;
 
 export const DEFAULT_PRIORITIES = ['No classes before 9 AM', 'Avoid Friday classes'];
 
+export function normalizeCourseCodes(codes: string[]): string[] {
+  return [...new Set(codes.map((code) => code.trim().toUpperCase().replace(/[\s_-]+/g, '')).filter(Boolean))];
+}
+
+/** Old or incompatible stored snapshots must not crash the saved-list page. */
+export function readSavedPlan(value: unknown): Plan | null {
+  const object = (v: unknown): v is Record<string, unknown> =>
+    v !== null && typeof v === 'object' && !Array.isArray(v);
+  const number = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
+  const strings = (v: unknown): v is string[] => Array.isArray(v) && v.every((s) => typeof s === 'string');
+  const day = (v: unknown) => number(v) && Number.isInteger(v) && v >= 0 && v <= 6;
+  const interval = (start: unknown, end: unknown) =>
+    number(start) && number(end) && start >= 0 && start < end && end <= 24;
+  if (!object(value) || value.failed || !number(value.id) || !number(value.score) ||
+      !['name', 'subtitle', 'rating', 'aRate', 'gap', 'earliest'].every((k) => typeof value[k] === 'string') ||
+      !strings(value.tags) || (value.reasons !== undefined && !strings(value.reasons)) ||
+      (value.warnings !== undefined && !strings(value.warnings)) ||
+      !Array.isArray(value.courses)) return null;
+  for (const course of value.courses) {
+    if (!object(course) || !['code', 'prof', 'room', 'color'].every((k) => typeof course[k] === 'string') ||
+        !number(course.start) || !number(course.end) || !Array.isArray(course.days) || !course.days.every(day) ||
+        !['section', 'campus', 'delivery'].every((k) => course[k] == null || typeof course[k] === 'string')) return null;
+    if (course.days.length && !interval(course.start, course.end)) return null;
+    if (course.meetings !== undefined && (!Array.isArray(course.meetings) ||
+        !course.meetings.every((m) => object(m) && day(m.day) && interval(m.start, m.end) && typeof m.room === 'string'))) return null;
+  }
+  return value as unknown as Plan;
+}
+
 /** The planner's day numbering: 0 = Monday. */
-const DAY_INDEX: Record<string, number> = { MON: 0, TUE: 1, WED: 2, THU: 3, FRI: 4 };
+const DAY_INDEX: Record<string, number> = { MON: 0, TUE: 1, WED: 2, THU: 3, FRI: 4, SAT: 5, SUN: 6 };
 /** One per class, in the order courses are chosen. Five, because a student
  *  taking five classes should not see two of them share a colour. */
 const COLORS = ['berry', 'blue', 'green', 'gold', 'purple'];
@@ -58,7 +87,18 @@ export function toCourse(section: ScheduleSection, index: number): Course {
     ),
     start: first ? decimalHours(first.start) : 0,
     end: first ? decimalHours(first.end) : 0,
-    room: [first?.building, first?.room].filter(Boolean).join(' ') || 'Online',
+    room: [first?.building, first?.room].filter(Boolean).join(' ') ||
+      (section.delivery === 'WEB' && !first ? 'Online' : 'Location TBA'),
+    meetings: section.meetings.flatMap((meeting) => {
+      const day = DAY_INDEX[meeting.day];
+      if (day === undefined) return [];
+      return [{
+        day,
+        start: decimalHours(meeting.start),
+        end: decimalHours(meeting.end),
+        room: [meeting.building, meeting.room].filter(Boolean).join(' ') || 'Location TBA',
+      }];
+    }),
     color: COLORS[index % COLORS.length],
     // Carried through for the hover card: a block is a choice of instructor as
     // much as a time, so the numbers behind that choice belong on it.
@@ -129,10 +169,8 @@ export async function plansFor(
   if (!courses.length) {
     return { plans: emptyPlan('No classes chosen', 'Add the classes you need'), detail: null };
   }
-  // Ten rather than three: the builder shows the top three as options, and
-  // the saved page lists the rest, so the search's other answers are offered
-  // instead of discarded. The cost is in the ranking, not the search -- the
-  // combinations were already walked to find the first three.
+  // The builder starts with the top three and can expand to show all ten.
+  // Generated candidates remain separate from schedules saved to an account.
   const result = await buildSchedules({
     term,
     courses,
@@ -143,7 +181,9 @@ export async function plansFor(
     const detail = result.detail ?? 'No conflict-free combination exists';
     return { plans: emptyPlan('No schedule fits', detail), detail };
   }
-  return { plans: result.schedules.map(toPlan), detail: null, relaxed: result.relaxed };
+  return { plans: result.schedules.map((schedule, index) => ({
+    ...toPlan(schedule, index), warnings: result.relaxed ?? [],
+  })), detail: null, relaxed: result.relaxed ?? [] };
 }
 
 /**

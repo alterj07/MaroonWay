@@ -3,7 +3,8 @@
 // fetches real schedules and maps them into Plan/Course.
 import { useMemo, useState, type ReactNode } from "react";
 
-import { DEFAULT_PRIORITIES } from "@/lib/plans";
+import { emptyPlan, normalizeCourseCodes, readSavedPlan } from "@/lib/plans";
+import type { SavedSchedule } from "@/lib/api";
 import { PlusIcon, SearchIcon } from "@animateicons/react/lucide";
 import {
   AlertTriangle,
@@ -37,6 +38,8 @@ export type Course = {
   start: number;
   end: number;
   room: string;
+  /** Each actual meeting; omitted only by older saved schedules. */
+  meetings?: { day: number; start: number; end: number; room: string }[];
   color: string;
   /** Everything the hover card shows. Null where there is no data to show. */
   section?: string;
@@ -85,6 +88,7 @@ export type ExploreCourse = {
 };
 
 export type Plan = {
+  warnings?: string[];
   /** Why no schedule could be built. Set means this is not a schedule at all. */
   failed?: string;
   /** Why the ranker put it here, in its own words. Empty when nothing was
@@ -108,34 +112,49 @@ export type Plan = {
   tags: string[];
   courses: Course[];
 };
-const days = ["MON", "TUE", "WED", "THU", "FRI"],
-  // Through 9pm: A&M runs evening labs and exam sections that finish well
-  // after five, and a class drawn below the last row sits outside the grid.
-  hours = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
+const days = ["MON", "TUE", "WED", "THU", "FRI"];
+const weekDays = [...days, "SAT", "SUN"];
+
+function courseMeetings(course: Course) {
+  return course.meetings ?? course.days.map((day) => ({
+    day, start: course.start, end: course.end, room: course.room,
+  }));
+}
 const time = (n: number) => {
-  const h = Math.floor(n),
-    m = Math.round((n - h) * 60);
-  return `${h > 12 ? h - 12 : h}:${String(m).padStart(2, "0")} ${h >= 12 ? "PM" : "AM"}`;
+  const minutes = Math.round(n * 60),
+    h = Math.floor(minutes / 60) % 24,
+    m = minutes % 60;
+  return `${h % 12 || 12}:${String(m).padStart(2, "0")} ${h >= 12 ? "PM" : "AM"}`;
 };
 function Mini({ courses }: { courses: Course[] }) {
+  const meetings = courses.flatMap(courseMeetings);
+  const visibleDays = weekDays.slice(0, Math.max(5, ...meetings.map((m) => m.day + 1)));
+  const startHour = Math.min(8, ...meetings.map((m) => Math.floor(m.start)));
+  const endHour = Math.max(22, ...meetings.map((m) => Math.ceil(m.end)));
   return (
-    <div className="mini">
+    <div className="mini" style={{
+      gridTemplateColumns: `18px repeat(${visibleDays.length}, 1fr)`,
+      gridTemplateRows: `13px repeat(${(endHour - startHour) * 4}, minmax(0, 1fr))`,
+      height: 79,
+      rowGap: 0,
+    }}>
       <i />
-      {days.map((d, i) => (
+      {visibleDays.map((d, i) => (
         <b key={d} style={{ gridColumn: i + 2 }}>
           {d[0]}
         </b>
       ))}
       {courses.flatMap((c, i) =>
-        c.days.map((d) => (
+        courseMeetings(c).map((meeting, index) => (
           <span
-            key={`${i}-${d}`}
+            key={`${i}-${index}`}
             className={c.color}
             style={{
-              gridColumn: d + 2,
-              gridRow: Math.min(5, Math.floor((c.start - 8) / 2) + 2),
+              gridColumn: meeting.day + 2,
+              gridRow: `${Math.floor((meeting.start - startHour) * 4) + 2} / ${Math.ceil((meeting.end - startHour) * 4) + 2}`,
+              alignSelf: "stretch",
             }}
-            title={`${c.code} · ${c.prof}`}
+            title={`${c.code} · ${c.prof} · ${weekDays[meeting.day]} ${time(meeting.start)}–${time(meeting.end)} · ${meeting.room}`}
           >
             {c.code}
           </span>
@@ -190,7 +209,7 @@ function ScheduleProblem({ reason }: { reason: string }) {
  * they were only ever noise.
  */
 function hourLabel(h: number) {
-  const hour = h > 12 ? h - 12 : h;
+  const hour = h % 12 || 12;
   return `${hour} ${h >= 12 ? "PM" : "AM"}`;
 }
 
@@ -201,7 +220,10 @@ function hourLabel(h: number) {
  * justify the choice -- the rating, how hard it marks, how many A's it gives --
  * belong where the choice is rather than a page away.
  */
-function CourseHover({ course }: { course: Course }) {
+function CourseHover({ course, meeting }: {
+  course: Course;
+  meeting: { day: number; start: number; end: number; room: string };
+}) {
   const stat = (v: number | null | undefined, digits = 2) =>
     v === null || v === undefined ? "—" : Number(v).toFixed(digits);
   const share = (v: number | null | undefined) =>
@@ -246,18 +268,18 @@ function CourseHover({ course }: { course: Course }) {
           <dd>{share(course.pctA)}</dd>
         </div>
         <div>
-          <dt>Avg GPA</dt>
-          <dd>{stat(course.gpa)}</dd>
+          <dt>Adjusted GPA</dt>
+          <dd>{stat(course.gpa == null ? null : Number(course.gpa) * 4 / 5)} / 4.0</dd>
         </div>
       </dl>
       <footer>
         <span>
           <Clock3 size={11} />
-          {time(course.start)}–{time(course.end)}
+          {time(meeting.start)}–{time(meeting.end)}
         </span>
         <span>
           <MapPin size={11} />
-          {course.room}
+          {meeting.room}
         </span>
         {course.campus ? (
           <span>{CAMPUS_NAMES[course.campus] ?? course.campus}</span>
@@ -386,30 +408,45 @@ function CoursePicker({
 }
 
 function Calendar({ plan }: { plan: Plan }) {
+  const meetings = plan.courses.flatMap(courseMeetings);
+  const visibleDays = weekDays.slice(0, Math.max(5, ...meetings.map((m) => m.day + 1)));
+  const startHour = Math.min(8, ...meetings.map((m) => Math.floor(m.start)));
+  const endHour = Math.max(22, ...meetings.map((m) => Math.ceil(m.end)));
+  const hours = Array.from({ length: endHour - startHour }, (_, i) => startHour + i);
   return (
     <div className="cal-scroll">
-      <div className="cal">
+      <div className="cal" style={{
+        gridTemplateColumns: `var(--cal-gutter) repeat(${visibleDays.length}, 1fr)`,
+        gridTemplateRows: `var(--cal-head) repeat(${hours.length}, var(--cal-row))`,
+        height: `calc(var(--cal-head) + ${hours.length} * var(--cal-row))`,
+      }}>
         <i />
-        {days.map((d, i) => (
-          <header key={d} style={{ gridColumn: i + 2 }}>
+        {visibleDays.map((d, i) => (
+          <header
+            key={d}
+            style={{ gridColumn: i + 2 }}
+          >
             <small>{d}</small>
-            <b>{26 + i}</b>
           </header>
         ))}
         {hours.map((h) => (
-          <label key={h} style={{ gridRow: h - 6 }}>
+          <label key={h} style={{ gridRow: h - startHour + 2 }}>
             {hourLabel(h)}
           </label>
         ))}
-        {days.map((_, d) => (
-          <div key={d} className="lane" style={{ gridColumn: d + 2 }} />
+        {visibleDays.map((_, d) => (
+          <div
+            key={d}
+            className="lane"
+            style={{ gridColumn: d + 2, gridRow: `2 / ${hours.length + 2}` }}
+          />
         ))}
         {plan.courses.flatMap((c) =>
-          c.days.map((d) => {
-            const hours = c.end - c.start;
+          courseMeetings(c).map((meeting, index) => {
+            const hours = meeting.end - meeting.start;
             return (
               <article
-                key={`${c.code}-${d}`}
+                key={`${c.code}-${c.section}-${index}`}
                 className={`${c.color} block`}
                 tabIndex={0}
                 style={{
@@ -417,9 +454,10 @@ function Calendar({ plan }: { plan: Plan }) {
                   // changing either cannot leave the blocks beside their
                   // column again -- the offset used to hardcode a gutter width
                   // that the grid had since outgrown.
-                  left: `calc(var(--cal-gutter) + ((100% - var(--cal-gutter)) / 5) * ${d})`,
-                  width: "calc((100% - var(--cal-gutter)) / 5)",
-                  top: `calc(var(--cal-head) + ${c.start - 8} * var(--cal-row))`,
+                  left: `calc(var(--cal-gutter) + ((100% - var(--cal-gutter)) / ${visibleDays.length}) * ${meeting.day})`,
+                  width: `calc((100% - var(--cal-gutter)) / ${visibleDays.length} - 6px)`,
+                  maxWidth: `calc((100% - var(--cal-gutter)) / ${visibleDays.length} - 6px)`,
+                  top: `calc(var(--cal-head) + ${meeting.start - startHour} * var(--cal-row))`,
                   height: `calc(${hours} * var(--cal-row))`,
                 }}
               >
@@ -457,7 +495,7 @@ function Calendar({ plan }: { plan: Plan }) {
                   {hours >= 0.7 ? (
                     <>
                       <span>
-                        {time(c.start)}–{time(c.end)}
+                        {time(meeting.start)}–{time(meeting.end)}
                       </span>
                       {c.prof ? (
                         <span className="block-who" title={c.prof}>
@@ -470,13 +508,13 @@ function Calendar({ plan }: { plan: Plan }) {
                 {/* The room goes on the right rather than on a third line, so
                     a short class can show it too instead of hiding where it
                     actually is. */}
-                {c.room ? (
-                  <small className="block-where" title={c.room}>
+                {meeting.room ? (
+                  <small className="block-where" title={meeting.room}>
                     <MapPin size={10} />
-                    {c.room}
+                    {meeting.room}
                   </small>
                 ) : null}
-                <CourseHover course={c} />
+                <CourseHover course={c} meeting={meeting} />
               </article>
             );
           }),
@@ -494,6 +532,10 @@ export function Planner({
   onSaveCourses,
   onBuildPlans,
   terms,
+  initialTerm,
+  savedSchedules: initialSavedSchedules = [],
+  savedSchedulesError = null,
+  serviceError = null,
   onUseSchedule,
 }: {
   plans: Plan[];
@@ -505,35 +547,55 @@ export function Planner({
     codes: string[],
     term?: string | null,
   ) => Promise<{ saved: boolean }>;
-  onBuildPlans: (
-    codes: string[],
-    wants: string,
-  ) => Promise<{ plans: Plan[]; relaxed: string[] }>;
+  onBuildPlans: (codes: string[], wants: string, term?: string | null) => Promise<{ plans: Plan[]; relaxed: string[] }>;
   /** Terms with sections loaded, for the semester picker. */
   terms: string[];
+  /** The semester used to generate initialPlans on the server. */
+  initialTerm?: string | null;
+  savedSchedules?: SavedSchedule[];
+  savedSchedulesError?: string | null;
+  serviceError?: string | null;
   /** Persists a built schedule; what "Use this schedule" means. */
   onUseSchedule: (
     term: string,
     label: string,
     plan: Plan,
-  ) => Promise<{ saved: boolean }>;
+  ) => Promise<{ saved: boolean; schedule?: SavedSchedule }>;
 }) {
   const [plans, setPlans] = useState<Plan[]>(initialPlans);
+  const [savedSchedules, setSavedSchedules] = useState(initialSavedSchedules);
+  const savedError = savedSchedulesError;
+  const [saveError, setSaveError] = useState<string | null>(null);
   // A failure arrives as one marked plan, not as a list of schedules.
   const failed = plans.length === 1 && Boolean(plans[0].failed);
   // What the student actually asked for, so the builder's sidebar lists their
   // courses rather than the ones in the landing illustration.
   const [chosen, setChosen] = useState<string[]>(savedCourses);
-  const build = async (codes: string[], wants: string) => {
+  const build = async (codes: string[], wants: string, selectedTerm = term) => {
+    if (busy) return;
+    codes = normalizeCourseCodes(codes);
     setChosen(codes);
-    const result = await onBuildPlans(codes, wants);
-    setPlans(result.plans);
-    setRelaxed(result.relaxed);
+    setPriorities(wants.split(",").map((s) => s.trim()).filter(Boolean));
+    setBusyWhat("build");
+    setBusy(true);
+    setKept(false);
+    setSaveError(null);
+    try {
+      const result = await onBuildPlans(codes, wants, selectedTerm || null);
+      setPlans(result.plans);
+      setRelaxed(result.relaxed);
+      setActive(1);
+    } catch {
+      setPlans(emptyPlan("Could not build schedules", "Try rebuilding this semester again"));
+      setRelaxed([]);
+    } finally {
+      setBusy(false);
+    }
   };
   // The sidebar shows the student's own courses; the showcase is only a
   // stand-in for a first visit when nothing has been chosen yet.
   const sidebar = useMemo(() => {
-    if (!chosen.length) return showcaseCourses(courses);
+    if (!chosen.length) return [];
     const byCode = new Map(courses.map((c) => [c.code, c]));
     return chosen.map((code) => {
       const found = byCode.get(code);
@@ -551,7 +613,6 @@ export function Planner({
     ),
     [dark, setDark] = useState(true),
     [active, setActive] = useState(1),
-    [saved, setSaved] = useState(false),
     [chat, setChat] = useState(true),
     [step, setStep] = useState(0),
     // Seeded from what was actually saved, falling back to the shared
@@ -562,10 +623,10 @@ export function Planner({
             .split(",")
             .map((s) => s.trim())
             .filter(Boolean)
-        : DEFAULT_PRIORITIES,
+        : [],
     ),
     // Each of these backs a control that previously did nothing.
-    [term, setTerm] = useState(terms[0] ?? ""),
+    [term, setTerm] = useState(initialTerm ?? terms[0] ?? ""),
     [termOpen, setTermOpen] = useState(false),
     [addingCourse, setAddingCourse] = useState(false),
     // The course a student has asked to remove, pending confirmation.
@@ -573,11 +634,12 @@ export function Planner({
     [addingPriority, setAddingPriority] = useState(false),
     [priorityDraft, setPriorityDraft] = useState(""),
     [comparing, setComparing] = useState(false),
+    [allOptions, setAllOptions] = useState(false),
     [analysing, setAnalysing] = useState(false),
     [busy, setBusy] = useState(false),
     // Preferences the timetable could not honour. Shown rather than swallowed:
     // a schedule that quietly disobeys is worse than one that says it had to.
-    [relaxed, setRelaxed] = useState<string[]>([]),
+    [relaxed, setRelaxed] = useState<string[]>(initialPlans[0]?.warnings ?? []),
     [editing, setEditing] = useState<number | null>(null),
     // What the overlay should say: one flag covers building and saving, and an
     // overlay reporting the wrong one is worse than no overlay.
@@ -593,29 +655,17 @@ export function Planner({
   const tied =
     plans.length > 1 && plans.every((p) => p.score === plans[0].score);
 
-  async function rebuild(codes = chosen, text = wants) {
+  async function rebuild(codes = chosen, text = wants, selectedTerm = term) {
     if (!codes.length || busy) return;
-    setBusyWhat("build");
-    setBusy(true);
-    setKept(false);
-    try {
-      await build(codes, text);
-    } finally {
-      setBusy(false);
-    }
+    await build(codes, text, selectedTerm);
   }
 
   async function addCourses(codes: string[]) {
     setAddingCourse(false);
-    const next = [...new Set([...chosen, ...codes])];
+    if (busy) return;
+    const next = normalizeCourseCodes([...chosen, ...codes]);
     if (next.length === chosen.length) return;
-    // The list is what the student asked for, so it changes when they ask --
-    // not several seconds later when a search happens to come back. `rebuild`
-    // only sets it through `build`, which meant any path that skipped the
-    // rebuild left the list showing something the student had already changed.
-    setChosen(next);
-    await onSaveCourses(next, term || null);
-    await rebuild(next);
+    await changeCourses(next);
   }
 
   function addPriority() {
@@ -628,24 +678,73 @@ export function Planner({
   async function dropCourse(code: string) {
     setConfirmDrop(null);
     const next = chosen.filter((c) => c !== code);
-    setChosen(next);
-    await onSaveCourses(next, term || null);
-    if (next.length) {
-      await rebuild(next);
-      return;
+    await changeCourses(next);
+  }
+
+  async function changeCourses(codes: string[]) {
+    if (busy) return { saved: false };
+    setBusy(true);
+    setSaveError(null);
+    try {
+      const result = await onSaveCourses(codes, term || null);
+      if (!result.saved) throw new Error("not saved");
+      setChosen(codes);
+      setKept(false);
+      setActive(1);
+      try {
+        const result = codes.length ? await onBuildPlans(codes, wants, term || null)
+          : { plans: emptyPlan("No classes chosen", "Add the classes you need"), relaxed: [] };
+        setPlans(result.plans);
+        setRelaxed(result.relaxed);
+      } catch {
+        setPlans(emptyPlan("Classes saved, schedule unavailable", "Your classes were saved. Try rebuilding your schedule again."));
+        setRelaxed([]);
+      }
+      return result;
+    } catch {
+      setPlans(emptyPlan("Could not update classes", "Please try updating your classes again"));
+      setRelaxed([]);
+      setSaveError("Could not update your classes. Please try again.");
+      return { saved: false };
+    } finally {
+      setBusy(false);
     }
-    // Removing the last course skipped the rebuild, and with it the only thing
-    // that updated the list -- so the course stayed on screen. Nothing left to
-    // search for, so clear the schedules too rather than leaving the calendar
-    // showing a plan for courses that are gone.
-    setPlans([]);
-    setRelaxed([]);
-    setKept(false);
   }
   const plan = useMemo(
     () => plans.find((p) => p.id === active) ?? plans[0],
     [active, plans],
   );
+
+  function selectPlan(id: number) {
+    if (busy || id === active) return;
+    setActive(id);
+    setKept(false);
+    setSaveError(null);
+  }
+
+  async function keepSchedule() {
+    if (busy || kept || !term || plan.failed) return;
+    setBusyWhat("save");
+    setBusy(true);
+    setSaveError(null);
+    try {
+      const result = await onUseSchedule(term, plan.name, plan);
+      if (!result.saved) {
+        setSaveError("Sign in again to save your schedule.");
+        return;
+      }
+      if (result.schedule) {
+        const record = result.schedule;
+        setSavedSchedules((previous) => [record, ...previous.filter((s) => s.id !== record.id)]);
+      }
+      setKept(true);
+      setPage("saved");
+    } catch {
+      setSaveError("Could not save your schedule. Please try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
   const prompts = [
       {
         q: "When do you prefer your first class?",
@@ -675,9 +774,10 @@ export function Planner({
         setDark={setDark}
         catalog={courses}
         student={student}
-        savedCourses={savedCourses}
-        savedWants={savedWants}
+        savedCourses={chosen}
+        savedWants={wants}
         onBuild={build}
+        serviceError={serviceError}
       />
     );
   if (page === "explore")
@@ -689,17 +789,25 @@ export function Planner({
         courses={courses}
         student={student}
         savedCourses={chosen}
-        onAddToPlan={addCourses}
-        onRemoveFromPlan={dropCourse}
+        onSaveCourses={changeCourses}
       />
     );
   if (page === "saved")
     return (
       <SavedSchedules
         onNav={setPage}
-        plans={plans}
-        onOpen={(id) => {
-          setActive(id);
+        schedules={savedSchedules}
+        error={savedError}
+        busy={busy}
+        onOpen={(record, snapshot) => {
+          if (busy) return;
+          setPlans([snapshot]);
+          setRelaxed(snapshot.warnings ?? []);
+          setActive(snapshot.id);
+          setTerm(record.term);
+          setChosen(snapshot.courses.map((c) => c.code.replace(/\s+/g, "").toUpperCase()));
+          setKept(true);
+          setSaveError(null);
           setPage("planner");
         }}
         dark={dark}
@@ -764,9 +872,12 @@ export function Planner({
           <div className="term-picker">
             <button
               className="term"
+              role="combobox"
+              aria-label="Semester"
+              aria-controls="semester-options"
               aria-haspopup="listbox"
               aria-expanded={termOpen}
-              disabled={!terms.length}
+              disabled={!terms.length || !chosen.length || busy}
               onClick={() => setTermOpen((v) => !v)}
             >
               <span>
@@ -784,8 +895,8 @@ export function Planner({
                     like any other menu rather than only on a second click of
                     the button. */}
                 <div className="term-shade" onClick={() => setTermOpen(false)} />
-                <ul className="term-list" role="listbox" aria-label="Semester">
-                  {terms.map((t) => (
+                <ul id="semester-options" className="term-list" role="listbox" aria-label="Semester">
+                  {[...new Set([term, ...terms])].filter(Boolean).map((t) => (
                     <li key={t}>
                       <button
                         role="option"
@@ -795,8 +906,7 @@ export function Planner({
                           setTermOpen(false);
                           if (t === term) return;
                           setTerm(t);
-                          void onSaveCourses(chosen, t);
-                          void rebuild();
+                          void rebuild(chosen, wants, t);
                         }}
                       >
                         {t}
@@ -866,6 +976,7 @@ export function Planner({
               </span>
               <button
                 className="course-drop"
+                disabled={busy}
                 aria-label={`Remove ${c.label}`}
                 onClick={() => setConfirmDrop(c.code)}
               >
@@ -947,6 +1058,7 @@ export function Planner({
               ),
             )}
           </div>
+          <p className="analysis-note">Describe your preferred week in the priorities above, then rebuild.</p>
           <button
             className="rebuild"
             disabled={busy || !chosen.length}
@@ -967,9 +1079,9 @@ export function Planner({
               </h2>
               {!failed && plans.length > 3 ? (
                 <small className="tied-note">
-                  Showing the best three.{" "}
-                  <button className="link" onClick={() => setPage("saved")}>
-                    See all {plans.length} in Saved schedules
+                  {allOptions ? "Showing all options." : "Showing the best three."}{" "}
+                  <button className="link" onClick={() => setAllOptions((v) => !v)}>
+                    {allOptions ? "Show top three" : `Show all ${plans.length} options`}
                   </button>
                 </small>
               ) : null}
@@ -997,12 +1109,12 @@ export function Planner({
             )}
           </div>
           <div className="cards">
-            {/* The top three here; the rest are on the saved page, which has
-                room to lay them out. */}
-            {(failed ? [] : plans.slice(0, 3)).map((p, i) => (
+            {/* Built candidates stay separate from schedules saved to the account. */}
+            {(failed ? [] : allOptions ? plans : plans.slice(0, 3)).map((p, i) => (
               <button
                 key={p.id}
-                onClick={() => setActive(p.id)}
+                disabled={busy}
+                onClick={() => selectPlan(p.id)}
                 className={active === p.id ? "selected" : ""}
               >
                 <div>
@@ -1054,7 +1166,7 @@ export function Planner({
                   <tr
                     key={p.id}
                     className={p.id === active ? "is-active" : ""}
-                    onClick={() => setActive(p.id)}
+                    onClick={() => selectPlan(p.id)}
                   >
                     <td>{p.name}</td>
                     <td>{p.score}%</td>
@@ -1072,144 +1184,132 @@ export function Planner({
               <ScheduleProblem reason={plan.failed} />
             ) : (
               <>
-                <div className="detail-head">
-                  <span>
-                    <em>
-                      <Sparkles size={11} /> BEST MATCH
-                    </em>
-                    <h2>{plan.name}</h2>
-                    <p>{plan.tags.join(" · ")}</p>
-                  </span>
-                  <div>
-                    <button className="save" onClick={() => setSaved(!saved)}>
-                      <Heart size={17} fill={saved ? "currentColor" : "none"} />
-                    </button>
-                    <button
-                      className="use"
-                      disabled={busy || kept || !term}
-                      onClick={async () => {
-                        setBusyWhat("save");
-                        setBusy(true);
-                        try {
-                          const result = await onUseSchedule(
-                            term,
-                            plan.name,
-                            plan,
-                          );
-                          setKept(result.saved);
-                          if (result.saved) setPage("saved");
-                        } finally {
-                          setBusy(false);
-                        }
-                      }}
-                    >
-                      {kept ? "Saved" : "Use this schedule"}{" "}
-                      <ArrowRight size={15} />
-                    </button>
-                  </div>
-                </div>
-                <div className="metrics">
-                  <Metric
-                    icon={<Star />}
-                    label="PROFESSOR AVG."
-                    value={`${plan.rating} / 5.0`}
-                  />
-                  <Metric
-                    icon={<GraduationCap />}
-                    label="AVERAGE A RATE"
-                    value={plan.aRate}
-                  />
-                  <Metric
-                    icon={<Clock3 />}
-                    label="TIGHTEST GAP"
-                    value={plan.gap}
-                  />
-                  <Metric
-                    icon={<Clock3 />}
-                    label="EARLIEST CLASS"
-                    value={plan.earliest}
-                  />
-                </div>
-                <Calendar plan={plan} />
-                <div className="why">
-                  <span>
-                    <Bot size={18} />
-                  </span>
-                  <div>
-                    <b>Why this works for you</b>
-                    {/* The reasons the ranker actually gave. This was a fixed
+            <div className="detail-head">
+              <span>
+                <em>
+                  <Sparkles size={11} /> BEST MATCH
+                </em>
+                <h2>{plan.name}</h2>
+                <p>{plan.tags.join(" · ")}</p>
+              </span>
+              <div>
+                <button className="save" aria-label={kept ? "Schedule saved" : "Save schedule"}
+                  disabled={busy || kept || !term} onClick={() => void keepSchedule()}>
+                  <Heart size={17} fill={kept ? "currentColor" : "none"} />
+                </button>
+                <button
+                  className="use"
+                  disabled={busy || kept || !term}
+                  onClick={() => void keepSchedule()}
+                >
+                  {kept ? "Saved" : "Use this schedule"}{" "}
+                  <ArrowRight size={15} />
+                </button>
+              </div>
+            </div>
+            {saveError && <p role="alert">{saveError}</p>}
+            {plan.warnings?.map((warning) => <p role="status" key={warning}>{warning}</p>)}
+            <div className="metrics">
+              <Metric
+                icon={<Star />}
+                label="PROFESSOR AVG."
+                value={`${plan.rating} / 5.0`}
+              />
+              <Metric
+                icon={<GraduationCap />}
+                label="AVERAGE A RATE"
+                value={plan.aRate}
+              />
+              <Metric icon={<Clock3 />} label="TIGHTEST GAP" value={plan.gap} />
+              <Metric
+                icon={<Clock3 />}
+                label="EARLIEST CLASS"
+                value={plan.earliest}
+              />
+            </div>
+            <Calendar plan={plan} />
+            <div className="why">
+              <span>
+                <Bot size={18} />
+              </span>
+              <div>
+                <b>Why this works for you</b>
+                {/* The reasons the ranker actually gave. This was a fixed
                     sentence claiming "no Friday classes" about every schedule,
                     including ones with a Friday class in them. */}
-                    <p>
-                      {plan.reasons?.length
-                        ? `Ranked on ${plan.reasons.join(", ")}.`
-                        : "You have not said what you want yet, so this is ranked on professor rating, then on difficulty."}
-                    </p>
-                  </div>
-                  <button onClick={() => setAnalysing((v) => !v)}>
-                    {analysing ? "Hide analysis" : "View full analysis"}{" "}
-                    <ArrowRight size={13} />
-                  </button>
-                </div>
-                {analysing ? (
-                  <div className="analysis">
-                    <h3>Every class in this schedule</h3>
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>Class</th>
-                          <th>Professor</th>
-                          <th>Rating</th>
-                          <th>Difficulty</th>
-                          <th>A rate</th>
-                          <th>When</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {plan.courses.map((c) => (
-                          <tr key={c.code}>
-                            <td>
-                              <b>{c.code}</b>
-                              {c.section ? <em> sec {c.section}</em> : null}
-                            </td>
-                            <td>{c.prof}</td>
-                            <td className={band(c.rating ?? null)}>
-                              {c.rating === null || c.rating === undefined
-                                ? "—"
-                                : Number(c.rating).toFixed(2)}
-                            </td>
-                            <td>
-                              {c.difficulty === null ||
-                              c.difficulty === undefined
-                                ? "—"
-                                : Number(c.difficulty).toFixed(2)}
-                            </td>
-                            <td>
-                              {c.pctA === null || c.pctA === undefined
-                                ? "—"
-                                : `${Math.round(Number(c.pctA) * 100)}%`}
-                            </td>
-                            <td>
-                              {c.days.map((d) => DAY_LETTERS[d]).join("")}{" "}
-                              {time(c.start)}–{time(c.end)}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                    <p className="analysis-note">
-                      Ratings are shrunk toward the average by how few reviews a
-                      professor has, so one glowing review does not outrank
-                      eighty steady ones. Ties break on difficulty, lowest
-                      first.
-                    </p>
-                  </div>
-                ) : null}
+                <p>
+                  {plan.reasons?.length
+                    ? `Ranked on ${plan.reasons.join(", ")}.`
+                    : "You have not said what you want yet, so this is ranked on professor rating, then on difficulty."}
+                </p>
+              </div>
+              <button onClick={() => setAnalysing((v) => !v)}>
+                {analysing ? "Hide analysis" : "View full analysis"}{" "}
+                <ArrowRight size={13} />
+              </button>
+            </div>
+            {analysing ? (
+              <div className="analysis">
+                <h3>Every class in this schedule</h3>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Class</th>
+                      <th>Professor</th>
+                      <th>Rating</th>
+                      <th>Difficulty</th>
+                      <th>A rate</th>
+                      <th>When</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {plan.courses.map((c) => (
+                      <tr key={c.code}>
+                        <td>
+                          <b>{c.code}</b>
+                          {c.section ? <em> sec {c.section}</em> : null}
+                        </td>
+                        <td>{c.prof}</td>
+                        <td className={band(c.rating ?? null)}>
+                          {c.rating === null || c.rating === undefined
+                            ? "—"
+                            : Number(c.rating).toFixed(2)}
+                        </td>
+                        <td>
+                          {c.difficulty === null || c.difficulty === undefined
+                            ? "—"
+                            : Number(c.difficulty).toFixed(2)}
+                        </td>
+                        <td>
+                          {c.pctA === null || c.pctA === undefined
+                            ? "—"
+                            : `${Math.round(Number(c.pctA) * 100)}%`}
+                        </td>
+                        <td>
+                          {courseMeetings(c).map((meeting, index) => (
+                            <div key={index}>
+                              {weekDays[meeting.day]} {time(meeting.start)}–{time(meeting.end)} · {meeting.room}
+                            </div>
+                          ))}
+                          {!courseMeetings(c).length && (c.delivery === "WEB" ? "Online · Asynchronous" : "Meeting times TBA")}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <p className="analysis-note">
+                  Ratings are shrunk toward the average by how few reviews a
+                  professor has, so one glowing review does not outrank eighty
+                  steady ones. Ties break on difficulty, lowest first.
+                </p>
+              </div>
+            ) : null}
               </>
             )}
           </div>
         </section>
       </div>
+
     </main>
   );
 }
@@ -1403,11 +1503,10 @@ const SHOWCASE_COLORS = ["berry", "blue", "green", "gold", "purple"];
 const SHOWCASE_TIMES = ["9:35", "9:35", "11:30", "12:45", "14:20"];
 
 /** Monday-first, matching the calendar's own day order. */
-const DAY_LETTERS = ["M", "T", "W", "R", "F"];
+const DAY_LETTERS = ["M", "T", "W", "R", "F", "S", "U"];
 
 /** Below this many reviews, a rating is marked as thin evidence. */
 const THIN_EVIDENCE = 20;
-
 const CAMPUS_NAMES: Record<string, string> = {
   CSTAT: "College Station",
   GALV: "Galveston",
@@ -1486,8 +1585,7 @@ function Explorer({
   courses,
   student,
   savedCourses,
-  onAddToPlan,
-  onRemoveFromPlan,
+  onSaveCourses,
 }: {
   onNav: (p: "home" | "planner" | "explore" | "saved") => void;
   dark: boolean;
@@ -1495,9 +1593,8 @@ function Explorer({
   courses: ExploreCourse[];
   student: Student | null;
   savedCourses: string[];
-  /** Adds to the schedule being built, not merely to a saved list. */
-  onAddToPlan: (codes: string[]) => Promise<void>;
-  onRemoveFromPlan: (code: string) => Promise<void>;
+  /** Saves through the builder so the current schedule stays in sync. */
+  onSaveCourses: (codes: string[]) => Promise<{ saved: boolean }>;
 }) {
   const [q, setQ] = useState("");
   const [selected, setSelected] = useState<ExploreCourse | null>(
@@ -1507,6 +1604,7 @@ function Explorer({
   // here has to reach the schedule, and a copy would drift from it.
   const added = savedCourses;
   const [saving, setSaving] = useState(false);
+  const [courseError, setCourseError] = useState<string | null>(null);
 
   const shown = useMemo(() => {
     const needle = q.trim().toLowerCase();
@@ -1526,13 +1624,15 @@ function Explorer({
       : (shown[0] ?? null);
 
   async function toggle(code: string) {
+    if (saving) return;
+    const next = added.includes(code) ? added.filter((x) => x !== code) : [...added, code];
     setSaving(true);
+    setCourseError(null);
     try {
-      // Goes through the builder, so the course lands in the schedule as well
-      // as the saved list. This wrote the saved list only, which is why the
-      // button said "Saved to your plan" while the plan did not change.
-      if (added.includes(code)) await onRemoveFromPlan(code);
-      else await onAddToPlan([code]);
+      const result = await onSaveCourses(next);
+      if (!result.saved) throw new Error("not saved");
+    } catch {
+      setCourseError("Could not update your classes. Please try again.");
     } finally {
       setSaving(false);
     }
@@ -1657,7 +1757,9 @@ function Explorer({
                           key={p.instructor_id ?? p.name}
                           className={band(p.adj_rating)}
                         >
-                          <td title={p.name ?? undefined}>{p.name}</td>
+                          <td>{p.instructor_id != null ? (
+                            <a href={`/professors/${p.instructor_id}`} className="underline underline-offset-2">{p.name ?? "View professor"}</a>
+                          ) : p.name}</td>
                           <td>{score(p.adj_rating)}</td>
                           <td>{score(p.adj_difficulty)}</td>
                           <td>{pct(p.pct_a)}</td>
@@ -1708,6 +1810,7 @@ function Explorer({
                   Sign in to keep your plan between visits.
                 </small>
               ) : null}
+              {courseError && <p role="alert">{courseError}</p>}
             </aside>
           ) : null}
         </div>
@@ -1717,21 +1820,17 @@ function Explorer({
 }
 
 function SavedSchedules({
-  onNav,
-  plans,
-  onOpen,
-  student,
-  dark,
-  setDark,
+  onNav, schedules, error, busy, onOpen, student, dark, setDark,
 }: {
   onNav: (p: "home" | "planner" | "explore" | "saved") => void;
-  plans: Plan[];
-  onOpen: (id: number) => void;
+  schedules: SavedSchedule[];
+  error: string | null;
+  busy: boolean;
+  onOpen: (record: SavedSchedule, snapshot: Plan) => void;
   student: Student | null;
   dark: boolean;
   setDark: (value: boolean) => void;
 }) {
-  const [favorites, setFavorites] = useState([1, 2]);
   return (
     <main className={`inner-page ${dark ? "site-dark" : "site-light"}`}>
       <NavRail
@@ -1748,91 +1847,45 @@ function SavedSchedules({
             <Plus size={16} /> Build a new schedule
           </button>
         </div>
+        {error && <p role="alert">{error}</p>}
+        {!schedules.length && !error && <p>No saved schedules yet</p>}
         <div className="saved-grid">
-          {plans.map((p, i) => (
-            <article
-              key={p.id}
-              role="button"
-              tabIndex={0}
-              aria-label={`Open ${p.name}`}
-              onClick={() => onOpen(p.id)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") onOpen(p.id);
-              }}
-              className={favorites.includes(p.id) ? "favorite" : ""}
-            >
-              <header>
-                <span>{`OPTION ${i + 1}`}</span>
-                <button
-                  aria-label={
-                    favorites.includes(p.id)
-                      ? "Remove favorite"
-                      : "Save favorite"
+          {schedules.map((record) => {
+            const snapshot = readSavedPlan(record.payload);
+            const label = record.label || snapshot?.name || "Saved schedule";
+            if (!snapshot) return (
+              <article key={record.id}>
+                <h2>{label}</h2>
+                <p>{record.term}</p>
+                <p>This saved schedule cannot be displayed.</p>
+              </article>
+            );
+            return (
+              <article key={record.id} role="button" tabIndex={busy ? -1 : 0}
+                aria-disabled={busy}
+                aria-label={`Open ${label}`}
+                onClick={() => { if (!busy) onOpen(record, snapshot); }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    if (!busy) onOpen(record, snapshot);
                   }
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setFavorites((v) =>
-                      v.includes(p.id)
-                        ? v.filter((x) => x !== p.id)
-                        : [...v, p.id],
-                    );
-                  }}
-                >
-                  <Heart
-                    size={17}
-                    fill={favorites.includes(p.id) ? "currentColor" : "none"}
-                  />
-                </button>
-              </header>
-              <h2>{p.name}</h2>
-              <p>{p.tags.join(" · ")}</p>
-              <Mini courses={p.courses} />
-              <div className="saved-stats">
-                <span>
-                  <Star size={14} />
-                  <b>{p.rating}</b> rating
-                </span>
-                <span>
-                  <GraduationCap size={14} />
-                  <b>{p.aRate}</b> A rate
-                </span>
-                <span>
-                  <Clock3 size={14} />
-                  <b>{p.gap}</b> gap
-                </span>
-              </div>
-            </article>
-          ))}
+                }}>
+                <header><span>{record.term}</span><Heart size={17} fill="currentColor" /></header>
+                <h2>{label}</h2>
+                <p>{snapshot.tags.join(" · ")}</p>
+                <Mini courses={snapshot.courses} />
+                <div className="saved-stats">
+                  <span><Star size={14} /><b>{snapshot.rating}</b> rating</span>
+                  <span><GraduationCap size={14} /><b>{snapshot.aRate}</b> A rate</span>
+                  <span><Clock3 size={14} /><b>{snapshot.gap}</b> gap</span>
+                </div>
+              </article>
+            );
+          })}
         </div>
       </section>
     </main>
-  );
-}
-function Range({
-  icon,
-  title,
-  sub,
-  width,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  sub: string;
-  width: string;
-}) {
-  return (
-    <div className="range">
-      <span>
-        {icon}
-        <i>
-          <b>{title}</b>
-          <small>{sub}</small>
-        </i>
-      </span>
-      <div>
-        <i style={{ width }} />
-        <b style={{ left: width }} />
-      </div>
-    </div>
   );
 }
 function Metric({
@@ -1864,6 +1917,7 @@ function Landing({
   savedCourses,
   savedWants,
   onBuild,
+  serviceError,
 }: {
   onStart: () => void;
   onSaved: () => void;
@@ -1874,6 +1928,7 @@ function Landing({
   savedCourses: string[];
   savedWants: string;
   onBuild: (courses: string[], wants: string) => Promise<void>;
+  serviceError?: string | null;
 }) {
   const showcase = useMemo(() => showcaseCourses(catalog), [catalog]);
   const showcaseCredits = showcaseCreditTotal(showcase);
@@ -1884,7 +1939,7 @@ function Landing({
     [analyzing, setAnalyzing] = useState(false),
     [picker, setPicker] = useState(false);
   const add = () => {
-    const v = entry.trim().toUpperCase();
+    const v = normalizeCourseCodes([entry])[0];
     if (v && !courses.includes(v)) setCourses([...courses, v]);
     setEntry("");
   };
@@ -1920,8 +1975,8 @@ function Landing({
           <span>Building your best week</span>
           <h2>Comparing every possible schedule…</h2>
           <p>
-            Checking professors, grade distributions, exam weight, syllabi, and
-            walking time.
+            Comparing available sections, meeting times, professor ratings, and
+            your preferences.
           </p>
           <div className="analysis-progress">
             <i />
@@ -1969,9 +2024,9 @@ function Landing({
           <div className="schedule-card">
             <header>
               <span>
-                <Sparkles size={12} /> YOUR BEST FIT
+                <Sparkles size={12} /> SAMPLE WEEK
               </span>
-              <b>94% match</b>
+              <b>Illustration</b>
             </header>
             <div className="week-head">
               {days.map((d) => (
@@ -1994,24 +2049,24 @@ function Landing({
             <footer>
               <span>
                 <Star size={12} />
-                <b>4.6</b> professors
+                Compare professors
               </span>
               <span>
                 <Footprints size={12} />
-                <b>9 min</b> walk
+                Plan class gaps
               </span>
               <span>
                 <CalendarDays size={12} />
-                <b>Fri</b> free
+                Choose your days
               </span>
             </footer>
             <div className="scan-line" />
           </div>
           <div className="choice-chip chip-one">
-            <Check size={11} /> No 8 AMs
+            <Check size={11} /> Choose your hours
           </div>
           <div className="choice-chip chip-two">
-            <Check size={11} /> Friday free
+            <Check size={11} /> Set your priorities
           </div>
         </div>
         <div className="minimal-copy">
@@ -2021,6 +2076,7 @@ function Landing({
           </p>
         </div>
         <div className="prompt-box">
+          {serviceError && <p role="alert">{serviceError}</p>}
           <div className="course-input">
             <span className="course-icon">
               <SearchIcon size={18} duration={1.15} color="currentColor" />

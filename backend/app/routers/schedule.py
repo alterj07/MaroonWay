@@ -11,7 +11,7 @@ from __future__ import annotations
 from dataclasses import replace
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import repository
@@ -184,7 +184,7 @@ async def list_terms(session: SessionDep) -> list[dict[str, Any]]:
 async def list_courses(
     session: SessionDep,
     term: str,
-    limit: int = 200,
+    limit: int = Query(200, ge=1, le=1000),
 ) -> list[dict[str, Any]]:
     """Courses with sections this term, most choice first."""
     return await repository.courses_with_sections(session, term=term, limit=limit)
@@ -387,16 +387,15 @@ async def generate_schedules(
         instructor_ids = sorted(
             {s.instructor_id for pool in candidates.values() for s in pool if s.instructor_id}
         )
-        traits: dict[int, Traits] = {}
+        traits: dict[tuple[int, int | None], Traits] = {}
         for row in await repository.traits_for_instructors(
             session, instructor_ids, version=QUESTION_VERSION
         ):
-            # The professor-level row is the general one; a course-level row
-            # refines it, so it wins where present.
+            # Preserve every course's notes separately. The scorer chooses
+            # the exact course, falling back only to the professor-level row.
             instructor_id = int(row["instructor_id"])
-            if row["course_id"] is None and instructor_id in traits:
-                continue
-            traits[instructor_id] = Traits(
+            course_id = None if row["course_id"] is None else int(row["course_id"])
+            traits[(instructor_id, course_id)] = Traits(
                 lots_of_quizzes=_number(row["lots_of_quizzes"]),
                 exam_difficulty=_number(row["exam_difficulty"]),
                 lecture_quality=_number(row["lecture_quality"]),
@@ -465,6 +464,9 @@ async def generate_schedules(
             "relaxed": relaxed,
         }
 
-    payload = await caches.search.get_or_compute(key, factory)
+    try:
+        payload = await caches.search.get_or_compute(key, factory)
+    except scheduling.SearchLimitExceeded as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     stamp(response)
     return payload
