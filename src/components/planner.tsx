@@ -1319,7 +1319,7 @@ function Explorer({
   }
 
   return (
-    <main className="inner-page">
+    <main className={`inner-page ${dark ? "site-dark" : "site-light"}`}>
       <NavRail
         page="explore"
         onNav={onNav}
@@ -1394,6 +1394,9 @@ function Explorer({
                 ) : null}
               </div>
               <h2>{active.title ?? "Untitled"}</h2>
+              {active.professors[0]?.department ? (
+                <p className="detail-dept">{active.professors[0].department}</p>
+              ) : null}
               <div className="insight-grid">
                 <Metric
                   icon={<Star />}
@@ -1422,9 +1425,8 @@ function Explorer({
                     <thead>
                       <tr>
                         <th>Professor</th>
-                        <th>Department</th>
                         <th>Rating</th>
-                        <th>Difficulty</th>
+                        <th>Diff.</th>
                         <th>A rate</th>
                         <th>Reviews</th>
                       </tr>
@@ -1435,15 +1437,20 @@ function Explorer({
                           key={p.instructor_id ?? p.name}
                           className={band(p.adj_rating)}
                         >
-                          <td>{p.name}</td>
-                          <td className="prof-dept">{p.department ?? "—"}</td>
+                          <td title={p.name ?? undefined}>{p.name}</td>
                           <td>{score(p.adj_rating)}</td>
                           <td>{score(p.adj_difficulty)}</td>
                           <td>{pct(p.pct_a)}</td>
-                          <td>
+                          <td
+                            title={
+                              p.class_reviews > 0
+                                ? `${p.class_reviews} reviews for this class`
+                                : `${p.professor_reviews} reviews overall`
+                            }
+                          >
                             {p.class_reviews > 0
-                              ? `${p.class_reviews} for this class`
-                              : `${p.professor_reviews} overall`}
+                              ? `${p.class_reviews} here`
+                              : `${p.professor_reviews} all`}
                           </td>
                         </tr>
                       ))}

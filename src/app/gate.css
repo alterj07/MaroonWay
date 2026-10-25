@@ -901,3 +901,278 @@
     transition: none;
   }
 }
+
+/* ---- the course explorer's detail panel ---- */
+
+/*
+ * The header laid four items out with space-between and no gap, so the code
+ * badge and the three facts ran into one another and wrapped mid-phrase
+ * ("COLLEGE / STATION"). They are pills on one wrapping row now.
+ */
+.course-detail .detail-code {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 10px;
+}
+.course-detail .detail-code em {
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid #ffffff1f;
+  background: #ffffff0f;
+  font-size: 0.625rem;
+  font-weight: 650;
+  letter-spacing: 0.07em;
+  white-space: nowrap;
+  color: inherit;
+  opacity: 0.74;
+}
+
+.detail-dept {
+  margin: 2px 0 0;
+  font-size: 0.6875rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  opacity: 0.5;
+}
+
+/*
+ * Fixed layout, so a long professor name takes an ellipsis instead of pushing
+ * the last column past the edge of the card it lives in.
+ */
+.prof-table table {
+  table-layout: fixed;
+  font-size: 0.75rem;
+}
+.prof-table th,
+.prof-table td {
+  padding: 7px 6px 7px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.prof-table th {
+  font-size: 0.5625rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.55;
+  text-align: left;
+}
+/* Professor takes the slack; the four numbers need only what they show. */
+.prof-table th:nth-child(1),
+.prof-table td:nth-child(1) {
+  width: auto;
+}
+.prof-table th:nth-child(2),
+.prof-table td:nth-child(2),
+.prof-table th:nth-child(3),
+.prof-table td:nth-child(3),
+.prof-table th:nth-child(4),
+.prof-table td:nth-child(4) {
+  width: 3.6rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.prof-table th:nth-child(5),
+.prof-table td:nth-child(5) {
+  width: 4.6rem;
+  text-align: right;
+}
+
+/* ---- the course explorer's result list ---- */
+
+/*
+ * The card was a fixed 76px tall, from before it carried a row of professor
+ * chips, so the chips and the "+4 more" spilled over its own border. It sizes
+ * to its content now, with the chips wrapping inside it.
+ */
+.course-list > button {
+  height: auto;
+  min-height: 76px;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 13px 16px;
+}
+.course-list > button > span {
+  min-width: 0;
+  flex: 1;
+  gap: 7px;
+}
+.course-list > button > span > b,
+.course-list > button > span > small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* The rating and the count sit together rather than colliding mid-card. */
+.course-list > button > div {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+  padding-top: 2px;
+}
+
+.prof-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  min-width: 0;
+}
+.prof-chips li {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  max-width: 100%;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+}
+.prof-chips li b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.prof-chips li em {
+  font-style: normal;
+  font-weight: 700;
+  opacity: 0.85;
+}
+
+/* "AVG. PROFESSOR" wrapped onto two lines in its cell. */
+.insight-grid span,
+.insight-grid small {
+  white-space: nowrap;
+}
+
+/* ---- motion: hovers and page changes ---- */
+
+/*
+ * One timing for the whole app, so nothing feels quicker or slower than its
+ * neighbour. 150ms is about the shortest a change can be and still read as a
+ * transition rather than a jump, and short enough not to sit between a click
+ * and its result.
+ */
+:root {
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --t-hover: 150ms;
+  --t-page: 220ms;
+}
+
+button,
+a,
+.course-list > button,
+.cards > button,
+.saved-grid > article {
+  transition:
+    background-color var(--t-hover) var(--ease),
+    border-color var(--t-hover) var(--ease),
+    box-shadow var(--t-hover) var(--ease),
+    transform var(--t-hover) var(--ease),
+    opacity var(--t-hover) var(--ease);
+}
+
+/* The gloss: a sheen across the face, brought in on hover rather than always
+   on, so a resting button stays flat and only the one under the cursor lifts. */
+.use,
+.rebuild,
+.add-plan,
+.gate-google,
+.confirm-go,
+.preference-input > button {
+  position: relative;
+  overflow: hidden;
+}
+.use::after,
+.rebuild::after,
+.add-plan::after,
+.gate-google::after,
+.confirm-go::after,
+.preference-input > button::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    120deg,
+    transparent 20%,
+    #ffffff26 48%,
+    #ffffff10 56%,
+    transparent 78%
+  );
+  opacity: 0;
+  transform: translateX(-24%);
+  transition:
+    opacity var(--t-hover) var(--ease),
+    transform 420ms var(--ease);
+  pointer-events: none;
+}
+.use:hover::after,
+.rebuild:hover::after,
+.add-plan:hover::after,
+.gate-google:hover::after,
+.confirm-go:hover::after,
+.preference-input > button:hover::after {
+  opacity: 1;
+  transform: translateX(24%);
+}
+.use:hover,
+.rebuild:hover,
+.add-plan:hover,
+.gate-google:hover,
+.confirm-go:hover {
+  transform: translateY(-1px);
+}
+.use:active,
+.rebuild:active,
+.add-plan:active,
+.gate-google:active,
+.confirm-go:active {
+  transform: translateY(0);
+  transition-duration: 60ms;
+}
+
+/* Changing page swaps one <main> for another, so each arrival animates once.
+   Short, and downward-settling rather than sliding in from a side, which would
+   imply a direction the navigation does not have. */
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.app-page,
+.inner-page,
+.minimal-home {
+  animation: page-in var(--t-page) var(--ease) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button,
+  a,
+  .course-list > button,
+  .cards > button,
+  .saved-grid > article,
+  .use::after,
+  .rebuild::after,
+  .add-plan::after,
+  .gate-google::after,
+  .confirm-go::after {
+    transition: none;
+  }
+  .app-page,
+  .inner-page,
+  .minimal-home {
+    animation: none;
+  }
+}
