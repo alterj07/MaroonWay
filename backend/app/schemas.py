@@ -173,15 +173,53 @@ class ScheduleSectionOut(BaseModel):
     adj_rating: float | None = None
     adj_difficulty: float | None = None
     adj_gpa: float | None = None
+    #: Share of students who earned an A, 0-1.
+    pct_a: float | None = None
+
+
+class PreferencesOut(BaseModel):
+    """The weights a request was ranked with, and where they came from."""
+
+    rating: float
+    difficulty: float
+    grades: float
+    workload: float
+    lecture: float
+    attendance: float
+    avoid_early_mornings: float
+    avoid_fridays: float
+    delivery: str | None = None
+    campus: str | None = None
+    honors: bool | None = None
+    min_gap_minutes: int
+    #: "jev-1.14" when Jev decided, "heuristic" for the keyword fallback,
+    #: "default" when the student expressed nothing.
+    engine: str
+    #: Questions Jev answered below its confidence floor.
+    low_confidence: list[str] = []
+    stated: str | None = None
+
+
+class ContributionOut(BaseModel):
+    name: str
+    weight: float
+    value: float
+    points: float
 
 
 class ScheduleOut(BaseModel):
     sections: list[ScheduleSectionOut]
+    #: 0-1 against the stated preferences; 0 when none were expressed.
+    preference_score: float = 0.0
+    #: What earned this schedule its place, for the UI to show.
+    reasons: list[str] = []
+    contributions: list[ContributionOut] = []
     #: Minutes between the two closest classes. Null when nothing shares a day.
     tightest_gap: int | None = None
     mean_rating: float
     mean_difficulty: float
     mean_gpa: float | None = None
+    mean_pct_a: float | None = None
     earliest_start: str | None = None
     days_on_campus: int
 
@@ -194,8 +232,12 @@ class ScheduleRequest(BaseModel):
     term: str
     #: Course codes, e.g. ["CSCE121", "MATH151"].
     courses: list[str] = Field(min_length=1, max_length=10)
-    #: The planning doc's hard floor, raisable but not lowerable below 0.
-    min_gap_minutes: int = Field(default=20, ge=0, le=240)
+    #: What the student wants, in their own words. Jev turns this into the
+    #: weights that rank the results.
+    wants: str | None = Field(default=None, max_length=2000)
+    #: The doc's floor is 20 minutes. None means "whatever Jev infers, or 20";
+    #: an explicit value always wins.
+    min_gap_minutes: int | None = Field(default=None, ge=0, le=240)
     earliest: str | None = Field(default=None, description='e.g. "09:00"')
     latest: str | None = Field(default=None, description='e.g. "17:00"')
     excluded_days: list[str] = []
@@ -210,5 +252,19 @@ class ScheduleResponse(BaseModel):
     request: ScheduleRequest
     count: int
     schedules: list[ScheduleOut]
+    preferences: PreferencesOut
     #: Set when nothing could be built, explaining which constraint bit.
     detail: str | None = None
+
+
+class PreferenceRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    wants: str = Field(min_length=1, max_length=2000)
+
+
+class PreferenceResponse(BaseModel):
+    preferences: PreferencesOut
+    #: Every question Jev was asked and what it answered, so the UI can show
+    #: the student what was understood before building anything.
+    answers: dict[str, Any] = {}

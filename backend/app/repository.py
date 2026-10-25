@@ -285,7 +285,8 @@ _SECTIONS_FOR_COURSES = text(
         s.meets,
         ics.adj_rating,
         ics.adj_difficulty,
-        ics.adj_gpa
+        ics.adj_gpa,
+        ics.pct_a
     from sections s
     join courses c on c.id = s.course_id
     left join instructors i on i.id = s.instructor_id
@@ -347,6 +348,69 @@ async def available_terms(session: AsyncSession) -> list[dict[str, Any]]:
                 order by term desc
                 """
             )
+        )
+    ).mappings().all()
+    return [dict(row) for row in rows]
+
+
+_TRAITS = text(
+    """
+    select instructor_id, course_id, lots_of_quizzes, exam_difficulty,
+           lecture_quality, attendance_taken, extra_credit, heavy_workload,
+           grades_generously, confidence, model, review_count
+    from instructor_traits
+    where instructor_id = any(cast(:instructor_ids as bigint[]))
+      and question_version = cast(:version as text)
+    """
+)
+
+
+async def traits_for_instructors(
+    session: AsyncSession,
+    instructor_ids: list[int],
+    *,
+    version: str,
+) -> list[dict[str, Any]]:
+    """Jev's decisions about these professors, overall and per course."""
+    if not instructor_ids:
+        return []
+    rows = (
+        await session.execute(
+            _TRAITS, {"instructor_ids": instructor_ids, "version": version}
+        )
+    ).mappings().all()
+    return [dict(row) for row in rows]
+
+
+async def courses_with_sections(
+    session: AsyncSession, *, term: str, limit: int = 200
+) -> list[dict[str, Any]]:
+    """Courses a student could actually build a schedule from this term.
+
+    Ordered by how much choice they offer, so a picker (or a demo) can lead
+    with courses that have several professors and times.
+    """
+    rows = (
+        await session.execute(
+            text(
+                """
+                select
+                    upper(c.dept || c.number) as code,
+                    c.dept,
+                    c.number,
+                    c.title,
+                    count(*)                            as sections,
+                    count(distinct s.instructor_id)     as instructors,
+                    count(*) filter (where s.meets <> '[]'::jsonb) as with_times
+                from sections s
+                join courses c on c.id = s.course_id
+                where s.term = cast(:term as text)
+                group by c.dept, c.number, c.title
+                order by count(distinct s.instructor_id) desc, code
+                limit cast(:limit as integer)
+                """
+            ),
+            {"term": term, "limit": limit},
         )
     ).mappings().all()
     return [dict(row) for row in rows]

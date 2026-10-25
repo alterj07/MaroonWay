@@ -150,6 +150,8 @@ class Section:
     adj_rating: float | None = None
     adj_difficulty: float | None = None
     adj_gpa: float | None = None
+    #: Share of students who earned an A, 0-1.
+    pct_a: float | None = None
 
     @property
     def is_online(self) -> bool:
@@ -220,6 +222,7 @@ class Schedule:
     mean_rating: float
     mean_difficulty: float
     mean_gpa: float | None
+    mean_pct_a: float | None
     earliest_start: int | None
     days_on_campus: int
 
@@ -251,6 +254,7 @@ def summarize(sections: Sequence[Section], *, default_rating: float = 3.5) -> Sc
         mean_rating=_mean([s.adj_rating for s in sections]) or default_rating,
         mean_difficulty=_mean([s.adj_difficulty for s in sections]) or 3.0,
         mean_gpa=_mean([s.adj_gpa for s in sections]),
+        mean_pct_a=_mean([s.pct_a for s in sections]),
         earliest_start=min(starts) if starts else None,
         days_on_campus=len({m.day for s in sections for m in s.meetings}),
     )

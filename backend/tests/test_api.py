@@ -105,6 +105,7 @@ class FakeRepo:
         self.search_calls: list[dict] = []
         self.course_calls: list[dict] = []
         self.section_calls: list[dict] = []
+        self.trait_calls: list[dict] = []
 
     async def load_professor(self, session, instructor_id, *, prompt_version, **kwargs):
         self.professor_calls.append(instructor_id)
@@ -164,6 +165,36 @@ class FakeRepo:
     async def available_terms(self, session):
         return [{"term": "FALL 2026", "sections": 3, "with_times": 3}]
 
+    async def courses_with_sections(self, session, *, term, limit=200):
+        return [
+            {"code": "CSCE121", "dept": "CSCE", "number": "121", "title": "Intro",
+             "sections": 2, "instructors": 1, "with_times": 2},
+            {"code": "MATH151", "dept": "MATH", "number": "151", "title": "Calc I",
+             "sections": 1, "instructors": 1, "with_times": 1},
+        ]
+
+    async def traits_for_instructors(self, session, instructor_ids, *, version):
+        self.trait_calls.append({"ids": list(instructor_ids), "version": version})
+        if not instructor_ids:
+            return []
+        # What Jev decided about instructor 7: quizzes often, clear lecturer.
+        return [
+            {
+                "instructor_id": 7,
+                "course_id": None,
+                "lots_of_quizzes": Decimal("0.900"),
+                "exam_difficulty": Decimal("0.700"),
+                "lecture_quality": Decimal("0.850"),
+                "attendance_taken": Decimal("0.200"),
+                "extra_credit": Decimal("0.100"),
+                "heavy_workload": Decimal("0.800"),
+                "grades_generously": Decimal("0.400"),
+                "confidence": Decimal("0.780"),
+                "model": "jev-1.14",
+                "review_count": 11,
+            }
+        ]
+
     async def current_data_version(self, session):
         return 0
 
@@ -180,6 +211,8 @@ def repo(monkeypatch) -> FakeRepo:
         "course_instructors",
         "sections_for_courses",
         "available_terms",
+        "courses_with_sections",
+        "traits_for_instructors",
         "current_data_version",
         "popular_instructor_ids",
     ):
@@ -469,3 +502,114 @@ def test_a_silly_gap_is_rejected(client):
 
 def test_at_least_one_course_is_required(client):
     assert client.post("/schedule", json={"term": "FALL 2026", "courses": []}).status_code == 422
+
+
+# --- preferences through Jev --------------------------------------------------
+
+
+def test_preferences_endpoint_reports_what_was_understood(client):
+    body = client.post(
+        "/schedule/preferences",
+        json={"wants": "easy A's, good lecturers, no 8am classes, nothing on Friday"},
+    ).json()
+
+    prefs = body["preferences"]
+    assert prefs["avoid_early_mornings"] > 0.5
+    assert prefs["avoid_fridays"] > 0.5
+    assert prefs["stated"].startswith("easy A's")
+    # No key is configured in tests, so the fallback answers -- and says so.
+    assert prefs["engine"] == "heuristic"
+    assert set(body["answers"]) == {
+        "rating_importance",
+        "difficulty_aversion",
+        "grade_importance",
+        "workload_aversion",
+        "lecture_quality_importance",
+        "attendance_importance",
+        "avoid_early_mornings",
+        "avoid_fridays",
+        "delivery",
+        "campus",
+        "gap_tolerance",
+        "wants_honors",
+    }
+
+
+def test_the_engine_is_always_reported(client):
+    """The UI must never imply a calibrated decision when it was a keyword guess."""
+    body = client.post("/schedule/preferences", json={"wants": "anything"}).json()
+    assert body["preferences"]["engine"] in ("heuristic", "jev-latest", "jev-1.14")
+    assert body["preferences"]["low_confidence"], "a guess is flagged"
+
+
+def test_an_empty_want_is_rejected(client):
+    assert client.post("/schedule/preferences", json={"wants": ""}).status_code == 422
+
+
+def test_a_schedule_reports_the_preferences_it_ranked_with(client):
+    body = client.post("/schedule", json={"term": "FALL 2026", "courses": ["CSCE121"]}).json()
+    assert body["preferences"]["engine"] == "default", "nothing expressed"
+    assert body["preferences"]["min_gap_minutes"] == 20
+
+
+def test_stating_wants_drives_the_ranking_and_is_echoed_back(client):
+    body = client.post(
+        "/schedule",
+        json={
+            "term": "FALL 2026",
+            "courses": ["CSCE121", "MATH151"],
+            "wants": "I want a good lecturer and I hate early mornings",
+        },
+    ).json()
+
+    assert body["count"] >= 1
+    assert body["preferences"]["engine"] == "heuristic"
+    assert body["preferences"]["stated"].startswith("I want a good lecturer")
+    top = body["schedules"][0]
+    assert top["preference_score"] > 0
+    assert top["contributions"], "the breakdown explains the score"
+
+
+def test_jev_traits_appear_in_the_breakdown(client, repo):
+    """Instructor 7's traits say quizzes are frequent and the workload heavy, so
+    a student who wants a light workload should see that weighed."""
+    body = client.post(
+        "/schedule",
+        json={
+            "term": "FALL 2026",
+            "courses": ["CSCE121"],
+            "wants": "I want less homework and fewer quizzes",
+        },
+    ).json()
+
+    assert repo.trait_calls, "traits were looked up"
+    names = {c["name"] for c in body["schedules"][0]["contributions"]}
+    assert "light workload" in names
+    assert "good lecturers" in names
+
+
+def test_an_explicit_gap_beats_what_jev_inferred(client):
+    body = client.post(
+        "/schedule",
+        json={
+            "term": "FALL 2026",
+            "courses": ["CSCE121"],
+            "wants": "I want an hour between classes",
+            "min_gap_minutes": 25,
+        },
+    ).json()
+    assert body["preferences"]["min_gap_minutes"] == 25
+
+
+def test_an_inferred_gap_is_used_when_none_is_given(client):
+    body = client.post(
+        "/schedule",
+        json={"term": "FALL 2026", "courses": ["CSCE121"], "wants": "relaxed gaps please"},
+    ).json()
+    assert body["preferences"]["min_gap_minutes"] >= 20
+
+
+def test_course_list_reports_how_much_choice_each_offers(client):
+    body = client.get("/schedule/courses", params={"term": "FALL 2026"}).json()
+    assert body[0]["code"] == "CSCE121"
+    assert body[0]["instructors"] >= 1
