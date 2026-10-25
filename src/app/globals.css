@@ -30,3 +30,4 @@
 .course-input>div button{border:1px solid #d5bbb1;background:#f5e9e4;color:var(--m);border-radius:6px;padding:6px 7px;font-size:8px;font-weight:700;display:flex;align-items:center;gap:4px}
 .minimal-home .prompt-box .add-course{border:0;background:transparent;box-shadow:none}
 .light-mode .course-input,.light-mode .course-input>div{align-items:center}.light-mode .course-input>div{display:flex;flex:1;min-width:0;justify-content:flex-start;gap:6px}.light-mode .course-input .course-icon,.light-mode .course-input>svg,.light-mode .preference-input>svg{color:#6b1720!important}.light-mode .course-input>div button{background:#f4e3dd!important;border-color:#9b6660!important;color:#6b1720!important}
+.course-input{justify-content:flex-start}.course-input .course-icon{justify-content:flex-start;align-self:center}.course-input .course-chips{margin:0;text-align:left;justify-content:flex-start;align-items:center}.course-input .add-course{margin-left:auto;flex:none}
