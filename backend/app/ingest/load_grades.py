@@ -18,7 +18,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from sqlalchemy import func
+from sqlalchemy import func, text
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -181,8 +181,79 @@ def parse_row(row: dict[str, str], cmap: ColumnMap, index: int) -> tuple[ParsedR
     )
 
 
+async def bulk_resolve(
+    session: AsyncSession, records: list[ParsedRow]
+) -> tuple[dict[str, int], dict[tuple[str, str, bool], int]]:
+    """Create every instructor and course up front, then fetch their ids.
+
+    The obvious implementation -- resolve each row as you meet it -- costs one
+    round trip per new instructor and per new course. That is 12,000-odd round
+    trips for A&M's grade data: half a minute against a local database and
+    twenty minutes against a hosted one, which is where this actually runs.
+    Batching turns it into about fifty.
+    """
+    names = {canonical_key(r.instructor): r.instructor for r in records if r.instructor}
+    course_keys = {(r.dept, r.number, r.honors): r.title for r in records}
+
+    instructor_rows = [
+        {
+            "full_name": name,
+            "normalized_name": normalize_name(name),
+            "canonical_key": key,
+        }
+        for key, name in names.items()
+    ]
+    insert_instructors = pg_insert(instructors).on_conflict_do_update(
+        index_elements=[instructors.c.canonical_key],
+        # Nothing to change on conflict, but ON CONFLICT DO UPDATE is what makes
+        # the row visible to the id lookup below in the same transaction.
+        set_={"full_name": instructors.c.full_name},
+    )
+    for start in range(0, len(instructor_rows), BATCH_SIZE):
+        await session.execute(insert_instructors, instructor_rows[start : start + BATCH_SIZE])
+
+    course_rows = [
+        {"dept": dept, "number": number, "honors": honors, "title": title}
+        for (dept, number, honors), title in course_keys.items()
+    ]
+    insert_courses = pg_insert(courses).on_conflict_do_update(
+        constraint="courses_identity",
+        set_={"title": func.coalesce(courses.c.title, pg_insert(courses).excluded.title)},
+    )
+    for start in range(0, len(course_rows), BATCH_SIZE):
+        await session.execute(insert_courses, course_rows[start : start + BATCH_SIZE])
+
+    await session.commit()
+
+    instructor_ids = {
+        str(row[1]): int(row[0])
+        for row in (
+            await session.execute(
+                text(
+                    "select id, canonical_key from instructors "
+                    "where canonical_key = any(cast(:keys as text[]))"
+                ),
+                {"keys": list(names)},
+            )
+        ).all()
+    }
+    course_ids = {
+        (str(row[1]), str(row[2]), bool(row[3])): int(row[0])
+        for row in (
+            await session.execute(
+                text("select id, upper(dept), upper(number), honors from courses")
+            )
+        ).all()
+    }
+    return instructor_ids, course_ids
+
+
 class Resolver:
-    """Instructor and course ids, created on first sight and then remembered."""
+    """Instructor and course ids, created on first sight and then remembered.
+
+    Kept for small files and for --limit runs; load() uses bulk_resolve, which
+    is the same thing in two statements rather than two thousand.
+    """
 
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
@@ -314,15 +385,19 @@ async def load(
         return stats
 
     async with session_scope() as session:
-        resolver = Resolver(session)
+        instructor_ids, course_ids = await bulk_resolve(session, parsed)
+        stats.instructors_seen = len(instructor_ids)
+        stats.courses_seen = len(course_ids)
         batch: list[dict[str, Any]] = []
         for record in parsed:
+            course_id = course_ids.get((record.dept, record.number, record.honors))
+            if course_id is None:
+                stats.skip("unresolved_course")
+                continue
             batch.append(
                 {
-                    "instructor_id": await resolver.instructor_id(record.instructor),
-                    "course_id": await resolver.course_id(
-                        record.dept, record.number, record.title, record.honors
-                    ),
+                    "instructor_id": instructor_ids.get(canonical_key(record.instructor)),
+                    "course_id": course_id,
                     "term": record.term,
                     "term_year": record.term_year,
                     "term_season": record.term_season,
@@ -347,7 +422,6 @@ async def load(
             await session.execute(_GRADE_UPSERT, batch)
             stats.rows_loaded += len(batch)
             await session.commit()
-        stats.instructors_seen, stats.courses_seen = resolver.counts
         version = await bump_data_version(session)
         log.info("data_version now %d (hot cache invalidated)", version)
 
