@@ -263,8 +263,14 @@ Render prompts for four secrets and handles the rest:
 
 | Prompted | Value |
 | --- | --- |
-| `DATABASE_URL` | the Supabase **session pooler** string, scheme rewritten to `postgresql+asyncpg://` |
+| `DATABASE_URL` | the Supabase **session pooler** string (Project Settings > Database > Connection string > Session pooler) |
 | `GEMINI_API_KEY` | from Google AI Studio |
+
+Supabase shows several strings and only one of them is a database connection.
+The right one starts `postgresql://`, names a host, port 5432 and a password.
+The project URL (`https://<ref>.supabase.co`) is not it -- pasting that reaches
+SQLAlchemy as a dialect name and the service exits with `Can't load plugin:
+sqlalchemy.dialects:https`. The `+asyncpg` driver suffix is added for you.
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | from the Google Cloud OAuth client |
 
 `NEXTAUTH_SECRET`, `INTERNAL_TOKEN`, `ADMIN_TOKEN` and `IMPORT_TOKEN` are

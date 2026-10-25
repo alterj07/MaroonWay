@@ -14,6 +14,7 @@ from contextlib import asynccontextmanager
 from collections.abc import AsyncIterator
 
 from fastapi import FastAPI
+from pydantic import ValidationError
 
 from app import repository
 from app.cache import CacheRegistry, warm_professor_cache
@@ -46,7 +47,16 @@ def configure_logging(level: int = logging.INFO) -> None:
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     configure_logging()
-    settings = get_settings()
+    try:
+        settings = get_settings()
+    except ValidationError as exc:
+        # Say what is wrong on one line before the traceback. A misconfigured
+        # service scrolls past eighty lines of Starlette and FastAPI frames
+        # otherwise, none of which name the setting at fault.
+        for error in exc.errors():
+            field = ".".join(str(part) for part in error["loc"]) or "settings"
+            log.error("configuration error: %s: %s", field.upper(), error["msg"])
+        raise
     engine = make_engine(settings)
     app.state.settings = settings
     app.state.engine = engine

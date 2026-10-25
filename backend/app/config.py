@@ -2,6 +2,7 @@
 
 from functools import lru_cache
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -12,6 +13,42 @@ class Settings(BaseSettings):
     # Supabase session pooler, with SQLAlchemy's async driver.
     database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/maroonway"
     db_echo: bool = False
+
+    @field_validator("database_url")
+    @classmethod
+    def _async_postgres_url(cls, value: str) -> str:
+        """Accept the URLs people actually paste, and reject the wrong ones clearly.
+
+        Supabase offers several strings and only one of them is a database
+        connection. Pasting the project URL instead used to reach SQLAlchemy as
+        a dialect name and die with ``Can't load plugin:
+        sqlalchemy.dialects:https`` -- eighty lines of traceback that never
+        mention the variable at fault.
+
+        A psql-style URL is rewritten rather than refused: ``postgresql://`` is
+        what every tool but this one prints, and demanding the ``+asyncpg``
+        suffix by hand is a trap with no upside.
+        """
+        url = value.strip()
+        if not url:
+            raise ValueError("DATABASE_URL is empty; set it to the Postgres connection string")
+
+        scheme = url.split("://", 1)[0].lower() if "://" in url else ""
+        if scheme in {"postgres", "postgresql"}:
+            return "postgresql+asyncpg://" + url.split("://", 1)[1]
+        if scheme.startswith("postgresql+"):
+            return url
+        if scheme in {"http", "https"}:
+            raise ValueError(
+                "DATABASE_URL looks like a project URL, not a database connection "
+                f"({url.split('://', 1)[0]}://...). In Supabase this is Project "
+                "Settings > Database > Connection string > Session pooler, which "
+                "starts postgresql:// and contains a host, port 5432 and a password."
+            )
+        raise ValueError(
+            f"DATABASE_URL must be a Postgres connection string, got scheme "
+            f"{scheme or '(none)'!r}. Expected postgresql:// or postgresql+asyncpg://."
+        )
 
     # --- upstream data ----------------------------------------------------
     rmp_school_id: str = "1003"  # A&M College Station; Galveston is 1006
