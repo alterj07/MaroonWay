@@ -345,7 +345,20 @@ async def available_terms(session: AsyncSession) -> list[dict[str, Any]]:
                        count(*) filter (where meets <> '[]'::jsonb) as with_times
                 from sections
                 group by term
-                order by term desc
+                -- Chronologically, not alphabetically: "FALL 2027" sorts
+                -- before "SPRING 2027" as text but comes after it in time, and
+                -- a term with real meeting times outranks one without, so the
+                -- app defaults to a term a student can actually be scheduled
+                -- into rather than to a demonstration one.
+                order by (count(*) filter (where meets <> '[]'::jsonb) > 0) desc,
+                         nullif(regexp_substr(term, '\\d{4}'), '')::int desc nulls last,
+                         case
+                             when term ilike '%%fall%%'   then 3
+                             when term ilike '%%summer%%' then 2
+                             when term ilike '%%spring%%' then 1
+                             else 0
+                         end desc,
+                         term desc
                 """
             )
         )

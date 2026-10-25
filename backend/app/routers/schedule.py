@@ -19,8 +19,8 @@ from app.cache import CacheRegistry, get_caches
 from app.config import Settings, get_settings
 from app.db import get_session
 from app.freshness import ensure_fresh
-from app.routers.professors import stamp
 from app.ingest.run_traits import QUESTION_VERSION
+from app.routers.professors import stamp
 from app.schemas import (
     PreferenceRequest,
     PreferenceResponse,
@@ -263,12 +263,37 @@ async def generate_schedules(
         # small pool is already biased toward high ratings -- and a student who
         # asked for no Friday classes would never see the Friday-free options,
         # because they rank lower on rating before preferences are applied.
+        pool_size = max(request.limit * 4, SCHEDULE_POOL)
         schedules = scheduling.generate(
             candidates,
             min_gap=min_gap,
             availability=availability,
-            limit=max(request.limit * 4, SCHEDULE_POOL),
+            limit=pool_size,
         )
+
+        # A clear "no Friday classes" has to shape the search, not just the
+        # ranking of what the search already chose. With a real term loaded a
+        # popular course has over a hundred sections, so the pool fills with
+        # the highest-rated combinations long before a Friday-free one appears,
+        # and the preference silently does nothing -- which is exactly what it
+        # used to do. Ask for the constrained schedules first and fall back to
+        # the unconstrained pool when the timetable cannot give them, so the
+        # answer is still honest about being impossible rather than empty.
+        relaxed: list[str] = []
+        if preferences.avoid_fridays > prefs_service.CLEAR_SIGNAL and "FRI" not in availability.excluded_days:
+            friday_free = scheduling.generate(
+                candidates,
+                min_gap=min_gap,
+                availability=replace(
+                    availability,
+                    excluded_days=availability.excluded_days | frozenset({"FRI"}),
+                ),
+                limit=pool_size,
+            )
+            if friday_free:
+                schedules = friday_free
+            else:
+                relaxed.append("no Friday classes was impossible for these courses")
 
         # 3. What did Jev read about these professors?
         instructor_ids = sorted(
@@ -311,6 +336,7 @@ async def generate_schedules(
             "schedules": [to_payload(r) for r in ranked],
             "preferences": preferences_payload(resolved),
             "detail": detail,
+            "relaxed": relaxed,
         }
 
     payload = await caches.search.get_or_compute(key, factory)

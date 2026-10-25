@@ -255,6 +255,9 @@ class ScheduleResponse(BaseModel):
     preferences: PreferencesOut
     #: Set when nothing could be built, explaining which constraint bit.
     detail: str | None = None
+    #: Preferences the timetable could not honour, so the student is told
+    #: rather than left wondering why Friday classes came back anyway.
+    relaxed: list[str] = Field(default_factory=list)
 
 
 class PreferenceRequest(BaseModel):
