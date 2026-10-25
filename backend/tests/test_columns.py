@@ -82,9 +82,28 @@ def test_split_course_code_variants():
 
 def test_campus_normalisation():
     assert normalize_campus("College Station") == "CSTAT"
+    assert normalize_campus("COLLEGE STATION") == "CSTAT"
     assert normalize_campus("Blinn") == "BLINN"
-    assert normalize_campus("Galveston") is None
     assert normalize_campus(None) is None
+    assert normalize_campus("") is None
+    assert normalize_campus("Unknown") is None
+
+
+def test_galveston_and_qatar_are_their_own_campuses():
+    """They are A&M campuses in their own right and the grade data covers
+    both; dropping them mis-filed about 1,200 instructor-courses."""
+    assert normalize_campus("Galveston") == "GALV"
+    assert normalize_campus("Qatar") == "QATAR"
+    # A phrase beats an abbreviation, so this is Galveston and not CSTAT.
+    assert normalize_campus("TAMU Galveston") == "GALV"
+
+
+def test_campus_abbreviation_matches_a_word_not_a_substring():
+    """"cs" lives inside "PHYSICS", and campus is aliased to columns such as
+    campus_basis that can hold a department name."""
+    assert normalize_campus("PHYSICS") is None
+    assert normalize_campus("ECONOMICS") is None
+    assert normalize_campus("CS") == "CSTAT"
 
 
 def parsed_rows(path: Path):

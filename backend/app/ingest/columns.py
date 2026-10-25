@@ -54,6 +54,9 @@ FIELD_ALIASES: dict[str, tuple[str, ...]] = {
     # Not "college": in A&M's reports that is the academic college
     # ("CENTER FOR ACAD ENHANCEMENT"), not a campus.
     "campus": ("campus", "campus_basis", "location", "site"),
+    # The academic college and department the grade report filed the row under.
+    "college": ("college",),
+    "department": ("department",),
     "honors": ("honors", "honor", "is_honors"),
     # Scheduling fields. Whether these exist is the open question from planning:
     # if the profiler finds them, sections can be loaded for real; if not, the

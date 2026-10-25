@@ -14,6 +14,7 @@ import argparse
 import asyncio
 import csv
 import logging
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -75,16 +76,49 @@ def _float(value: str | None) -> float | None:
         return None
 
 
+#: Campus codes, longest phrase first so "college station" wins over "cs".
+#:
+#: Galveston and Qatar are A&M campuses in their own right and the grade data
+#: covers both; collapsing them into CSTAT or dropping them would quietly
+#: mis-file about 1,200 instructor-courses.
+_CAMPUS_PHRASES: tuple[tuple[str, str], ...] = (
+    ("college station", "CSTAT"),
+    ("galveston", "GALV"),
+    ("qatar", "QATAR"),
+    ("blinn", "BLINN"),
+)
+#: Whole-word abbreviations. Matched on word boundaries, not as substrings:
+#: "cs" occurs inside "PHYSICS", and campus is aliased to columns like
+#: campus_basis that can hold a department name.
+_CAMPUS_WORDS: dict[str, str] = {
+    "cstat": "CSTAT",
+    "cs": "CSTAT",
+    "main": "CSTAT",
+    "tamu": "CSTAT",
+    "galv": "GALV",
+    "qat": "QATAR",
+}
+
+
 def normalize_campus(value: str | None) -> str | None:
-    """Map whatever the CSV says onto CSTAT / BLINN, or nothing."""
+    """Map whatever the CSV says onto a campus code, or nothing."""
     if not value:
         return None
     lowered = value.lower()
-    if "blinn" in lowered:
-        return "BLINN"
-    if any(token in lowered for token in ("college station", "cstat", "cs", "main", "tamu")):
-        return "CSTAT"
+    for phrase, code in _CAMPUS_PHRASES:
+        if phrase in lowered:
+            return code
+    for word in re.split(r"[^a-z0-9]+", lowered):
+        code = _CAMPUS_WORDS.get(word)
+        if code:
+            return code
     return None
+
+
+def _label(value: str | None) -> str | None:
+    """A trimmed organisational label, or None when the cell is blank."""
+    text = (value or "").strip()
+    return text or None
 
 
 def _bool(value: str | None) -> bool:
@@ -103,6 +137,8 @@ class ParsedRow:
     term_season: str | None
     section: str | None
     level: str | None
+    college: str | None
+    department: str | None
     source_file: str | None
     instructor: str
     gpa: float | None
@@ -163,6 +199,8 @@ def parse_row(row: dict[str, str], cmap: ColumnMap, index: int) -> tuple[ParsedR
             number=number.strip().upper(),
             title=cmap.get(row, "title"),
             campus=normalize_campus(cmap.get(row, "campus")),
+            college=_label(cmap.get(row, "college")),
+            department=_label(cmap.get(row, "department")),
             honors=_bool(cmap.get(row, "honors")),
             term=term_raw,
             term_year=term.year if term else None,
@@ -310,6 +348,8 @@ _GRADE_UPDATABLE = (
     "af_total",
     "campus",
     "level",
+    "college",
+    "department",
     "source_file",
     "grade_i",
     "grade_s",
@@ -403,6 +443,8 @@ async def load(
                     "term_season": record.term_season,
                     "section": record.section,
                     "campus": record.campus,
+                    "college": record.college,
+                    "department": record.department,
                     "level": record.level,
                     "source_file": record.source_file,
                     "gpa": record.gpa,

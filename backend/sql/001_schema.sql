@@ -171,7 +171,7 @@ create table if not exists sections (
     instructor_id  bigint references instructors (id) on delete set null,
     term           text not null,
     section_code   text not null,
-    campus         text check (campus in ('CSTAT', 'BLINN')),
+    campus         text check (campus in ('CSTAT', 'BLINN', 'GALV', 'QATAR')),
     delivery       text check (delivery in ('F2F', 'WEB', 'HYBRID')),
     honors         boolean not null default false,
     -- [{"day": "MON", "start": "09:10", "end": "10:00", "building": "ZACH", "room": "350"}]

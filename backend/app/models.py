@@ -55,6 +55,7 @@ courses = Table(
     Column("credits", Text),
     Column("description", Text),
     Column("prereq_text", Text),
+    Column("dept_code", Text),
     Column("coreq_text", Text),
     Column("is_honors_dept", Boolean),
 )
@@ -71,6 +72,8 @@ course_grades = Table(
     Column("section", Text),
     Column("campus", Text),
     Column("level", Text),
+    Column("college", Text),
+    Column("department", Text),
     Column("source_file", Text),
     Column("grade_a", Integer),
     Column("grade_b", Integer),
@@ -259,4 +262,20 @@ saved_schedules = Table(
     Column("label", Text),
     Column("payload", JSONB, nullable=False),
     Column("created_at", DateTime(timezone=True), server_default=func.now()),
+)
+
+#: Which terms an instructor actually taught a course.
+#:
+#: The dataset records this per instructor-course as a JSON list of term names;
+#: flattened to one row per term it answers "who teaches ENGR102 in the fall,
+#: and how recently" with an index scan, which is the only evidence available
+#: about who is likely to teach a course again.
+instructor_course_terms = Table(
+    "instructor_course_terms",
+    metadata,
+    Column("instructor_id", BigInteger, ForeignKey("instructors.id", ondelete="CASCADE"), primary_key=True),
+    Column("course_id", BigInteger, ForeignKey("courses.id", ondelete="CASCADE"), primary_key=True),
+    Column("term", Text, primary_key=True),
+    Column("term_year", SmallInteger),
+    Column("term_season", Text),
 )

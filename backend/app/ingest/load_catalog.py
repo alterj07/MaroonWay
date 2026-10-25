@@ -29,7 +29,15 @@ log = logging.getLogger("ingest.catalog")
 BATCH_SIZE = 500
 
 _insert = pg_insert(courses)
-_UPDATABLE = ("title", "credits", "description", "prereq_text", "coreq_text", "is_honors_dept")
+_UPDATABLE = (
+    "title",
+    "credits",
+    "description",
+    "prereq_text",
+    "coreq_text",
+    "is_honors_dept",
+    "dept_code",
+)
 #: Only fills blanks: a value already in the table is not overwritten by a
 #: later catalog scrape that happens to have less detail.
 _UPSERT = _insert.on_conflict_do_update(
@@ -46,6 +54,16 @@ class Stats:
 
     def report(self) -> str:
         return f"read={self.rows_read} loaded={self.rows_loaded} skipped={self.rows_skipped}"
+
+
+def _credits(value: str | None) -> str | None:
+    """Catalog credit hours, without the scrape's trailing full stop.
+
+    Every value in courses.csv ends in one -- "3.", "1 to 4." -- which reads as
+    a typo on a course card.
+    """
+    text = (value or "").strip().rstrip(".").strip()
+    return text or None
 
 
 def _bool(value: str | None) -> bool | None:
@@ -73,11 +91,12 @@ def parse_row(row: dict[str, str]) -> dict[str, Any] | None:
         "number": number.upper(),
         "honors": False,
         "title": _text(lookup.get("title")),
-        "credits": _text(lookup.get("credits")),
+        "credits": _credits(lookup.get("credits")),
         "description": _text(lookup.get("description")),
         "prereq_text": _text(lookup.get("prereq_text")),
         "coreq_text": _text(lookup.get("coreq_text")),
         "is_honors_dept": _bool(lookup.get("is_honors_dept")),
+        "dept_code": _text(lookup.get("dept_code")),
     }
 
 

@@ -210,3 +210,29 @@ scratch database, **never at Supabase**.
   6,022-professor roster took that to 3,127 (56%). Matching runs with the CSV
   name as the target, since that is the side carrying "RODRIGUEZ C"; run the
   other way round, fuzzy matching attaches it to the wrong Rodriguez.
+
+### Loading order
+
+```bash
+python -m app.ingest.apply_sql sql/001_schema.sql sql/002_indexes.sql sql/003_extra_datapoints.sql
+python -m app.ingest.load_catalog      ../Data/courses.csv
+python -m app.ingest.load_grades       ../Data/output/sections_all.csv
+python -m app.ingest.load_rmp_dataset  ../Data/output/schedule_dataset.csv
+python -m app.ingest.load_extras       ../Data/output/schedule_dataset.csv
+python -m app.ingest.load_rmp --school-id 1003 --detail-limit 0
+python -m app.ingest.make_demo_sections --courses 60 --per-course 6
+python -m app.ingest.load_sections     out/demo_sections.csv
+```
+
+`load_extras` must run after both `load_grades` and `load_catalog`: it fills in
+the campus, course level and teaching history onto rows they create.
+
+### What the CSVs do and do not contain
+
+They carry grade distributions, the course catalog, and RateMyProfessors
+ratings. **They contain no meeting times** -- no days, no start or end times, no
+rooms. The only clock times anywhere in the data are inside review comments
+("exams were at 7:30pm"). `make_demo_sections` therefore invents times and
+labels the term `DEMO <term>`; everything else about those sections is real,
+including which instructors are likely to teach the course, which now comes
+from `instructor_course_terms`.
