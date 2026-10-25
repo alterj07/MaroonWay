@@ -2,14 +2,18 @@ import type { Metadata } from 'next';
 import { connection } from 'next/server';
 
 import { Card } from '@/components/card';
+import { SignIn } from '@/components/sign-in';
 import { Text } from '@/components/text';
 import {
   buildSchedules,
+  getStudentPreferences,
   getTerms,
+  saveStudentPreferences,
   type Preferences,
   type Schedule,
   type ScheduleSection,
 } from '@/lib/api';
+import { currentStudent, studentHeaders } from '@/lib/session';
 
 export const metadata: Metadata = { title: 'Schedule' };
 
@@ -190,7 +194,13 @@ export default async function SchedulePage({
     .split(',')
     .map((c) => c.trim().toUpperCase().replace(/\s+/g, ''))
     .filter(Boolean);
-  const wants = params.wants ?? '';
+
+  // A signed-in student's saved wants prefill the form, so they do not retype
+  // them. Anything in the query string wins, since that is this visit's intent.
+  const student = await currentStudent();
+  const headers = student ? studentHeaders(student) : null;
+  const saved = headers ? await getStudentPreferences(headers).catch(() => null) : null;
+  const wants = params.wants ?? saved?.wants ?? '';
 
   const result =
     term && courses.length
@@ -208,6 +218,15 @@ export default async function SchedulePage({
           preferences: null as Preferences | null,
         }))
       : null;
+
+  // Remember what they asked for this time, for the next visit.
+  if (headers && params.wants && result?.preferences) {
+    await saveStudentPreferences(headers, {
+      wants: params.wants,
+      weights: result.preferences as unknown as Record<string, unknown>,
+      engine: result.preferences.engine,
+    }).catch(() => undefined);
+  }
 
   return (
     <main className="mx-auto flex w-full max-w-page flex-col gap-6 px-6 py-10">
@@ -227,6 +246,8 @@ export default async function SchedulePage({
           </Text>
         ) : null}
       </section>
+
+      <SignIn />
 
       <Ask courses={rawCourses} wants={wants} term={params.term} />
 

@@ -19,6 +19,8 @@ create unique index if not exists rmp_ratings_rating_id_key
 create index if not exists summaries_lookup_idx
     on summaries (instructor_id, course_id, prompt_version);
 create index if not exists sections_term_idx on sections (term, course_id);
+create index if not exists saved_schedules_student_idx
+    on saved_schedules (student_id, created_at desc);
 create index if not exists instructor_traits_lookup_idx
     on instructor_traits (instructor_id, course_id);
 -- Which professors still need their comments pulled.

@@ -219,3 +219,42 @@ instructor_traits = Table(
     Column("answers", JSONB, nullable=False, server_default="{}"),
     Column("decided_at", DateTime(timezone=True), server_default=func.now()),
 )
+
+students = Table(
+    "students",
+    metadata,
+    Column("id", BigInteger, primary_key=True),
+    Column("subject", Text, nullable=False, unique=True),
+    Column("email", Text, nullable=False),
+    Column("name", Text),
+    Column("created_at", DateTime(timezone=True), server_default=func.now()),
+    Column("last_seen_at", DateTime(timezone=True), server_default=func.now()),
+)
+
+student_preferences = Table(
+    "student_preferences",
+    metadata,
+    Column(
+        "student_id",
+        BigInteger,
+        ForeignKey("students.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+    Column("wants", Text),
+    Column("weights", JSONB, nullable=False, server_default="{}"),
+    Column("engine", Text),
+    Column("updated_at", DateTime(timezone=True), server_default=func.now()),
+)
+
+saved_schedules = Table(
+    "saved_schedules",
+    metadata,
+    Column("id", BigInteger, primary_key=True),
+    Column(
+        "student_id", BigInteger, ForeignKey("students.id", ondelete="CASCADE"), nullable=False
+    ),
+    Column("term", Text, nullable=False),
+    Column("label", Text),
+    Column("payload", JSONB, nullable=False),
+    Column("created_at", DateTime(timezone=True), server_default=func.now()),
+)

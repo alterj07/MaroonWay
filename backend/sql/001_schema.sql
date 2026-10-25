@@ -181,6 +181,40 @@ create table if not exists sections (
     constraint sections_identity unique (term, course_id, section_code)
 );
 
+-- Students, identified by their Google subject claim. Google is *not* Howdy:
+-- Howdy authenticates NetID through CAS with Duo, so signing in here proves
+-- who someone is and that they hold a tamu.edu account -- nothing more. It
+-- grants no access to their registration data.
+create table if not exists students (
+    id          bigserial primary key,
+    -- Google's stable subject id. Not the email, which can change.
+    subject     text not null unique,
+    email       text not null,
+    name        text,
+    created_at  timestamptz not null default now(),
+    last_seen_at timestamptz not null default now()
+);
+
+-- What a student said they want, so they do not retype it every visit.
+create table if not exists student_preferences (
+    student_id  bigint primary key references students (id) on delete cascade,
+    wants       text,
+    weights     jsonb not null default '{}'::jsonb,
+    engine      text,
+    updated_at  timestamptz not null default now()
+);
+
+-- Schedules a student kept. The payload is the built schedule as served, so a
+-- saved schedule still renders after the underlying sections change.
+create table if not exists saved_schedules (
+    id          bigserial primary key,
+    student_id  bigint not null references students (id) on delete cascade,
+    term        text not null,
+    label       text,
+    payload     jsonb not null,
+    created_at  timestamptz not null default now()
+);
+
 -- What Jev read out of a professor's reviews: the planning doc's "types of
 -- teachers and classes", as typed values rather than prose. Each column is a
 -- probability or a normalised 0-1 level, with the confidence Jev reported, so

@@ -375,3 +375,74 @@ export type CourseOption = {
 export function getCourseOptions(term: string, limit = 200): Promise<CourseOption[]> {
   return get<CourseOption[]>('/schedule/courses', { term, limit });
 }
+
+// --- per-student storage ------------------------------------------------------
+//
+// These take the identity headers from src/lib/session.ts, so they are
+// server-only like everything else here.
+
+export type StudentPreferences = {
+  wants: string | null;
+  weights: Record<string, unknown>;
+  engine: string | null;
+  updated_at: string | null;
+};
+
+export type SavedSchedule = {
+  id: number;
+  term: string;
+  label: string | null;
+  payload: Record<string, unknown>;
+  created_at: string | null;
+};
+
+async function send<T>(
+  path: string,
+  method: string,
+  headers: Record<string, string>,
+  body?: unknown
+): Promise<T> {
+  const response = await fetch(url(path), {
+    method,
+    cache: 'no-store',
+    headers: { 'content-type': 'application/json', accept: 'application/json', ...headers },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  if (!response.ok) {
+    const detail = await response.text().catch(() => '');
+    throw new ApiError(response.status, path, `${response.status}: ${detail}`);
+  }
+  return (await response.json()) as T;
+}
+
+/** What this student asked for last time. Null when they have saved nothing. */
+export async function getStudentPreferences(
+  headers: Record<string, string>
+): Promise<StudentPreferences | null> {
+  try {
+    return await send<StudentPreferences>('/me/preferences', 'GET', headers);
+  } catch (error) {
+    // Not signed in, or accounts are not configured: not an error worth
+    // breaking a page over.
+    if (error instanceof ApiError && [401, 403, 503].includes(error.status)) return null;
+    throw error;
+  }
+}
+
+export function saveStudentPreferences(
+  headers: Record<string, string>,
+  preferences: { wants?: string | null; weights?: Record<string, unknown>; engine?: string | null }
+): Promise<StudentPreferences> {
+  return send<StudentPreferences>('/me/preferences', 'PUT', headers, preferences);
+}
+
+export function getSavedSchedules(headers: Record<string, string>): Promise<SavedSchedule[]> {
+  return send<SavedSchedule[]>('/me/schedules', 'GET', headers);
+}
+
+export function saveSchedule(
+  headers: Record<string, string>,
+  schedule: { term: string; label?: string | null; payload: Record<string, unknown> }
+): Promise<SavedSchedule> {
+  return send<SavedSchedule>('/me/schedules', 'POST', headers, schedule);
+}
