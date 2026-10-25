@@ -72,9 +72,14 @@ python -m app.ingest.load_rmp --school-id 1003 --detail-limit 0
 python -m app.ingest.make_demo_sections
 python -m app.ingest.load_sections out/demo_sections.csv
 
-# Summaries. Read the prompts and the token estimate before spending quota.
+# Summaries (Gemini). Read the prompts and token estimate before spending quota.
 python -m app.ingest.run_summaries --limit 5 --dry-run
 python -m app.ingest.run_summaries --limit 5
+
+# Traits (Jev). What the reviews say about quizzes, exams, lecturing,
+# attendance and extra credit, as typed values.
+python -m app.ingest.run_traits --limit 5 --dry-run
+python -m app.ingest.run_traits --limit 50
 ```
 
 Every loader takes `--dry-run` (parse and report, write nothing) and `--limit`.
