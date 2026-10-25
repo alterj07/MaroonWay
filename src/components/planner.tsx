@@ -659,7 +659,7 @@ function SavedSchedules({
               className={favorites.includes(p.id) ? "favorite" : ""}
             >
               <header>
-                <span>{i === 0 ? "CURRENT FAVORITE" : `OPTION ${i + 1}`}</span>
+                <span>{`OPTION ${i + 1}`}</span>
                 <button
                   aria-label={
                     favorites.includes(p.id)
