@@ -554,6 +554,9 @@ export function Planner({
     [comparing, setComparing] = useState(false),
     [analysing, setAnalysing] = useState(false),
     [busy, setBusy] = useState(false),
+    // What the overlay should say: one flag covers building and saving, and an
+    // overlay reporting the wrong one is worse than no overlay.
+    [busyWhat, setBusyWhat] = useState<"build" | "save">("build"),
     [kept, setKept] = useState(false);
 
   /** Everything the student has asked for, as one sentence for the decider. */
@@ -567,6 +570,7 @@ export function Planner({
 
   async function rebuild(codes = chosen, text = wants) {
     if (!codes.length || busy) return;
+    setBusyWhat("build");
     setBusy(true);
     setKept(false);
     try {
@@ -664,6 +668,31 @@ export function Planner({
     );
   return (
     <main className={`app-page ${dark ? "site-dark" : "site-light"}`}>
+      {/* A rebuild walks a large combination space and calls the decider, so
+          it can take seconds. Without this the only sign of life is a button
+          reading "Rebuilding...", which looks the same as a button that has
+          hung. */}
+      {busy ? (
+        <div className="working" role="status" aria-live="polite">
+          <div className="working-card">
+            <span className="working-spin" aria-hidden="true">
+              <i />
+              <i />
+              <i />
+            </span>
+            <b>
+              {busyWhat === "save"
+                ? "Saving this schedule…"
+                : "Building your schedule…"}
+            </b>
+            <p>
+              {busyWhat === "save"
+                ? "Keeping it against your account so it is here next time."
+                : "Comparing every conflict-free way to take these classes, then ranking them against what you asked for."}
+            </p>
+          </div>
+        </div>
+      ) : null}
       <NavRail
         page="planner"
         onNav={setPage}
@@ -855,6 +884,14 @@ export function Planner({
                   ? "No schedules"
                   : `${plans.length} schedule${plans.length === 1 ? "" : "s"} built for you`}
               </h2>
+              {!failed && plans.length > 3 ? (
+                <small className="tied-note">
+                  Showing the best three.{" "}
+                  <button className="link" onClick={() => setPage("saved")}>
+                    See all {plans.length} in Saved schedules
+                  </button>
+                </small>
+              ) : null}
               {tied ? (
                 <small className="tied-note">
                   Same professors in each, so they score the same on what you
@@ -870,7 +907,9 @@ export function Planner({
             )}
           </div>
           <div className="cards">
-            {(failed ? [] : plans).map((p, i) => (
+            {/* The top three here; the rest are on the saved page, which has
+                room to lay them out. */}
+            {(failed ? [] : plans.slice(0, 3)).map((p, i) => (
               <button
                 key={p.id}
                 onClick={() => setActive(p.id)}
@@ -959,6 +998,7 @@ export function Planner({
                       className="use"
                       disabled={busy || kept || !term}
                       onClick={async () => {
+                        setBusyWhat("save");
                         setBusy(true);
                         try {
                           const result = await onUseSchedule(

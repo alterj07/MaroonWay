@@ -21,6 +21,9 @@ import {
  * heard of, so the first schedule was built without them and arrived at 8am
  * under a chip reading "No classes before 9 AM".
  */
+/** How many ranked schedules to ask for. The builder shows the first few. */
+export const SCHEDULE_OPTIONS = 10;
+
 export const DEFAULT_PRIORITIES = ['No classes before 9 AM', 'Avoid Friday classes'];
 
 /** The planner's day numbering: 0 = Monday. */
@@ -126,7 +129,16 @@ export async function plansFor(
   if (!courses.length) {
     return { plans: emptyPlan('No classes chosen', 'Add the classes you need'), detail: null };
   }
-  const result = await buildSchedules({ term, courses, wants: wants || null, limit: 3 });
+  // Ten rather than three: the builder shows the top three as options, and
+  // the saved page lists the rest, so the search's other answers are offered
+  // instead of discarded. The cost is in the ranking, not the search -- the
+  // combinations were already walked to find the first three.
+  const result = await buildSchedules({
+    term,
+    courses,
+    wants: wants || null,
+    limit: SCHEDULE_OPTIONS,
+  });
   if (!result.schedules.length) {
     const detail = result.detail ?? 'No conflict-free combination exists';
     return { plans: emptyPlan('No schedule fits', detail), detail };

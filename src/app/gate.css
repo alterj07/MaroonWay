@@ -1345,3 +1345,104 @@ a,
   line-height: 1.45;
   opacity: 0.78;
 }
+
+/* ---- while a schedule is being built ---- */
+
+/*
+ * A rebuild walks a large combination space and calls the decider, so seconds
+ * pass with nothing to show. A button reading "Rebuilding..." is the same
+ * picture as a button that has hung, so this says what is happening and keeps
+ * the page from being clicked while it happens.
+ */
+.working {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: #0c000388;
+  backdrop-filter: blur(4px);
+  animation: page-in 180ms var(--ease) both;
+}
+.working-card {
+  width: min(100%, 380px);
+  padding: 26px 26px 22px;
+  border-radius: 14px;
+  text-align: center;
+  background: linear-gradient(145deg, #2a0d12, #3a141a);
+  border: 1px solid #ffffff1f;
+  box-shadow: 0 30px 70px #10000288;
+  color: #f7e9e4;
+}
+.working-card b {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+}
+.working-card p {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  opacity: 0.72;
+}
+
+/* Three dots, because a spinner implies a measurable fraction and this has
+   none to report. */
+.working-spin {
+  display: flex;
+  justify-content: center;
+  gap: 7px;
+  margin-bottom: 16px;
+}
+.working-spin i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #e8a79c;
+  animation: working-pulse 1.05s ease-in-out infinite;
+}
+.working-spin i:nth-child(2) {
+  animation-delay: 0.14s;
+}
+.working-spin i:nth-child(3) {
+  animation-delay: 0.28s;
+}
+@keyframes working-pulse {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-4px);
+  }
+}
+
+/* The "see all" link in the results heading. */
+.link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  opacity: 0.85;
+}
+.link:hover {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .working {
+    animation: none;
+  }
+  .working-spin i {
+    animation: none;
+    opacity: 0.8;
+  }
+}
