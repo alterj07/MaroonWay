@@ -11,7 +11,24 @@
  * make it staler.
  */
 
-const BACKEND_URL = process.env.BACKEND_URL ?? 'http://127.0.0.1:8000';
+/**
+ * Where the API lives.
+ *
+ * Accepts a bare hostname as well as a full URL, because Render's blueprint
+ * fills this in from the API service with `fromService`, which yields a host
+ * like `maroonway-api.onrender.com` and cannot prepend a scheme. A bare host
+ * is assumed to be https; only a local address is assumed to be http.
+ */
+function backendBase(): string {
+  const raw = (process.env.BACKEND_URL ?? 'http://127.0.0.1:8000').trim();
+  const withScheme = /^https?:\/\//.test(raw)
+    ? raw
+    : `${/^(localhost|127\.0\.0\.1|\[::1\])(:|$)/.test(raw) ? 'http' : 'https'}://${raw}`;
+  // A trailing slash would turn every path into a double slash.
+  return withScheme.replace(/\/+$/, '');
+}
+
+const BACKEND_URL = backendBase();
 
 export type Score = {
   rating_count: number;

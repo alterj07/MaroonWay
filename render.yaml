@@ -1,12 +1,59 @@
-# Render blueprint for the MaroonWay backend.
+# Render blueprint: the whole of MaroonWay, both halves.
 #
-# The repository root is the Next.js app, which deploys to Vercel; only
-# backend/ belongs here, hence rootDir. Apply it from the Render dashboard with
-# New > Blueprint, pointed at this repository.
+# Apply it from the dashboard with New > Blueprint, pointed at this repository.
+# It creates two services, because they are different kinds of thing:
 #
-# Every secret is marked sync: false, so Render prompts for it once and stores
-# it rather than reading it from this file. Nothing sensitive is committed.
+#   maroonway      the Next.js site (Node). What a student opens.
+#   maroonway-api  the FastAPI backend (Python). What it reads from.
+#
+# The site talks to the API server-side only, so the API needs no CORS and the
+# browser never sees its URL or tokens.
+#
+# Secrets marked `sync: false` are prompted for once and stored by Render;
+# nothing sensitive is committed here. `generateValue: true` lets Render invent
+# a secret, and `fromService` copies one service's value into the other -- which
+# is how INTERNAL_TOKEN stays identical on both sides without anyone pasting it
+# twice and getting it wrong.
 services:
+  # ---------------------------------------------------------------- frontend
+  - type: web
+    name: maroonway
+    runtime: node
+    plan: free
+    region: ohio
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      # NextAuth refuses to run in production without this, and the whole site
+      # 500s rather than degrading -- every page reads the session.
+      - key: NEXTAUTH_SECRET
+        generateValue: true
+      # Must be the service's own public URL: the state cookie is set on this
+      # host and Google returns to it, so a mismatch loses the cookie and every
+      # sign-in fails with "State cookie was missing".
+      - key: NEXTAUTH_URL
+        value: https://maroonway.onrender.com
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      # Render supplies the API's hostname; src/lib/api.ts adds the scheme.
+      - key: BACKEND_URL
+        fromService:
+          type: web
+          name: maroonway-api
+          property: host
+      # The same value the API generated, copied across. This is what proves a
+      # request carrying a student's identity came from the site.
+      - key: INTERNAL_TOKEN
+        fromService:
+          type: web
+          name: maroonway-api
+          envVarKey: INTERNAL_TOKEN
+
+  # ----------------------------------------------------------------- backend
   - type: web
     name: maroonway-api
     runtime: python
@@ -22,20 +69,17 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: "3.13.14"
-      # Supabase, via the session pooler (port 5432 on the pooler host). The
-      # scheme must be postgresql+asyncpg://, not postgresql://, or SQLAlchemy
-      # loads the synchronous driver and the app will not start.
+      # Supabase, via the session pooler. The scheme must be
+      # postgresql+asyncpg://, not postgresql://, or SQLAlchemy loads the
+      # synchronous driver and the service will not start.
       - key: DATABASE_URL
         sync: false
-      # Must match the value set on the Vercel frontend: it is what proves a
-      # request carrying a student's identity came from the frontend and not
-      # from someone calling this API directly.
       - key: INTERNAL_TOKEN
-        sync: false
+        generateValue: true
       - key: ADMIN_TOKEN
-        sync: false
+        generateValue: true
       - key: IMPORT_TOKEN
-        sync: false
+        generateValue: true
       - key: GEMINI_API_KEY
         sync: false
       - key: RMP_SCHOOL_ID
