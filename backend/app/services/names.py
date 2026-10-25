@@ -60,9 +60,13 @@ def name_tokens(raw: str | None) -> list[str]:
     while tokens and tokens[0] in TITLES:
         tokens.pop(0)
     tokens = [t for t in tokens if t not in SUFFIXES]
-    # Single letters are middle initials; one source has them, the other rarely does.
-    tokens = [t for t in tokens if len(t) > 1]
-    return tokens
+    # Single letters are usually middle initials, and one source has them while
+    # the other rarely does -- but A&M's grade reports write instructors as
+    # "RODRIGUEZ C", where that letter is the ONLY thing separating two
+    # different professors. So drop initials only when enough of the name
+    # survives without them.
+    words = [t for t in tokens if len(t) > 1]
+    return words if len(words) >= 2 else tokens
 
 
 def normalize_name(raw: str | None) -> str:
@@ -89,6 +93,45 @@ def similarity(left: str, right: str) -> float:
     from difflib import SequenceMatcher
 
     return SequenceMatcher(None, canonical_key(left), canonical_key(right)).ratio() * 100.0
+
+
+@dataclass(frozen=True, slots=True)
+class NameKey:
+    """A surname plus a first-name initial: the common ground between
+    ``"RODRIGUEZ C"`` (how A&M writes it) and ``"Christopher Rodriguez"``
+    (how RateMyProfessors does)."""
+
+    surname: str
+    initial: str | None
+
+    @property
+    def is_usable(self) -> bool:
+        return bool(self.surname and self.initial)
+
+
+def name_keys(raw: str | None) -> set[NameKey]:
+    """Every surname/initial reading of a name.
+
+    A two-word name with no comma is genuinely ambiguous -- ``"DOE JANE"`` could
+    be either order -- so both readings are returned and a match on either
+    counts.
+    """
+    tokens = name_tokens(raw)
+    words = [t for t in tokens if len(t) > 1]
+    letters = [t for t in tokens if len(t) == 1]
+    keys: set[NameKey] = set()
+
+    if words and letters:
+        # "RODRIGUEZ C": the word is the surname, the letter the initial.
+        keys.add(NameKey(words[-1], letters[0]))
+        if len(words) > 1:
+            keys.add(NameKey(words[0], letters[0]))
+    elif len(words) >= 2:
+        keys.add(NameKey(words[-1], words[0][0]))   # First Last
+        keys.add(NameKey(words[0], words[-1][0]))   # Last First
+    elif len(words) == 1:
+        keys.add(NameKey(words[0], None))
+    return keys
 
 
 @dataclass(frozen=True, slots=True)
@@ -129,6 +172,91 @@ def match_name(
         if score >= floor and (best is None or score > best.score):
             best = NameMatch(value, name, score, f"fuzzy:{_BACKEND}")
     return best
+
+
+@dataclass(frozen=True, slots=True)
+class MatchOutcome:
+    """The result of resolving one name, and the reason for it.
+
+    Ambiguity is reported rather than resolved: two professors who share a
+    surname and an initial cannot be told apart from the grade reports alone,
+    and guessing would silently attach the wrong ratings to a person.
+    """
+
+    match: NameMatch | None
+    reason: str  # exact | surname_initial | fuzzy | ambiguous | no_match
+    candidates: tuple[str, ...] = ()
+
+    @property
+    def matched(self) -> bool:
+        return self.match is not None
+
+
+def is_initial_form(raw: str | None) -> bool:
+    """True for ``"RODRIGUEZ C"``: a surname plus a bare initial.
+
+    This is how A&M's grade reports name instructors, and it is the only case
+    where matching on an initial is better evidence than matching on the names
+    themselves.
+    """
+    tokens = name_tokens(raw)
+    return any(len(t) == 1 for t in tokens) and any(len(t) > 1 for t in tokens)
+
+
+def resolve_name(
+    target: str,
+    candidates: Mapping[str, T],
+    *,
+    floor: float = DEFAULT_FLOOR,
+) -> MatchOutcome:
+    """Resolve ``target`` against ``candidates``, reporting how and why.
+
+    Each strategy is applied only where it is actually valid, and anything that
+    cannot be told apart comes back as ``ambiguous`` instead of a guess -- the
+    wrong professor's ratings on a course page is a worse outcome than a gap.
+    """
+    if not target or not candidates:
+        return MatchOutcome(None, "no_match")
+
+    wanted = canonical_key(target)
+    if wanted:
+        for name, value in candidates.items():
+            if canonical_key(name) == wanted:
+                return MatchOutcome(NameMatch(value, name, 100.0, "exact"), "exact")
+
+    if is_initial_form(target):
+        target_keys = {key for key in name_keys(target) if key.is_usable}
+        hits = [
+            (name, value)
+            for name, value in candidates.items()
+            if target_keys & {k for k in name_keys(name) if k.is_usable}
+        ]
+        if len(hits) == 1:
+            name, value = hits[0]
+            return MatchOutcome(
+                NameMatch(value, name, 95.0, "surname_initial"), "surname_initial"
+            )
+        if len(hits) > 1:
+            return MatchOutcome(None, "ambiguous", tuple(sorted(n for n, _ in hits)))
+        # A readable surname and initial matching nobody is an answer, not a
+        # gap. Falling through to fuzzy would let the shared surname alone
+        # attach "RODRIGUEZ A" to Christopher Rodriguez.
+        return MatchOutcome(None, "initial_mismatch")
+
+    scored = [
+        (similarity(target, name), name, value) for name, value in candidates.items()
+    ]
+    scored = [row for row in scored if row[0] >= floor]
+    if not scored:
+        return MatchOutcome(None, "no_match")
+
+    top = max(row[0] for row in scored)
+    leaders = [row for row in scored if row[0] == top]
+    if len(leaders) > 1:
+        return MatchOutcome(None, "ambiguous", tuple(sorted(name for _, name, _ in leaders)))
+
+    score, name, value = leaders[0]
+    return MatchOutcome(NameMatch(value, name, score, f"fuzzy:{_BACKEND}"), "fuzzy")
 
 
 def backend() -> str:
