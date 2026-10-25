@@ -799,7 +799,7 @@ function Landing({
             <i />
             <i />
           </div>
-          <span>Building your best week</span>
+          <span>Building your best week...</span>
           <div className="analysis-progress">
             <i />
           </div>
