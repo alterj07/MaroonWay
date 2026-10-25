@@ -249,17 +249,54 @@ export type ScheduleSection = {
 
 export type Schedule = {
   sections: ScheduleSection[];
+  /** 0-1 against the stated preferences; 0 when none were expressed. */
+  preference_score: number;
+  /** What earned this schedule its place. */
+  reasons: string[];
+  contributions: Contribution[];
   tightest_gap: number | null;
   mean_rating: number;
   mean_difficulty: number;
   mean_gpa: number | null;
+  /** Share of students who earned an A, 0-1. */
+  mean_pct_a: number | null;
   earliest_start: string | null;
   days_on_campus: number;
+};
+
+export type Preferences = {
+  rating: number;
+  difficulty: number;
+  grades: number;
+  workload: number;
+  lecture: number;
+  attendance: number;
+  avoid_early_mornings: number;
+  avoid_fridays: number;
+  delivery: string | null;
+  campus: string | null;
+  honors: boolean | null;
+  min_gap_minutes: number;
+  /** "jev-1.14" when Jev decided, "heuristic" for the keyword fallback, "default" when nothing was stated. */
+  engine: string;
+  low_confidence: string[];
+  stated: string | null;
+};
+
+export type Contribution = { name: string; weight: number; value: number; points: number };
+
+export type PreferenceAnswer = {
+  kind: string;
+  value: unknown;
+  confidence: number | null;
+  unit: number;
 };
 
 export type ScheduleRequest = {
   term: string;
   courses: string[];
+  /** What the student wants, in their own words. Jev turns it into weights. */
+  wants?: string | null;
   min_gap_minutes?: number;
   earliest?: string;
   latest?: string;
@@ -275,9 +312,33 @@ export type ScheduleResponse = {
   request: ScheduleRequest;
   count: number;
   schedules: Schedule[];
+  preferences: Preferences;
   /** Set when nothing could be built — says which constraint bit. */
   detail: string | null;
 };
+
+export type PreferenceResponse = {
+  preferences: Preferences;
+  answers: Record<string, PreferenceAnswer>;
+};
+
+/**
+ * Ask Jev what the student's words mean, without building anything — so the UI
+ * can show what was understood before committing to a schedule.
+ */
+export async function readPreferences(wants: string): Promise<PreferenceResponse> {
+  const response = await fetch(url('/schedule/preferences'), {
+    method: 'POST',
+    cache: 'no-store',
+    headers: { 'content-type': 'application/json', accept: 'application/json' },
+    body: JSON.stringify({ wants }),
+  });
+  if (!response.ok) {
+    const detail = await response.text().catch(() => '');
+    throw new ApiError(response.status, '/schedule/preferences', `${response.status}: ${detail}`);
+  }
+  return (await response.json()) as PreferenceResponse;
+}
 
 export type TermSummary = { term: string; sections: number; with_times: number };
 
@@ -298,4 +359,19 @@ export async function buildSchedules(request: ScheduleRequest): Promise<Schedule
     throw new ApiError(response.status, '/schedule', `${response.status}: ${detail}`);
   }
   return (await response.json()) as ScheduleResponse;
+}
+
+export type CourseOption = {
+  code: string;
+  dept: string;
+  number: string;
+  title: string | null;
+  sections: number;
+  instructors: number;
+  with_times: number;
+};
+
+/** Courses with sections this term, most choice first. */
+export function getCourseOptions(term: string, limit = 200): Promise<CourseOption[]> {
+  return get<CourseOption[]>('/schedule/courses', { term, limit });
 }
