@@ -7,6 +7,8 @@ minute short, an online section that cannot clash with anything.
 
 from __future__ import annotations
 
+from dataclasses import replace
+
 import pytest
 
 from app.services.scheduling import (
@@ -156,6 +158,38 @@ def test_an_online_section_cannot_clash_with_anything():
     assert online.is_online
     assert clash(online, section("CSCE121")) is None
     assert clash(online, section("MATH151", start="09:10", end="10:00")) is None
+
+
+@pytest.mark.parametrize("delivery", ["F2F", "HYBRID", None])
+def test_missing_times_are_not_evidence_that_a_section_is_online(delivery):
+    unknown = replace(section("CSCE121", delivery=delivery), meetings=())
+    assert not unknown.is_online
+    assert generate({"CSCE121": [unknown]}) == []
+    reason = describe_failure({"CSCE121": [unknown]})
+    assert "CSCE121" in reason and "meeting times" in reason
+
+
+def test_an_unknown_time_section_cannot_pair_with_a_different_campus():
+    unknown = replace(section("CSCE121", campus="GALV"), meetings=())
+    known = section("MATH151", campus="CSTAT")
+    assert clash(unknown, known) is not None
+    assert generate({"CSCE121": [unknown], "MATH151": [known]}) == []
+
+
+def test_a_known_time_alternative_is_used_instead_of_an_unknown_time_section():
+    unknown = replace(section("CSCE121", "500", rating=5.0), meetings=())
+    known = section("CSCE121", "501", rating=3.0)
+    results = generate({"CSCE121": [unknown, known]})
+    assert len(results) == 1
+    assert results[0].sections == (known,)
+
+
+def test_synchronous_online_meetings_still_obey_time_conflicts():
+    online = section("CSCE121", delivery="WEB", campus="GALV")
+    assert online.is_online
+    assert clash(online, section("MATH151", campus="CSTAT")) is not None
+    later = section("MATH151", start="10:30", end="11:20", campus="CSTAT")
+    assert clash(online, later) is None
 
 
 # --- generating ---------------------------------------------------------------

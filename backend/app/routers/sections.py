@@ -85,7 +85,7 @@ def to_parsed(section: Any) -> tuple[ParsedRow | None, str]:
             section_code=str(section.section).strip(),
             instructor=section.instructor,
             campus=normalize_campus(section.campus),
-            delivery=delivery or ("WEB" if not meetings else "F2F"),
+            delivery=delivery or ("F2F" if meetings else None),
             honors=bool(section.honors),
             seats=section.seats,
             seats_open=section.seats_open,

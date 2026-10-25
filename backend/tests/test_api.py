@@ -425,6 +425,27 @@ def test_terms_report_how_many_sections_carry_times(client):
     assert body == [{"term": "FALL 2026", "sections": 3, "with_times": 3}]
 
 
+@pytest.mark.parametrize("delivery", ["F2F", "HYBRID", None, "WEB"])
+def test_missing_meeting_times_are_only_schedulable_for_explicit_online_sections(client, monkeypatch, delivery):
+    async def sections_without_times(session, **kwargs):
+        return [{
+            "section_id": 1, "course_id": 1, "code": "CSCE121", "section_code": "501",
+            "term": "FALL 2026", "campus": "GALV", "delivery": delivery, "meets": [],
+        }]
+
+    monkeypatch.setattr(repository, "sections_for_courses", sections_without_times)
+    response = client.post("/schedule", json={"term": "FALL 2026", "courses": ["CSCE121"]})
+    assert response.status_code == 200
+    body = response.json()
+    if delivery == "WEB":
+        assert body["count"] == 1
+        assert body["schedules"][0]["sections"][0]["meetings"] == []
+    else:
+        assert body["count"] == 0
+        assert body["schedules"] == []
+        assert "meeting times" in body["detail"] and "CSCE121" in body["detail"]
+
+
 def test_a_schedule_is_built_and_honours_the_twenty_minute_gap(client):
     response = client.post(
         "/schedule",

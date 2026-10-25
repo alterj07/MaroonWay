@@ -103,8 +103,8 @@ class Meeting:
 def parse_meetings(raw: Any) -> tuple[Meeting, ...]:
     """Read the ``sections.meets`` JSONB into meetings, dropping unusable rows.
 
-    A section with no parseable meeting is not an error: online sections
-    legitimately have none, and they cannot clash with anything.
+    A section with no parseable meeting may be asynchronous online or may have
+    missing times. Its explicit delivery mode determines whether it is usable.
     """
     if not raw:
         return ()
@@ -155,8 +155,13 @@ class Section:
 
     @property
     def is_online(self) -> bool:
-        """No meetings is what makes a section unschedulable-against."""
-        return not self.meetings
+        """Explicitly remote; synchronous online classes can still have meetings."""
+        return self.delivery == "WEB"
+
+    @property
+    def is_schedulable(self) -> bool:
+        """Known meetings, or an explicitly online section with no fixed time."""
+        return bool(self.meetings) or self.is_online
 
     @property
     def days(self) -> tuple[str, ...]:
@@ -182,7 +187,7 @@ class Availability:
         return True
 
     def allows_section(self, section: Section) -> bool:
-        return all(self.allows(m) for m in section.meetings)
+        return section.is_schedulable and all(self.allows(m) for m in section.meetings)
 
 
 def gap_between(first: Meeting, second: Meeting) -> int | None:
@@ -198,11 +203,14 @@ def gap_between(first: Meeting, second: Meeting) -> int | None:
 
 def clash(left: Section, right: Section, min_gap: int = DEFAULT_MIN_GAP_MINUTES) -> str | None:
     """Why these two sections cannot both be taken, or ``None`` if they can."""
+    for section in (left, right):
+        if not section.is_schedulable:
+            return f"meeting times are missing for {section.code}; conflicts cannot be verified"
     # A&M teaches the same catalog numbers at College Station, Galveston and in
     # Qatar. Two in-person sections on different campuses are not a timetable
     # conflict but they are still impossible to attend, and no gap is long
-    # enough to bridge them. Online sections belong to no campus, so they pair
-    # with anything.
+    # enough to bridge them. Explicitly online sections require no campus
+    # travel, but any synchronous meetings must still pass the time checks.
     if (
         left.campus
         and right.campus
@@ -355,6 +363,8 @@ def describe_failure(
     for code, sections in sorted(candidates.items()):
         if not sections:
             return f"no sections on record for {code}"
+        if not any(s.is_schedulable for s in sections):
+            return f"meeting times are missing for {code}; conflicts cannot be verified"
         if not any(availability.allows_section(s) for s in sections):
             return f"every section of {code} falls outside your availability"
 
