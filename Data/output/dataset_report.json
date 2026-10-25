@@ -1,0 +1,20 @@
+{
+  "rows": 20386,
+  "matched_rows": 7328,
+  "campuses": {
+    "College Station": 18172,
+    "Galveston": 798,
+    "Qatar": 389,
+    "Unknown": 1027
+  },
+  "complete_review_rows": 7328,
+  "grade_issue_sections": 0,
+  "as_of": "2026-10-24",
+  "subject_filter": null,
+  "notes": [
+    "College Station is inferred from report unit, not verified section location.",
+    "Unknown-campus rows are retained but never automatically matched to RMP.",
+    "Roster and review timestamps describe cache freshness; complete means pagination completed.",
+    "Honors, section availability and campus-specific prerequisites are not verified."
+  ]
+}

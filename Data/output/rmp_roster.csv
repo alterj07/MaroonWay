@@ -1,0 +1,53 @@
+prof_id,name,first_name,last_name,department,school,avg_rating,avg_difficulty,num_ratings,would_take_again,school_id
+1913458,Christopher Lee,Christopher,Lee,Biology,Texas A&M University at College Station,4.1,3.5,285,79.7794,19496
+8292,James Pennington,James,Pennington,Chemistry,Texas A&M University at College Station,3.9,4.2,158,67.3913,19496
+1665133,Nene Coulibaly,Nene,Coulibaly,Mathematics,Texas A&M University at Corpus Christi,2.3,3.9,132,26.087,19496
+2548884,Michael Scialdone,Michael,Scialdone,Business,Texas A&M University at College Station,3.7,3.0,36,70.2703,19496
+3046723,elsa brown,elsa,brown,Mathematics,Texas A&M University at Kingsville,3.7,2.7,3,75.0,19496
+3165091,Ann Wehman,Ann,Wehman,Biochemistry,Texas A&M University at College Station,2.0,4.0,1,0.0,19496
+2590541,Alicia Altemose,Alicia,Altemose,Chemistry,Texas A&M University at College Station,2.8,4.0,338,36.6864,19496
+2467202,Pauline Wade,Pauline,Wade,Computer Science,Texas A&M University at College Station,1.5,3.4,95,10.4167,19496
+2893992,Jose Rico,Jose,Rico,Mathematics,Texas A&M International University,2.2,3.8,36,29.7297,19496
+2896173,Mayson Astle,Mayson,Astle,Psychology,Texas A&M University at College Station,4.7,2.1,33,94.1176,19496
+2698621,Jose Gutierrez,Jose,Gutierrez,History,Texas A&M International University,5.0,2.2,26,100.0,19496
+2453380,Max Menzies III,Max,Menzies III,Agriculture,Texas A&M University at College Station,4.5,3.2,23,87.5,19496
+1141996,Stephanie Payne,Stephanie,Payne,Psychology,Texas A&M University at College Station,3.0,3.8,21,60.0,19496
+3082939,Gargi  Sivaram,Gargi ,Sivaram,Biochemistry,Texas A&M University at College Station,4.2,4.1,16,70.5882,19496
+1039806,Heather Lench,Heather,Lench,Psychology & Sociology,Texas A&M University at College Station,3.9,2.3,14,81.8182,19496
+2586175,Ty Gadberry,Ty,Gadberry,Psychology,Texas A&M University at College Station,4.9,2.8,10,100.0,19496
+3163528,Giacomo Ferraro,Giacomo,Ferraro,Mathematics,Texas A&M,1.0,4.6,8,0.0,19496
+2773861,Troy Thompson,Troy,Thompson,Agricultural Economics,Texas A&M University at College Station,2.9,3.1,7,50.0,19496
+1977996,Sukho Lee,Sukho,Lee,Physical Education,Texas A&M University-San Antonio,5.0,2.4,7,85.7143,19496
+2972138,Scott Cummings,Scott,Cummings,Agriculture,Texas A&M University at College Station,5.0,1.8,6,100.0,19496
+3161299,Srijato Bhattacharyya,Srijato,Bhattacharyya,Mathematics,Texas A&M,5.0,1.0,1,100.0,19496
+3161299,Srijato Bhattacharyya,Srijato,Bhattacharyya,Mathematics,Texas A&M,5.0,1.0,1,100.0,19496
+1859046,Dwight Roblyer,Dwight,Roblyer,Political Science,Texas A&M University at College Station,3.8,3.0,740,64.0299,19496
+2177748,Michelle Pozzi,Michelle,Pozzi,Biochemistry,Texas A&M University at College Station,4.1,4.4,96,78.125,19496
+2221521,Ki Hwan Yum,Ki Hwan,Yum,Computer Science,Texas A&M University at College Station,1.9,4.1,84,18.8235,19496
+2595890,John Weeks,John,Weeks,Mathematics,Texas A&M University at College Station,4.6,2.7,66,88.0597,19496
+2219434,Mi Lu,Mi,Lu,Engineering,Texas A&M University at College Station,2.3,3.4,51,33.3333,19496
+1947777,Andrew Comech,Andrew,Comech,Mathematics,Texas A&M University at College Station,3.0,3.3,29,51.7241,19496
+1777921,Jennifer Smith-Engle,Jennifer,Smith-Engle,Environmental Science,Texas A&M University at Corpus Christi,4.1,2.6,28,86.9565,19496
+2300717,Ernesto Amaral,Ernesto,Amaral,Sociology,Texas A&M University at College Station,3.0,3.2,24,56.0,19496
+3086887,Steven Boll,Steven,Boll,Geology,Texas A&M University at College Station,5.0,1.7,23,100.0,19496
+3003849,Michael  Abd-Elmessih,Michael ,Abd-Elmessih,History,Texas A&M University at Kingsville,4.3,1.1,7,87.5,19496
+3155470,Bret Van Poppel,Bret,Van Poppel,Aerospace Engineering,Texas A&M University at College Station,5.0,3.0,6,100.0,19496
+3114651,Nate Perry,Nate,Perry,English,Texas A&M University at Corpus Christi,5.0,1.5,4,100.0,19496
+2608612,Kaitlyn Culliton,Kaitlyn,Culliton,English,Texas A&M International University,4.0,3.7,3,50.0,19496
+3118275,Hamidreza Moeiniasl,Hamidreza,Moeiniasl,English,Texas A&M- San antonio,3.0,3.5,2,50.0,19496
+3049500,Gary Brown,Gary,Brown,Law,Texas A&M University at College Station,5.0,1.0,2,100.0,19496
+3124046,Kelly Fouts,Kelly,Fouts,Communication,Texas A&M- San antonio,2.0,4.0,2,66.6667,19496
+2405331,Carl Aronson,Carl,Aronson,Chemistry,Texas A&M University at Galveston,1.7,4.6,155,17.9487,19496
+1600434,Mariya Vorobets,Mariya,Vorobets,Mathematics,Texas A&M University at College Station,3.6,3.3,132,75.2137,19496
+3041478,Shreyas Kumar,Shreyas,Kumar,Computer Science,Texas A&M University at College Station,5.0,2.3,120,98.3333,19496
+2723018,Larry Lemmons,Larry,Lemmons,Communication,Texas A&M University at College Station,3.7,1.6,68,69.1176,19496
+3035399,Amit Merchant,Amit,Merchant,Computer Science,Texas A&M University at College Station,4.9,2.4,56,96.4286,19496
+2416425,Justin Moscarello,Justin,Moscarello,Psychology,Texas A&M University at College Station,4.5,3.1,51,86.5385,19496
+2208704,James Grau,James,Grau,Psychology,Texas A&M University at College Station,3.5,4.1,48,61.2245,19496
+1168163,Brandi Kutil,Brandi,Kutil,Biology,Texas A&M University at Corpus Christi,3.9,2.3,29,76.1905,19496
+2526307,Bheemaiah Veena Narayanna Rao,Bheemaiah Veena Narayanna,Rao,Mathematics,Texas A&M University at Corpus Christi,3.7,3.2,25,64.0,19496
+2999605,Tung Nguyen,Tung,Nguyen,Computer Science,Texas A&M University at College Station,3.0,1.8,8,44.4444,19496
+3106893,Jeanne Goodman,Jeanne,Goodman,Art & Design,Texas A&M University at College Station,2.2,4.2,5,20.0,19496
+2812977,Ioana Pavel,Ioana,Pavel,Chemistry,Texas A&M University at Corpus Christi,4.3,3.8,4,80.0,19496
+2851118,Tyler Prochnow,Tyler,Prochnow,Health Science,Texas A&M University at College Station,4.7,2.0,3,100.0,19496
+3114659,Wanda Avila,Wanda,Avila,Music,Texas A&M University at Corpus Christi,5.0,1.3,3,100.0,19496
