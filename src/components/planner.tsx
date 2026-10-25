@@ -1049,27 +1049,7 @@ function Landing({
             </button>
           </div>
         </div>
-        <div className="quick-prefs">
-          <span>Try:</span>
-          {[
-            "No 8 AMs",
-            "Free Fridays",
-            "Shortest walks",
-            "Highest-rated professors",
-          ].map((p) => (
-            <button key={p} onClick={() => setPref(p)}>
-              {p}
-            </button>
-          ))}
-        </div>
       </section>
-      <footer className="minimal-footer">
-        <span>
-          <i /> Live TAMU course data
-        </span>
-        <small>Ratings · Grade distributions · Syllabi · Walking time</small>
-        <b>Built in Aggieland ♥</b>
-      </footer>
     </main>
   );
 }
