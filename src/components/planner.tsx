@@ -545,6 +545,7 @@ export function Planner({
     ),
     // Each of these backs a control that previously did nothing.
     [term, setTerm] = useState(terms[0] ?? ""),
+    [termOpen, setTermOpen] = useState(false),
     [addingCourse, setAddingCourse] = useState(false),
     // The course a student has asked to remove, pending confirmation.
     [confirmDrop, setConfirmDrop] = useState<string | null>(null),
@@ -685,35 +686,58 @@ export function Planner({
               Reset
             </button>
           </div>
-          <label className="term">
-            <span>
-              <CalendarDays size={17} />
-              <i>
-                <small>SEMESTER</small>
-                <b>{term || "No term loaded"}</b>
-              </i>
-            </span>
-            <ChevronDown size={16} />
-            {/* A real select over the terms that have sections. This was a
-                fixed string, so it could name a term the database had never
-                heard of. */}
-            <select
-              aria-label="Semester"
-              value={term}
+          {/*
+            A dropdown of our own rather than a <select>: the option list of a
+            native select is drawn by the operating system, so its white
+            background and blue highlight cannot be styled to match anything.
+          */}
+          <div className="term-picker">
+            <button
+              className="term"
+              aria-haspopup="listbox"
+              aria-expanded={termOpen}
               disabled={!terms.length}
-              onChange={(e) => {
-                setTerm(e.target.value);
-                void onSaveCourses(chosen, e.target.value);
-                void rebuild();
-              }}
+              onClick={() => setTermOpen((v) => !v)}
             >
-              {terms.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
-          </label>
+              <span>
+                <CalendarDays size={17} />
+                <i>
+                  <small>SEMESTER</small>
+                  <b>{term || "No term loaded"}</b>
+                </i>
+              </span>
+              <ChevronDown size={16} className={termOpen ? "flip" : ""} />
+            </button>
+            {termOpen ? (
+              <>
+                {/* Catches the click that dismisses the list, so it closes
+                    like any other menu rather than only on a second click of
+                    the button. */}
+                <div className="term-shade" onClick={() => setTermOpen(false)} />
+                <ul className="term-list" role="listbox" aria-label="Semester">
+                  {terms.map((t) => (
+                    <li key={t}>
+                      <button
+                        role="option"
+                        aria-selected={t === term}
+                        className={t === term ? "chosen" : ""}
+                        onClick={() => {
+                          setTermOpen(false);
+                          if (t === term) return;
+                          setTerm(t);
+                          void onSaveCourses(chosen, t);
+                          void rebuild();
+                        }}
+                      >
+                        {t}
+                        {t === term ? <Check size={14} /> : null}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            ) : null}
+          </div>
           <div className="label">
             <b>COURSES · {sidebarCredits} CREDITS</b>
             <button onClick={() => setAddingCourse((v) => !v)}>
