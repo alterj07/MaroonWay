@@ -365,21 +365,6 @@ export function Planner({ plans }: { plans: Plan[] }) {
           </div>
         </section>
       </div>
-      <footer className="sources">
-        <b>DATA SOURCES</b>
-        <span>
-          <Star /> Rate My Professors
-        </span>
-        <span>
-          <Building2 /> Aggie Schedule Builder
-        </span>
-        <span>
-          <BookOpen /> Course syllabi
-        </span>
-        <button>
-          <Info /> How scoring works
-        </button>
-      </footer>
     </main>
   );
 }
@@ -809,17 +794,12 @@ function Landing({
       {analyzing && (
         <div className="analysis-overlay">
           <div className="analysis-orbit">
-            <Sparkles size={22} />
+            <Bot size={22} />
             <i />
             <i />
             <i />
           </div>
-          <span>Building your best week</span>
-          <h2>Comparing every possible schedule…</h2>
-          <p>
-            Checking professors, grade distributions, exam weight, syllabi, and
-            walking time.
-          </p>
+          <span>Building your best work…</span>
           <div className="analysis-progress">
             <i />
           </div>
