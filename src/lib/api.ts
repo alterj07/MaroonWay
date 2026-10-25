@@ -186,11 +186,12 @@ function url(path: string, query?: Query) {
   return target.toString();
 }
 
-async function get<T>(path: string, query?: Query): Promise<T> {
+async function get<T>(path: string, query?: Query, signal?: AbortSignal): Promise<T> {
   const target = url(path, query);
   const response = await fetch(target, {
     cache: 'no-store',
     headers: { accept: 'application/json' },
+    signal,
   });
 
   if (!response.ok) {
@@ -245,8 +246,8 @@ export function getCourseInstructors(
   );
 }
 
-export function getHealth(): Promise<Health> {
-  return get<Health>('/healthz');
+export function getHealth(signal?: AbortSignal): Promise<Health> {
+  return get<Health>('/healthz', undefined, signal);
 }
 
 // --- scheduling --------------------------------------------------------------
@@ -547,10 +548,30 @@ export async function backendStatus(): Promise<{ ok: boolean; detail: string | n
         'deployed backend (for example https://maroonway-api.onrender.com).',
     };
   }
-  try {
-    const health = await getHealth();
-    return { ok: health.database === 'ok', detail: health.detail };
-  } catch (error) {
-    return { ok: false, detail: error instanceof Error ? error.message : String(error) };
+
+  // Two attempts, the second patient. A free Render instance sleeps after
+  // fifteen minutes idle and takes the better part of a minute to wake, so the
+  // first request after a quiet spell times out -- and a sleeping backend
+  // reported as an unavailable one sends you to check configuration that was
+  // never wrong. The first attempt keeps a warm instance fast; the second
+  // waits out a cold one.
+  const attempts: { timeout: number; note: string }[] = [
+    { timeout: 6000, note: 'warm' },
+    { timeout: 60000, note: 'cold start' },
+  ];
+
+  let lastDetail: string | null = null;
+  for (const attempt of attempts) {
+    try {
+      const health = await getHealth(AbortSignal.timeout(attempt.timeout));
+      return { ok: health.database === 'ok', detail: health.detail };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      lastDetail =
+        attempt.note === 'cold start'
+          ? `${message} (tried for 60s, long enough for a sleeping instance to wake)`
+          : message;
+    }
   }
+  return { ok: false, detail: lastDetail };
 }
