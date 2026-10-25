@@ -1061,8 +1061,8 @@
  */
 :root {
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
-  --t-hover: 150ms;
-  --t-page: 220ms;
+  --t-hover: 350ms;
+  --t-page: 420ms;
 }
 
 button,
@@ -1110,7 +1110,7 @@ a,
   transform: translateX(-24%);
   transition:
     opacity var(--t-hover) var(--ease),
-    transform 420ms var(--ease);
+    transform 620ms var(--ease);
   pointer-events: none;
 }
 .use:hover::after,
@@ -1135,7 +1135,7 @@ a,
 .gate-google:active,
 .confirm-go:active {
   transform: translateY(0);
-  transition-duration: 60ms;
+  transition-duration: 90ms;
 }
 
 /* Changing page swaps one <main> for another, so each arrival animates once.
