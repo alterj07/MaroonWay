@@ -198,6 +198,23 @@ def gap_between(first: Meeting, second: Meeting) -> int | None:
 
 def clash(left: Section, right: Section, min_gap: int = DEFAULT_MIN_GAP_MINUTES) -> str | None:
     """Why these two sections cannot both be taken, or ``None`` if they can."""
+    # A&M teaches the same catalog numbers at College Station, Galveston and in
+    # Qatar. Two in-person sections on different campuses are not a timetable
+    # conflict but they are still impossible to attend, and no gap is long
+    # enough to bridge them. Online sections belong to no campus, so they pair
+    # with anything.
+    if (
+        left.campus
+        and right.campus
+        and left.campus != right.campus
+        and not left.is_online
+        and not right.is_online
+    ):
+        return (
+            f"{left.code} is at {left.campus} and {right.code} is at "
+            f"{right.campus}; a student cannot attend both"
+        )
+
     for first in left.meetings:
         for second in right.meetings:
             gap = gap_between(first, second)

@@ -306,3 +306,52 @@ def test_the_failure_message_names_the_near_miss():
     )
     assert "closest any two of their sections come is 20 min" in message
     assert "less than the 90 min required" in message
+
+
+class TestCampusConflicts:
+    """A&M teaches the same numbers at three campuses."""
+
+    def _section(
+        self, code: str, campus: str | None, day: str, start: str, end: str
+    ) -> Section:
+        return Section(
+            section_id=abs(hash((code, campus, day, start))) % 100_000,
+            course_id=abs(hash(code)) % 1000,
+            code=code,
+            section_code="501",
+            term="FALL 2026",
+            campus=campus,
+            meetings=(Meeting(day=day, start=start, end=end),),
+        )
+
+    def test_different_campuses_cannot_both_be_attended(self) -> None:
+        here = self._section("ACCT229", "CSTAT", "MON", "09:00", "09:50")
+        away = self._section("ENGL104", "GALV", "WED", "13:00", "13:50")
+        reason = clash(here, away)
+        assert reason is not None
+        assert "CSTAT" in reason and "GALV" in reason
+
+    def test_same_campus_is_fine_when_the_times_work(self) -> None:
+        a = self._section("ACCT229", "CSTAT", "MON", "09:00", "09:50")
+        b = self._section("ENGL104", "CSTAT", "WED", "13:00", "13:50")
+        assert clash(a, b) is None
+
+    def test_an_online_section_pairs_with_any_campus(self) -> None:
+        """No meetings means no campus to travel to."""
+        online = Section(
+            section_id=1,
+            course_id=9,
+            code="ENGL104",
+            section_code="M99",
+            term="FALL 2026",
+            campus="GALV",
+            delivery="WEB",
+            meetings=(),
+        )
+        assert clash(self._section("ACCT229", "CSTAT", "MON", "09:00", "09:50"), online) is None
+
+    def test_an_unknown_campus_is_not_treated_as_a_conflict(self) -> None:
+        """Most rows have a campus now, but not all; absence is not evidence."""
+        known = self._section("ACCT229", "CSTAT", "MON", "09:00", "09:50")
+        unknown = self._section("ENGL104", None, "WED", "13:00", "13:50")
+        assert clash(known, unknown) is None
