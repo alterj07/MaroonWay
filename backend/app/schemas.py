@@ -342,6 +342,8 @@ class StudentPreferencesRequest(BaseModel):
     wants: str | None = Field(default=None, max_length=2000)
     weights: dict[str, Any] = {}
     engine: str | None = None
+    courses: list[str] = Field(default_factory=list, max_length=20)
+    term: str | None = None
 
 
 class StudentPreferencesOut(BaseModel):
@@ -350,6 +352,8 @@ class StudentPreferencesOut(BaseModel):
     wants: str | None = None
     weights: dict[str, Any] = {}
     engine: str | None = None
+    courses: list[str] = []
+    term: str | None = None
     updated_at: datetime | None = None
 
 

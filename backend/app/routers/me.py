@@ -94,7 +94,7 @@ async def read_preferences(student: StudentDep, session: SessionDep) -> dict[str
         await session.execute(
             text(
                 """
-                select wants, weights, engine, updated_at
+                select wants, weights, engine, courses, term, updated_at
                 from student_preferences
                 where student_id = cast(:id as bigint)
                 """
@@ -102,7 +102,7 @@ async def read_preferences(student: StudentDep, session: SessionDep) -> dict[str
             {"id": student["id"]},
         )
     ).mappings().first()
-    return dict(row) if row else {"wants": None, "weights": {}, "engine": None}
+    return dict(row) if row else {"wants": None, "weights": {}, "engine": None, "courses": []}
 
 
 @router.put("/preferences", response_model=StudentPreferencesOut)
@@ -111,20 +111,35 @@ async def write_preferences(
     student: StudentDep,
     session: SessionDep,
 ) -> dict[str, Any]:
-    """Remember what a student asked for, so they do not retype it."""
+    """Remember what a student asked for, so they do not retype it.
+
+    A partial update keeps what it does not mention: saving a course list from
+    the explorer must not erase the wants typed on the schedule page, and vice
+    versa.
+    """
     row = (
         await session.execute(
             text(
                 """
-                insert into student_preferences (student_id, wants, weights, engine, updated_at)
+                insert into student_preferences
+                    (student_id, wants, weights, engine, courses, term, updated_at)
                 values (cast(:id as bigint), cast(:wants as text),
-                        cast(:weights as jsonb), cast(:engine as text), now())
+                        cast(:weights as jsonb), cast(:engine as text),
+                        cast(:courses as jsonb), cast(:term as text), now())
                 on conflict (student_id) do update
-                    set wants = excluded.wants,
-                        weights = excluded.weights,
-                        engine = excluded.engine,
+                    set wants = coalesce(excluded.wants, student_preferences.wants),
+                        weights = case
+                            when excluded.weights = '{}'::jsonb then student_preferences.weights
+                            else excluded.weights
+                        end,
+                        engine = coalesce(excluded.engine, student_preferences.engine),
+                        courses = case
+                            when excluded.courses = '[]'::jsonb then student_preferences.courses
+                            else excluded.courses
+                        end,
+                        term = coalesce(excluded.term, student_preferences.term),
                         updated_at = now()
-                returning wants, weights, engine, updated_at
+                returning wants, weights, engine, courses, term, updated_at
                 """
             ),
             {
@@ -132,6 +147,8 @@ async def write_preferences(
                 "wants": request.wants,
                 "weights": json.dumps(request.weights),
                 "engine": request.engine,
+                "courses": json.dumps(request.courses),
+                "term": request.term,
             },
         )
     ).mappings().one()

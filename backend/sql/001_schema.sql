@@ -201,6 +201,10 @@ create table if not exists student_preferences (
     wants       text,
     weights     jsonb not null default '{}'::jsonb,
     engine      text,
+    -- The courses they are planning around, so the plan is still there next
+    -- time they sign in.
+    courses     jsonb not null default '[]'::jsonb,
+    term        text,
     updated_at  timestamptz not null default now()
 );
 

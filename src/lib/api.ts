@@ -385,6 +385,9 @@ export type StudentPreferences = {
   wants: string | null;
   weights: Record<string, unknown>;
   engine: string | null;
+  /** The courses they are planning around. */
+  courses: string[];
+  term: string | null;
   updated_at: string | null;
 };
 
@@ -429,9 +432,21 @@ export async function getStudentPreferences(
   }
 }
 
+/**
+ * Save part or all of a student's preferences.
+ *
+ * Partial: the backend keeps what is not mentioned, so saving a course list
+ * from the explorer will not erase wants typed on the schedule page.
+ */
 export function saveStudentPreferences(
   headers: Record<string, string>,
-  preferences: { wants?: string | null; weights?: Record<string, unknown>; engine?: string | null }
+  preferences: {
+    wants?: string | null;
+    weights?: Record<string, unknown>;
+    engine?: string | null;
+    courses?: string[];
+    term?: string | null;
+  }
 ): Promise<StudentPreferences> {
   return send<StudentPreferences>('/me/preferences', 'PUT', headers, preferences);
 }
@@ -445,4 +460,48 @@ export function saveSchedule(
   schedule: { term: string; label?: string | null; payload: Record<string, unknown> }
 ): Promise<SavedSchedule> {
   return send<SavedSchedule>('/me/schedules', 'POST', headers, schedule);
+}
+
+// --- the course explorer ------------------------------------------------------
+
+export type CourseProfessor = {
+  instructor_id: number | null;
+  name: string | null;
+  adj_rating: number | null;
+  adj_difficulty: number | null;
+  adj_gpa: number | null;
+  pct_a: number | null;
+  class_reviews: number;
+  professor_reviews: number;
+  sections: number;
+};
+
+export type ExploreCourse = {
+  course_id: number;
+  code: string;
+  dept: string;
+  number: string;
+  title: string | null;
+  credits: string | null;
+  honors: boolean;
+  prereq_text: string | null;
+  professor_count: number;
+  avg_rating: number | null;
+  avg_pct_a: number | null;
+  /** Everyone who has taught it, best rated first. */
+  professors: CourseProfessor[];
+};
+
+export function exploreCourses(q = '', limit = 60): Promise<ExploreCourse[]> {
+  return get<ExploreCourse[]>('/courses/explore', { q, limit });
+}
+
+/** Whether the backend can reach its database. Used to explain an empty page. */
+export async function backendStatus(): Promise<{ ok: boolean; detail: string | null }> {
+  try {
+    const health = await getHealth();
+    return { ok: health.database === 'ok', detail: health.detail };
+  } catch (error) {
+    return { ok: false, detail: error instanceof Error ? error.message : String(error) };
+  }
 }

@@ -414,3 +414,81 @@ async def courses_with_sections(
         )
     ).mappings().all()
     return [dict(row) for row in rows]
+
+
+_EXPLORE = text(
+    """
+    with ranked as (
+        select
+            c.id                        as course_id,
+            upper(c.dept || c.number)   as code,
+            c.dept, c.number, c.title, c.credits, c.honors, c.prereq_text,
+            i.id                        as instructor_id,
+            i.full_name                 as instructor_name,
+            ics.adj_rating, ics.adj_difficulty, ics.adj_gpa, ics.pct_a,
+            ics.class_rating_count, ics.instructor_rating_count, ics.section_count
+        from courses c
+        left join instructor_course_scores ics on ics.course_id = c.id
+        left join instructors i on i.id = ics.instructor_id
+        where (
+                cast(:q as text) = ''
+                -- Codes are stored compact ("CSCE121") and typed either way,
+                -- so the query loses its spaces for this comparison only.
+                or upper(c.dept || c.number) like
+                   upper('%' || replace(cast(:q as text), ' ', '') || '%')
+                or c.title ilike '%' || cast(:q as text) || '%'
+                or i.normalized_name ilike '%' || lower(cast(:q as text)) || '%'
+              )
+    )
+    select
+        course_id, code, dept, number, title, credits, honors, prereq_text,
+        count(instructor_id)                                      as professor_count,
+        avg(adj_rating)                                           as avg_rating,
+        avg(pct_a)                                                as avg_pct_a,
+        coalesce(
+            jsonb_agg(
+                jsonb_build_object(
+                    'instructor_id', instructor_id,
+                    'name', instructor_name,
+                    'adj_rating', adj_rating,
+                    'adj_difficulty', adj_difficulty,
+                    'adj_gpa', adj_gpa,
+                    'pct_a', pct_a,
+                    'class_reviews', class_rating_count,
+                    'professor_reviews', instructor_rating_count,
+                    'sections', section_count
+                )
+                order by adj_rating desc nulls last
+            ) filter (where instructor_id is not null),
+            '[]'::jsonb
+        )                                                         as professors
+    from ranked
+    group by course_id, code, dept, number, title, credits, honors, prereq_text
+    order by count(instructor_id) desc, code
+    limit cast(:limit as integer)
+    """
+)
+
+
+async def explore_courses(
+    session: AsyncSession,
+    *,
+    query: str = "",
+    limit: int = 60,
+    professors_per_course: int = 8,
+) -> list[dict[str, Any]]:
+    """Courses with every professor who has taught them, best rated first.
+
+    One query rather than one per card: the course explorer needs the
+    professors *on* the card, so a student can tell a good instructor from a
+    bad one without clicking through.
+    """
+    rows = (
+        await session.execute(_EXPLORE, {"q": (query or "").strip(), "limit": limit})
+    ).mappings().all()
+    courses = []
+    for row in rows:
+        course = dict(row)
+        course["professors"] = (course.get("professors") or [])[:professors_per_course]
+        courses.append(course)
+    return courses

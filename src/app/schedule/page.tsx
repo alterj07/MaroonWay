@@ -122,7 +122,7 @@ function Week({ schedule }: { schedule: Schedule }) {
     <div className="flex gap-2">
       {DAYS.map((day) => (
         <div key={day} className="flex-1">
-          <Text variant="caption" muted className="mb-1 text-center">
+          <Text muted className="mb-1 text-center text-sm font-semibold">
             {day}
           </Text>
           <div className="relative h-64 rounded-md border border-line bg-background">
@@ -135,7 +135,7 @@ function Week({ schedule }: { schedule: Schedule }) {
                   return (
                     <div
                       key={`${section.section_id}-${meeting.day}`}
-                      className={`absolute inset-x-1 overflow-hidden rounded px-1 py-0.5 text-[0.625rem] leading-tight text-white ${COLORS[index % COLORS.length]}`}
+                      className={`absolute inset-x-1 overflow-hidden rounded px-1 py-0.5 text-xs leading-tight text-white ${COLORS[index % COLORS.length]}`}
                       style={{ top: `${top}%`, height: `${Math.max(height, 7)}%` }}
                       title={`${section.code} · ${section.instructor_name ?? 'staff'} · ${meeting.start}–${meeting.end}`}>
                       <span className="font-semibold">{section.code}</span>
@@ -166,11 +166,11 @@ function SectionRow({ section }: { section: ScheduleSection }) {
         <Text as="span" className="font-semibold">
           {section.code}
         </Text>{' '}
-        <Text as="span" muted variant="caption">
+        <Text as="span" muted className="text-sm">
           sec {section.section_code} · {section.instructor_name ?? 'staff'}
         </Text>
       </div>
-      <Text as="span" variant="caption" muted>
+      <Text as="span" muted className="text-sm">
         {when} {where} ·{' '}
         {section.adj_rating === null ? 'unrated' : `rating ${section.adj_rating.toFixed(2)}`}
         {section.adj_difficulty === null ? '' : ` · difficulty ${section.adj_difficulty.toFixed(2)}`}
@@ -266,7 +266,7 @@ export default async function SchedulePage({
                   </Text>
                 ) : null}
               </Text>
-              <Text variant="caption" muted>
+              <Text muted className="text-sm">
                 {schedule.preference_score > 0
                   ? `${Math.round(schedule.preference_score * 100)}% match · `
                   : ''}

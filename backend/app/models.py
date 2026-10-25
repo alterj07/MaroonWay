@@ -243,6 +243,8 @@ student_preferences = Table(
     Column("wants", Text),
     Column("weights", JSONB, nullable=False, server_default="{}"),
     Column("engine", Text),
+    Column("courses", JSONB, nullable=False, server_default="[]"),
+    Column("term", Text),
     Column("updated_at", DateTime(timezone=True), server_default=func.now()),
 )
 

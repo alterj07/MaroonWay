@@ -23,6 +23,30 @@ CachesDep = Annotated[CacheRegistry, Depends(get_caches)]
 SettingsDep = Annotated[Settings, Depends(get_settings)]
 
 
+@router.get("/explore")
+async def explore(
+    response: Response,
+    session: SessionDep,
+    caches: CachesDep,
+    q: str = Query("", max_length=120, description="Course code, title or professor name"),
+    limit: int = Query(60, ge=1, le=200),
+) -> list[dict[str, Any]]:
+    """Courses for the explorer, each carrying its professors.
+
+    The professors travel with the course because that is what the card shows:
+    a student comparing CSCE 121 sections is really comparing instructors.
+    """
+    await ensure_fresh(session, caches)
+    key = caches.key("explore", caches.digest({"q": q.strip().lower(), "limit": limit}))
+
+    async def factory() -> list[dict[str, Any]]:
+        return await repository.explore_courses(session, query=q, limit=limit)
+
+    payload = await caches.search.get_or_compute(key, factory)
+    stamp(response)
+    return payload
+
+
 @router.get("/{dept}/{number}/instructors", response_model=list[CourseInstructorOut])
 async def course_instructors(
     dept: str,
