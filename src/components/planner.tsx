@@ -91,8 +91,10 @@ function Mini({ courses }: { courses: Course[] }) {
   return (
     <div className="mini">
       <i />
-      {days.map((d) => (
-        <b key={d}>{d[0]}</b>
+      {days.map((d, i) => (
+        <b key={d} style={{ gridColumn: i + 2 }}>
+          {d[0]}
+        </b>
       ))}
       {courses.flatMap((c, i) =>
         c.days.map((d) => (
@@ -117,7 +119,11 @@ function Calendar({ plan }: { plan: Plan }) {
       <div className="cal">
         <i />
         {days.map((d, i) => (
-          <header key={d} className={i === 4 ? "off" : ""}>
+          <header
+            key={d}
+            className={i === 4 ? "off" : ""}
+            style={{ gridColumn: i + 2 }}
+          >
             <small>{d}</small>
             <b>{26 + i}</b>
           </header>
