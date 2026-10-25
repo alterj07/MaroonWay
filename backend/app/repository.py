@@ -464,8 +464,11 @@ _EXPLORE = text(
         -- a student can only attend one of them.
         mode() within group (order by campus)                      as campus,
         count(instructor_id)                                      as professor_count,
-        avg(adj_rating)                                           as avg_rating,
-        avg(pct_a)                                                as avg_pct_a,
+        -- Cast to float8: avg() over numeric returns numeric, which arrives in
+        -- JSON as a *string* while every other score on this payload is a
+        -- number. The explorer called .toFixed() on it and the page died.
+        avg(adj_rating)::float8                                   as avg_rating,
+        avg(pct_a)::float8                                        as avg_pct_a,
         coalesce(
             jsonb_agg(
                 jsonb_build_object(

@@ -583,11 +583,12 @@ function AppHeader({
 }
 
 /** Rating bands, so a card shows at a glance who is worth taking. */
-function band(rating: number | null) {
-  if (rating === null) return "prof-unrated";
-  if (rating >= 4.2) return "prof-great";
-  if (rating >= 3.6) return "prof-good";
-  if (rating >= 3.0) return "prof-mixed";
+function band(rating: number | string | null) {
+  const value = num(rating);
+  if (value === null) return "prof-unrated";
+  if (value >= 4.2) return "prof-great";
+  if (value >= 3.6) return "prof-good";
+  if (value >= 3.0) return "prof-mixed";
   return "prof-poor";
 }
 
@@ -631,9 +632,26 @@ const CAMPUS_NAMES: Record<string, string> = {
   BLINN: "Blinn",
 };
 
-const pct = (v: number | null) =>
-  v === null ? "—" : `${Math.round(v * 100)}%`;
-const score = (v: number | null) => (v === null ? "—" : v.toFixed(2));
+/**
+ * Scores arrive as numbers, except where Postgres computed them with avg(),
+ * which returns numeric and serialises as a string. One of those reaching
+ * .toFixed() took the whole explorer down with "v.toFixed is not a function",
+ * so these coerce rather than trust the declared type.
+ */
+function num(v: number | string | null | undefined): number | null {
+  if (v === null || v === undefined || v === "") return null;
+  const n = typeof v === "number" ? v : Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+const pct = (v: number | string | null) => {
+  const n = num(v);
+  return n === null ? "—" : `${Math.round(n * 100)}%`;
+};
+const score = (v: number | string | null) => {
+  const n = num(v);
+  return n === null ? "—" : n.toFixed(2);
+};
 
 /**
  * The professors who teach a course, named on the card itself.
