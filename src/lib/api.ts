@@ -20,7 +20,19 @@
  * is assumed to be https; only a local address is assumed to be http.
  */
 function backendBase(): string {
-  const raw = (process.env.BACKEND_URL ?? 'http://127.0.0.1:8000').trim();
+  const configured = (process.env.BACKEND_URL ?? '').trim();
+
+  // A localhost default is right on a laptop and actively misleading on a
+  // server: nothing listens on 127.0.0.1 inside a Render container, so an
+  // unset BACKEND_URL surfaced as "could not reach 127.0.0.1:8000" -- an
+  // error about the wrong machine, which reads as the app falling back to
+  // localhost rather than as a variable nobody set.
+  if (!configured) {
+    if (process.env.NODE_ENV === 'production') return '';
+    return 'http://127.0.0.1:8000';
+  }
+
+  const raw = configured;
   const withScheme = /^https?:\/\//.test(raw)
     ? raw
     : `${/^(localhost|127\.0\.0\.1|\[::1\])(:|$)/.test(raw) ? 'http' : 'https'}://${raw}`;
@@ -527,6 +539,14 @@ export function exploreCourses(q = '', limit = 60): Promise<ExploreCourse[]> {
 
 /** Whether the backend can reach its database. Used to explain an empty page. */
 export async function backendStatus(): Promise<{ ok: boolean; detail: string | null }> {
+  if (!BACKEND_URL) {
+    return {
+      ok: false,
+      detail:
+        'BACKEND_URL is not set, so there is no API to read from. Point it at the ' +
+        'deployed backend (for example https://maroonway-api.onrender.com).',
+    };
+  }
   try {
     const health = await getHealth();
     return { ok: health.database === 'ok', detail: health.detail };
