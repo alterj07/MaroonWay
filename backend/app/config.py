@@ -1,9 +1,31 @@
 """Settings, read once from the environment (and a local .env) at startup."""
 
+import re
 from functools import lru_cache
 
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+def _check_pooler_user(url: str) -> None:
+    """Supabase's pooler wants ``postgres.<project-ref>``, not ``postgres``.
+
+    Connecting to the pooler as plain ``postgres`` fails with "password
+    authentication failed", which sends people to check a password that was
+    never wrong. The project reference is the subdomain of the project URL.
+    """
+    match = re.match(r"^[a-z+]+://([^:/@]+):[^@]*@([^:/]+)", url)
+    if not match:
+        return
+    user, host = match.group(1), match.group(2)
+    if "pooler.supabase.com" in host and "." not in user:
+        raise ValueError(
+            f"DATABASE_URL connects to Supabase's pooler as {user!r}, which always "
+            "fails authentication. The pooler wants the user "
+            f"'{user}.<project-ref>', where the reference is the subdomain of your "
+            "project URL. Copying the Session pooler string from Supabase gives "
+            "you this already."
+        )
 
 
 class Settings(BaseSettings):
@@ -35,8 +57,11 @@ class Settings(BaseSettings):
 
         scheme = url.split("://", 1)[0].lower() if "://" in url else ""
         if scheme in {"postgres", "postgresql"}:
-            return "postgresql+asyncpg://" + url.split("://", 1)[1]
+            rewritten = "postgresql+asyncpg://" + url.split("://", 1)[1]
+            _check_pooler_user(rewritten)
+            return rewritten
         if scheme.startswith("postgresql+"):
+            _check_pooler_user(url)
             return url
         if scheme in {"http", "https"}:
             raise ValueError(

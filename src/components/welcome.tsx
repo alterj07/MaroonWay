@@ -26,9 +26,19 @@ const SIGN_IN_ERRORS: Record<string, string> = {
 };
 
 export function Welcome({ error }: { error?: string }) {
-  const problem = error
-    ? (SIGN_IN_ERRORS[error] ?? 'Something went wrong signing in. Try again below.')
-    : null;
+  // Without Google credentials NextAuth cannot build an authorization URL at
+  // all: the button renders, the click fails, and the error comes back as
+  // OAuthSignin -- "Google could not be reached", which blames Google for a
+  // variable nobody set. Server component, so reading this never reaches the
+  // browser.
+  const configured = Boolean(
+    process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET,
+  );
+  const problem = !configured
+    ? 'Sign-in is not configured on this deployment yet: GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are not set.'
+    : error
+      ? (SIGN_IN_ERRORS[error] ?? 'Something went wrong signing in. Try again below.')
+      : null;
 
   return (
     <main className="gate">
@@ -54,7 +64,7 @@ export function Welcome({ error }: { error?: string }) {
             </p>
           ) : null}
 
-          <GoogleButton callbackUrl="/" />
+          {configured ? <GoogleButton callbackUrl="/" /> : null}
 
           <small className="gate-note">
             Your <strong>@tamu.edu</strong> account only. This is not your Howdy
