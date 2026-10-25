@@ -28,6 +28,7 @@ import argparse
 import asyncio
 import csv
 import logging
+from collections import Counter
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -42,7 +43,7 @@ from app.config import get_settings
 from app.ingest.common import bump_data_version, configure_logging, session_scope
 from app.models import name_links, rmp_professors, rmp_ratings
 from app.services import rmp as rmp_service
-from app.services.names import DEFAULT_FLOOR, backend, match_name, normalize_name
+from app.services.names import DEFAULT_FLOOR, backend, normalize_name, resolve_name
 from app.services.throttle import TokenBucket
 
 log = logging.getLogger("ingest.rmp")
@@ -110,6 +111,7 @@ _NEEDS_DETAIL = text(
 
 @dataclass(slots=True)
 class Stats:
+    reasons: Counter = field(default_factory=Counter)
     listed: int = 0
     aggregates_written: int = 0
     linked: int = 0
@@ -124,6 +126,8 @@ class Stats:
             f"listed={self.listed} aggregates={self.aggregates_written} linked={self.linked}"
             f" details={self.details_fetched}/{self.detail_candidates} ratings={self.ratings}"
             f" failed={self.failed} unmatched={len(self.unmatched)}"
+            + (f" [{' '.join(f'{k}={v}' for k, v in sorted(self.reasons.items()))}]"
+               if self.reasons else "")
         )
 
 
@@ -185,25 +189,50 @@ async def _link_names(
     floor: float,
     stats: Stats,
 ) -> None:
-    """Attach RMP professors to CSV instructor rows where we can tell who is who."""
+    """Attach CSV instructors to RMP professors.
+
+    The direction matters. The CSV name is the target and the roster holds the
+    candidates, because the CSV is what carries "SCHUMACHER C" -- so the
+    surname-plus-initial strategy applies and a disagreeing initial can veto a
+    match. Run the other way round, with the RMP full name as the target, that
+    strategy never fires and fuzzy matching links "SCHUMACHER C" to "Jay
+    Schumacher" at 91%, "PLUNKETT E" to "Brandi Plunkett", and
+    "DHARMASENA K" to "Senarath Dharmasena".
+    """
+    roster = {record.full_name: record for record in records if record.full_name}
     candidates = await _instructor_candidates(session)
-    log.info("%d CSV instructors need an RMP id", len(candidates))
-    if not candidates:
+    # instructors.rmp_id is unique, and a professor the pipeline load already
+    # linked can still match a different unlinked name here.
+    taken = {
+        int(row[0])
+        for row in (
+            await session.execute(
+                text("select rmp_id from instructors where rmp_id is not null")
+            )
+        ).all()
+    }
+    log.info(
+        "%d CSV instructors need an RMP id; roster of %d; %d professors already claimed",
+        len(candidates),
+        len(roster),
+        len(taken),
+    )
+    if not candidates or not roster:
         return
 
-    # Most-rated first: when two professors could claim the same CSV name, the
-    # one students actually reviewed is the better bet.
-    for record in sorted(records, key=lambda r: r.num_ratings, reverse=True):
-        name = record.full_name
-        if not name or not candidates:
-            continue
-        hit = match_name(name, candidates, floor=floor)
-        if hit is None:
-            if record.num_ratings > 0:
-                stats.unmatched.append((name, str(record.rmp_id)))
+    for name, instructor_id in sorted(candidates.items()):
+        outcome = resolve_name(name, roster, floor=floor)
+        stats.reasons[outcome.reason] += 1
+        if outcome.match is None:
+            stats.unmatched.append((name, outcome.reason))
             continue
 
-        instructor_id = int(hit.value)
+        record = outcome.match.value
+        if record.rmp_id in taken:
+            stats.reasons["already_claimed"] += 1
+            stats.unmatched.append((name, "already_claimed"))
+            continue
+
         await session.execute(
             text(
                 """
@@ -217,23 +246,24 @@ async def _link_names(
             {
                 "rmp_id": record.rmp_id,
                 "department": record.department,
-                "instructor_id": instructor_id,
+                "instructor_id": int(instructor_id),
             },
         )
         await session.execute(
             _NAME_LINK_UPSERT,
             {
-                "source": "rmp",
+                "source": "grades_csv",
                 "source_name": name,
                 "normalized_name": normalize_name(name),
-                "instructor_id": instructor_id,
+                "instructor_id": int(instructor_id),
                 "rmp_id": record.rmp_id,
-                "method": hit.method,
-                "confidence": round(hit.score, 2),
+                "method": outcome.match.method,
+                "confidence": round(float(outcome.match.score), 2),
             },
         )
-        candidates.pop(hit.matched_name, None)
+        taken.add(record.rmp_id)
         stats.linked += 1
+    await session.commit()
 
 
 def _write_unmatched(stats: Stats) -> None:
@@ -242,10 +272,10 @@ def _write_unmatched(stats: Stats) -> None:
     UNMATCHED_PATH.parent.mkdir(parents=True, exist_ok=True)
     with UNMATCHED_PATH.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.writer(handle)
-        writer.writerow(["rmp_name", "rmp_id"])
+        writer.writerow(["csv_instructor_name", "reason"])
         writer.writerows(sorted(stats.unmatched))
     log.warning(
-        "%d rated RMP professors matched no CSV instructor -> %s",
+        "%d CSV instructors matched no RMP professor -> %s",
         len(stats.unmatched),
         UNMATCHED_PATH,
     )
@@ -326,10 +356,18 @@ async def load(
     records: list[rmp_service.ProfessorRecord] = []
     if not skip_listing:
         log.info("listing professors for school %s", school_id)
-        records = await rmp_service.fetch_all_professors(school_id)
+        records = await rmp_service.fetch_school_roster(school_id)
         stats.listed = len(records)
         rated = sum(1 for r in records if r.num_ratings > 0)
         log.info("listing returned %d professors, %d of them rated", stats.listed, rated)
+        # If the search ever loses its school scoping again, say so loudly
+        # rather than linking A&M instructors to professors elsewhere.
+        off_school = {r.school_id for r in records if r.school_id} - {str(school_id)}
+        if off_school:
+            raise SystemExit(
+                f"listing returned professors from other schools ({sorted(off_school)[:5]}); "
+                "refusing to match against it"
+            )
 
     if dry_run:
         for record in records[:5]:

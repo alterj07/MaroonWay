@@ -299,6 +299,12 @@ def normalize_professor(raw: Any) -> ProfessorRecord | None:
         school_id = school.get("legacyId") or school.get("id")
     elif school is not None:
         school_id = _pick(school, "legacyId", "id")
+    if school_id is not None:
+        # Always the legacy number as a string. The roster query returns the
+        # school's base64 node id while the per-professor one returns legacyId,
+        # and rows from the two have to be comparable.
+        numeric = _as_int(school_id) or decode_node_id(school_id)
+        school_id = str(numeric) if numeric is not None else str(school_id)
 
     raw_ratings = _pick(raw, "ratings", "reviews", default=[]) or []
     if isinstance(raw_ratings, dict):  # {"edges": [{"node": {...}}]}
@@ -317,7 +323,7 @@ def normalize_professor(raw: Any) -> ProfessorRecord | None:
         first_name=(str(v).strip() if (v := _pick(raw, "firstName", "first_name")) else None),
         last_name=(str(v).strip() if (v := _pick(raw, "lastName", "last_name")) else None),
         department=(str(v).strip() if (v := _pick(raw, "department", "departmentName")) else None),
-        school_id=str(school_id) if school_id is not None else None,
+        school_id=school_id,
         avg_rating=avg_rating,
         avg_difficulty=avg_difficulty,
         num_ratings=num_ratings,
@@ -359,6 +365,90 @@ async def fetch_all_professors(school_id: str) -> list[ProfessorRecord]:
     raw = await asyncio.to_thread(_api().fetch_all_professors_from_a_school, school_id)
     records = (normalize_professor(entry) for entry in (raw or []))
     return [record for record in records if record is not None]
+
+
+def school_node_id(school_id: int | str) -> str:
+    """``1003`` -> ``"U2Nob29sLTEwMDM="``.
+
+    GraphQL node ids are base64 of ``<Type>-<legacyId>``, confirmed against the
+    pipeline's own cache, where school 1003 is stored under exactly this key.
+    """
+    return base64.b64encode(f"School-{int(school_id)}".encode()).decode()
+
+
+async def fetch_school_roster(
+    school_id: int | str,
+    *,
+    client: httpx.AsyncClient | None = None,
+    page_size: int = 500,
+    max_pages: int = 80,
+    timeout: float = DEFAULT_TIMEOUT,
+) -> list[ProfessorRecord]:
+    """Every professor at one school, paginated, aggregates only.
+
+    The package's own ``fetch_all_professors_from_a_school`` derives the school's
+    node id by downloading an HTML page and regexing ``window.__RELAY_STORE__``
+    out of it. RateMyProfessors now answers that with 403, and the package
+    swallows the failure: ``schoolID`` becomes None, its query carries
+    ``fallback: True``, and the search quietly returns professors from *every*
+    school -- capped at 10,000 and useless for matching.
+
+    So the node id is computed here instead, which keeps the search scoped and
+    needs no HTML scrape. The package's query string and gist parser are still
+    used, so its schema knowledge is not duplicated.
+    """
+    from RateMyProfessor_Database_APIs import helper_classes, helper_queries
+
+    _, headers = _graphql_bits()
+    headers["Referer"] = (
+        f"https://www.ratemyprofessors.com/search/professors/{school_id}?q=*"
+    )
+    query_string = helper_queries.fetch_professors_single_page_query_string
+    node = school_node_id(school_id)
+
+    records: list[ProfessorRecord] = []
+    cursor: str | None = None
+    owned = client is None
+    http = client or httpx.AsyncClient(timeout=timeout)
+    try:
+        for _ in range(max_pages):
+            payload = {
+                "query": query_string,
+                "variables": {
+                    "count": page_size,
+                    "cursor": cursor,
+                    "query": {
+                        "text": "",
+                        "schoolID": node,
+                        # Off deliberately: with a real schoolID, a fallback can
+                        # only widen the search beyond the school we asked for.
+                        "fallback": False,
+                        "departmentID": None,
+                    },
+                },
+            }
+            response = await http.post(GRAPHQL_ENDPOINT, json=payload, headers=headers)
+            response.raise_for_status()
+            teachers = (response.json().get("data") or {}).get("search", {}).get("teachers")
+            if not teachers:
+                break
+            for edge in teachers.get("edges") or []:
+                node_payload = edge.get("node") if isinstance(edge, dict) else None
+                if not node_payload:
+                    continue
+                record = normalize_professor(
+                    helper_classes.parse_professor_gist(node_payload)
+                )
+                if record is not None:
+                    records.append(record)
+            page_info = teachers.get("pageInfo") or {}
+            if not page_info.get("hasNextPage"):
+                break
+            cursor = page_info.get("endCursor")
+    finally:
+        if owned:
+            await http.aclose()
+    return records
 
 
 async def fetch_professor_by_node_id(

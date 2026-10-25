@@ -181,3 +181,28 @@ def test_raw_payload_is_kept_for_fields_the_scraper_adds_later():
     assert record is not None
     assert record.raw["lock_status"] == "unlocked"
     assert record.ratings[0].raw["flagStatus"] == "UNFLAGGED"
+
+
+def test_school_node_id_round_trips():
+    """Confirmed against the pipeline's own cache, which stores school 1003
+    under exactly this key."""
+    from app.services.rmp import school_node_id
+
+    assert school_node_id(1003) == "U2Nob29sLTEwMDM="
+    assert decode_node_id(school_node_id(1006)) == 1006
+
+
+def test_school_id_normalises_whichever_form_the_query_returns():
+    """The roster query returns the school's node id, the per-professor query
+    returns its legacyId. Rows from both have to be comparable."""
+    from_roster = normalize_professor(
+        {"legacyId": 1, "firstName": "A", "lastName": "B",
+         "school": {"id": "U2Nob29sLTEwMDM=", "name": "Texas A&M University"}}
+    )
+    from_detail = normalize_professor(
+        {"legacyId": 2, "firstName": "C", "lastName": "D",
+         "school": {"legacyId": 1003, "id": "U2Nob29sLTEwMDM=", "name": "Texas A&M"}}
+    )
+
+    assert from_roster is not None and from_detail is not None
+    assert from_roster.school_id == from_detail.school_id == "1003"

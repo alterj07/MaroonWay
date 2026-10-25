@@ -46,6 +46,10 @@ BATCH_SIZE = 1_000
 #: The review JSON blobs are large; the default field limit rejects them.
 CSV_FIELD_LIMIT = 10_000_000
 PIPELINE_MATCHED = "matched_name_department"
+#: RateMyProfessors school ids per campus, as build_dataset.py records them.
+#: Stored on each professor so the rows say which school they belong to -- a
+#: roster fetch that loses its scoping can then be cleaned up by school.
+CAMPUS_SCHOOL_IDS = {"college station": "1003", "galveston": "1006"}
 
 _professor_insert = pg_insert(rmp_professors)
 _PROFESSOR_UPSERT = _professor_insert.on_conflict_do_update(
@@ -210,7 +214,7 @@ def extract(path: Path, *, limit: int | None, stats: Stats) -> Extract:
                 "last_name": last,
                 "full_name": name,
                 "department": _text(row.get("departments")),
-                "school_id": None,
+                "school_id": CAMPUS_SCHOOL_IDS.get((_text(row.get("campus")) or "").lower()),
                 "avg_rating": _float(row.get("rmp_rating")),
                 "avg_difficulty": _float(row.get("rmp_difficulty")),
                 "num_ratings": _int(row.get("rmp_review_count")) or 0,
