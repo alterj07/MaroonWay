@@ -71,6 +71,9 @@ export function toPlan(schedule: Schedule, index: number): Plan {
 export function emptyPlan(title: string, detail: string): Plan[] {
   return [
     {
+      // Marks this as a failure rather than a schedule, so the planner says so
+      // instead of rendering an empty week with dashes for every metric.
+      failed: detail,
       id: 1,
       name: title,
       subtitle: detail,

@@ -13,7 +13,23 @@ import { GoogleButton } from '@/components/google-button';
  * the API is asleep still gets a working screen instead of an error, which
  * matters on a free host that spins down when idle.
  */
-export function Welcome() {
+/** What NextAuth's `?error=` codes actually mean to a student. */
+const SIGN_IN_ERRORS: Record<string, string> = {
+  OAuthCallback:
+    'That sign-in attempt expired before it finished. Try again — this usually works on the second go.',
+  OAuthSignin: 'Google could not be reached. Try again in a moment.',
+  AccessDenied:
+    'That account is not a tamu.edu account. Sign in with your Texas A&M Google account.',
+  Verification: 'That sign-in link has already been used. Start again below.',
+  Configuration:
+    'Sign-in is not configured on this server yet. If this is your deployment, check NEXTAUTH_SECRET and the Google credentials.',
+};
+
+export function Welcome({ error }: { error?: string }) {
+  const problem = error
+    ? (SIGN_IN_ERRORS[error] ?? 'Something went wrong signing in. Try again below.')
+    : null;
+
   return (
     <main className="gate">
       <div className="gate-inner">
@@ -31,6 +47,12 @@ export function Welcome() {
             tell us what a good week looks like, and get schedules ranked by the
             professors and grade data behind them.
           </p>
+
+          {problem ? (
+            <p className="gate-error" role="alert">
+              {problem}
+            </p>
+          ) : null}
 
           <GoogleButton callbackUrl="/" />
 

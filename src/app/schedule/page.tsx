@@ -31,7 +31,19 @@ function minutes(clock: string) {
 }
 
 /** The form. A plain GET form, so it works without client JavaScript. */
-function Ask({ courses, wants, term }: { courses: string; wants: string; term?: string }) {
+function Ask({
+  courses,
+  wants,
+  term,
+  suggestion,
+}: {
+  courses: string;
+  wants: string;
+  term?: string;
+  /** Real courses from this term, so the hint cannot name ones that are not
+   *  offered -- the old literal outlived the data it was written against. */
+  suggestion: string;
+}) {
   return (
     <form method="get" className="flex flex-col gap-3 rounded-card border border-line bg-surface p-6">
       {term ? <input type="hidden" name="term" value={term} /> : null}
@@ -42,7 +54,7 @@ function Ask({ courses, wants, term }: { courses: string; wants: string; term?: 
         <input
           name="courses"
           defaultValue={courses}
-          placeholder="BIOL100, CHEM107, ANTH205"
+          placeholder={suggestion}
           className="rounded-md border border-line bg-background px-3 py-2 text-base"
         />
       </label>
@@ -185,7 +197,13 @@ function SectionRow({ section }: { section: ScheduleSection }) {
 export default async function SchedulePage({
   searchParams,
 }: {
-  searchParams: Promise<{ courses?: string; term?: string; wants?: string; gap?: string }>;
+  searchParams: Promise<{
+    courses?: string;
+    term?: string;
+    wants?: string;
+    gap?: string;
+    error?: string;
+  }>;
 }) {
   await connection();
   const params = await searchParams;
@@ -193,7 +211,7 @@ export default async function SchedulePage({
   // Same gate as the planner: a schedule is built from a student's own courses
   // and saved against their account, so there is nothing to build anonymously.
   const student = await currentStudent();
-  if (!student) return <Welcome />;
+  if (!student) return <Welcome error={params.error} />;
 
   // Their saved courses and wants prefill the form, so they do not retype them.
   // Anything in the query string wins, since that is this visit's intent.
@@ -264,7 +282,12 @@ export default async function SchedulePage({
 
       <SignIn />
 
-      <Ask courses={rawCourses} wants={wants} term={params.term} />
+      <Ask
+        courses={rawCourses}
+        wants={wants}
+        term={params.term}
+        suggestion={fallback.join(', ') || 'e.g. ENGL203, KINE199'}
+      />
 
       {result?.preferences ? <Understood preferences={result.preferences} /> : null}
 

@@ -4,6 +4,7 @@
 import { useMemo, useState } from "react";
 import { PlusIcon, SearchIcon } from "@animateicons/react/lucide";
 import {
+  AlertTriangle,
   ArrowRight,
   BookOpen,
   Bot,
@@ -69,6 +70,8 @@ export type ExploreCourse = {
 };
 
 export type Plan = {
+  /** Why no schedule could be built. Set means this is not a schedule at all. */
+  failed?: string;
   id: number;
   name: string;
   subtitle: string;
@@ -113,6 +116,54 @@ function Mini({ courses }: { courses: Course[] }) {
     </div>
   );
 }
+/**
+ * Why there is no schedule, stated plainly.
+ *
+ * This used to render as a schedule card -- an empty week, dashes for every
+ * metric, a "Use this schedule" button and a blurb claiming strong professor
+ * ratings -- for a result that does not exist. A student reading that cannot
+ * tell a missing course from a timetable clash, and the one thing they need,
+ * the reason, was a line of small grey text.
+ */
+function ScheduleProblem({ reason }: { reason: string }) {
+  const missing = reason.match(/no sections on record for ([A-Z]+ ?\d+[A-Z]?)/i);
+  return (
+    <div className="problem">
+      <span className="problem-mark">
+        <AlertTriangle size={20} />
+      </span>
+      <h2>No schedule could be built</h2>
+      <p>{reason}</p>
+      {missing ? (
+        <ul className="problem-help">
+          <li>
+            <b>{missing[1]}</b> has no sections in this term. It may not be
+            offered, or the term may not be loaded yet.
+          </li>
+          <li>Check the course number, or remove it and build again.</li>
+        </ul>
+      ) : (
+        <ul className="problem-help">
+          <li>Loosen a preference, or allow a tighter gap between classes.</li>
+          <li>Remove one course and build again to see which one conflicts.</li>
+        </ul>
+      )}
+    </div>
+  );
+}
+
+/**
+ * An hour mark for the calendar's left gutter.
+ *
+ * Not time(): "8:00 AM" wrapped in the 48px column and its second line landed
+ * on the next hour's label. The minutes on an hour mark are always :00, so
+ * they were only ever noise.
+ */
+function hourLabel(h: number) {
+  const hour = h > 12 ? h - 12 : h;
+  return `${hour} ${h >= 12 ? "PM" : "AM"}`;
+}
+
 function Calendar({ plan }: { plan: Plan }) {
   return (
     <div className="cal-scroll">
@@ -130,7 +181,7 @@ function Calendar({ plan }: { plan: Plan }) {
         ))}
         {hours.map((h) => (
           <label key={h} style={{ gridRow: h - 6 }}>
-            {time(h)}
+            {hourLabel(h)}
           </label>
         ))}
         {days.map((_, d) => (
@@ -188,6 +239,8 @@ export function Planner({
   onBuildPlans: (codes: string[], wants: string) => Promise<Plan[]>;
 }) {
   const [plans, setPlans] = useState<Plan[]>(initialPlans);
+  // A failure arrives as one marked plan, not as a list of schedules.
+  const failed = plans.length === 1 && Boolean(plans[0].failed);
   // What the student actually asked for, so the builder's sidebar lists their
   // courses rather than the ones in the landing illustration.
   const [chosen, setChosen] = useState<string[]>(savedCourses);
@@ -369,15 +422,21 @@ export function Planner({
         <section className="results">
           <div className="result-title">
             <span>
-              <small>TOP RECOMMENDATIONS</small>
-              <h2>3 schedules built for you</h2>
+              <small>{failed ? "RESULT" : "TOP RECOMMENDATIONS"}</small>
+              <h2>
+                {failed
+                  ? "No schedules"
+                  : `${plans.length} schedule${plans.length === 1 ? "" : "s"} built for you`}
+              </h2>
             </span>
-            <button>
-              <SlidersHorizontal size={14} /> Compare
-            </button>
+            {failed ? null : (
+              <button>
+                <SlidersHorizontal size={14} /> Compare
+              </button>
+            )}
           </div>
           <div className="cards">
-            {plans.map((p, i) => (
+            {(failed ? [] : plans).map((p, i) => (
               <button
                 key={p.id}
                 onClick={() => setActive(p.id)}
@@ -410,6 +469,10 @@ export function Planner({
             ))}
           </div>
           <div className="detail">
+            {plan.failed ? (
+              <ScheduleProblem reason={plan.failed} />
+            ) : (
+              <>
             <div className="detail-head">
               <span>
                 <em>
@@ -461,6 +524,8 @@ export function Planner({
                 View full analysis <ArrowRight size={13} />
               </button>
             </div>
+              </>
+            )}
           </div>
         </section>
       </div>

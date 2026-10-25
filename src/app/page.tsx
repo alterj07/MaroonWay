@@ -23,14 +23,20 @@ import { currentStudent, studentHeaders } from '@/lib/session';
  * rather than claiming no schedule fits — which is a different problem with a
  * different fix.
  */
-export default async function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  // A Promise in this version of Next; `error` arrives here when NextAuth
+  // bounces a failed sign-in back to the gate.
+  searchParams: Promise<{ error?: string }>;
+}) {
   const student = await currentStudent();
 
   // The gate comes first, and before the backend is touched. Everything here
   // is per-student, so there is nothing to show an anonymous visitor -- and
   // asking the API for a catalogue nobody will see would make a signed-out
   // visitor wait on a cold start for a screen that needs no data.
-  if (!student) return <Welcome />;
+  if (!student) return <Welcome error={(await searchParams).error} />;
 
   const status = await backendStatus();
 

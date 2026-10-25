@@ -249,3 +249,75 @@
     transition: none;
   }
 }
+
+/* ---- when no schedule could be built ---- */
+
+.problem {
+  padding: 30px 26px 34px;
+  text-align: left;
+}
+.problem-mark {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  background: #b4303018;
+  color: #c75a5a;
+}
+.problem h2 {
+  margin: 0 0 7px;
+  font-size: 1.3rem;
+  letter-spacing: -0.02em;
+}
+.problem > p {
+  margin: 0 0 18px;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  opacity: 0.86;
+}
+.problem-help {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 9px;
+  max-width: 62ch;
+}
+.problem-help li {
+  position: relative;
+  padding-left: 18px;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  opacity: 0.74;
+}
+.problem-help li:before {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 8px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.55;
+}
+.problem-help b {
+  font-weight: 700;
+  opacity: 1;
+}
+
+.gate-error {
+  display: flex;
+  gap: 9px;
+  width: min(100%, 360px);
+  margin: 0 0 14px;
+  padding: 11px 13px;
+  border-radius: 10px;
+  border: 1px solid #e59b9b40;
+  background: #b4303024;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: #ffd9d2;
+}

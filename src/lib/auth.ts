@@ -50,5 +50,9 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
   },
-  pages: { error: '/' },
+  // Both land on our own gate. Left to NextAuth they render its default page,
+  // which answers a dropped state cookie with "Try signing in with a different
+  // account." -- advice that cannot work, since the account was never the
+  // problem.
+  pages: { signIn: '/', error: '/' },
 };
