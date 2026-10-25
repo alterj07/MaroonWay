@@ -43,7 +43,9 @@ export default async function ProfessorPage({ params }: { params: Promise<{ id: 
   const instructorSummary = professor.summaries.find((s) => s.subject_type === 'instructor');
 
   return (
-    <>
+    // The root layout renders a bare <body>, so this page carries its own
+    // centred column.
+    <main className="mx-auto flex w-full max-w-page flex-col gap-10 px-6 py-10">
       <section className="flex flex-col gap-2">
         <Text variant="eyebrow" className="text-primary">
           {professor.department ?? 'Department unknown'}
@@ -139,6 +141,6 @@ export default async function ProfessorPage({ params }: { params: Promise<{ id: 
           </Card>
         ))}
       </section>
-    </>
+    </main>
   );
 }
