@@ -60,16 +60,23 @@ def add_minutes(clock: str, minutes: int) -> str:
 
 async def build(*, term: str, out: Path, courses: int, per_course: int) -> int:
     async with session_scope() as session:
-        rows = (await session.execute(_CANDIDATES, {"limit": courses * per_course * 3})).mappings().all()
+        rows = (
+        await session.execute(_CANDIDATES, {"limit": courses * per_course * 40})
+    ).mappings().all()
 
-    by_course: dict[tuple[str, str], list[dict]] = {}
+    # Group every candidate by course, then keep the courses that actually have
+    # several instructors -- those are the ones where a student has a choice,
+    # which is the whole point of ranking.
+    grouped: dict[tuple[str, str], list[dict]] = {}
     for row in rows:
-        key = (row["dept"], row["number"])
-        if len(by_course.setdefault(key, [])) < per_course:
-            by_course[key].append(dict(row))
-        if len(by_course) >= courses and all(len(v) >= 1 for v in by_course.values()):
-            if sum(len(v) for v in by_course.values()) >= courses * per_course:
-                break
+        grouped.setdefault((row["dept"], row["number"]), []).append(dict(row))
+
+    richest = sorted(grouped.items(), key=lambda kv: len(kv[1]), reverse=True)
+    by_course = {
+        key: teachers[:per_course]
+        for key, teachers in richest[:courses]
+        if len(teachers) >= 2
+    }
 
     out.parent.mkdir(parents=True, exist_ok=True)
     written = 0
@@ -82,9 +89,11 @@ async def build(*, term: str, out: Path, courses: int, per_course: int) -> int:
         )
         for index, ((dept, number), teachers) in enumerate(sorted(by_course.items())):
             for offset, teacher in enumerate(teachers):
-                pattern = "MWF" if (index + offset) % 3 != 2 else "TR"
+                pattern = "MWF" if offset % 3 != 2 else "TR"
                 slots = MWF_SLOTS if pattern == "MWF" else TR_SLOTS
-                start = slots[(index * 2 + offset) % len(slots)]
+                # offset drives the slot, so the sections of one course sit at
+                # genuinely different times rather than all at 08:00.
+                start = slots[(offset * 2 + index) % len(slots)]
                 end = add_minutes(start, 50 if pattern == "MWF" else 75)
                 writer.writerow(
                     [
