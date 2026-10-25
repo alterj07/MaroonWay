@@ -49,26 +49,41 @@ Interactive docs are at `/docs`.
 
 ## Loading data
 
+The source of truth is the project's own pipeline output, on the `data` branch.
+No scraping is needed: it already carries matched professors, their aggregates,
+and the review text.
+
 ```bash
-# 1. Look at the CSV before trusting any mapping (read-only).
-python -m app.ingest.profile_csv /path/to/grades.csv
+# Catalog: titles, credits, descriptions, prerequisites.
+python -m app.ingest.load_catalog   ../Data/courses.csv              #  5,262 courses
 
-# 2. Load it. --dry-run parses and reports without writing.
-python -m app.ingest.load_grades /path/to/grades.csv --dry-run
-python -m app.ingest.load_grades /path/to/grades.csv
+# Grades: one row per section per term.
+python -m app.ingest.load_grades    ../Data/output/sections_all.csv  # 83,926 rows
 
-# 3. RateMyProfessors: listing is cheap, comments are not. Smoke first.
-python -m app.ingest.load_rmp --dry-run
-python -m app.ingest.load_rmp --detail-limit 20
+# RateMyProfessors: aggregates, review text, and professor matching.
+python -m app.ingest.load_rmp_dataset ../Data/output/schedule_dataset.csv
 
-# 4. Summaries. Read the prompts and the token estimate before spending quota.
+# Summaries. Read the prompts and the token estimate before spending quota.
 python -m app.ingest.run_summaries --limit 5 --dry-run
 python -m app.ingest.run_summaries --limit 5
 ```
 
-If a column does not map in step 1, add it to `OVERRIDES` in
-`app/ingest/columns.py` — that is the only file that needs to know the CSV's
-header spellings.
+Every loader takes `--dry-run` (parse and report, write nothing) and `--limit`.
+
+Before trusting a new file, profile it — read-only, and it reports which of our
+fields mapped, what it could not place, and whether the file carries meeting
+times:
+
+```bash
+python -m app.ingest.profile_csv ../Data/output/sections_all.csv
+```
+
+If a column does not map, add it to `OVERRIDES` in `app/ingest/columns.py` —
+the only file that needs to know a CSV's header spellings.
+
+`app/ingest/load_rmp.py` is the scraper path, now only useful for refreshing
+data the pipeline has not collected (notably professors missing from its
+1,985-professor roster).
 
 Every ingest job bumps `data_version`, which is part of every cache key, so a
 running server picks up new data within 30 seconds without a restart.
@@ -148,5 +163,13 @@ scratch database, **never at Supabase**.
   roughly 10-30 requests per minute, so summaries are a resumable batch job with
   a token bucket and backoff, never an in-request call. `GEMINI_MODEL` is an env
   var because those model names keep moving.
-- **`RMP_SCHOOL_ID` must be verified by hand.** Open Texas A&M on
-  ratemyprofessors.com and read the number after `/school/`. Blinn is separate.
+- **`RMP_SCHOOL_ID` is 19496** (A&M College Station), per the pipeline's
+  `rmp_roster.csv`. Blinn College is a separate school id.
+- **Meeting times do not exist in any source yet.** Every CSV on the data
+  branch was checked: no days, times, building or room columns anywhere. The
+  20-minute-gap scheduler needs a term schedule-of-classes feed, which is a
+  different thing from the course catalog.
+- **Professor matching is roster-limited, not matcher-limited.** 1,919 of 5,548
+  instructors link to RateMyProfessors. Of the rest, most fail because the
+  professor is absent from the pipeline's roster, not because the names could
+  not be matched.
