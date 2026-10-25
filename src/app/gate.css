@@ -1062,7 +1062,12 @@
 :root {
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
   --t-hover: 350ms;
-  --t-page: 420ms;
+  --t-page: 920ms;
+  /* The page change gets its own curve: almost all of the movement happens
+     early and then eases out for a long tail, which is what reads as smooth
+     over nearly a second. The hover curve over that distance would feel slack
+     in the middle. */
+  --ease-page: cubic-bezier(0.16, 0.84, 0.3, 1);
 }
 
 button,
@@ -1144,7 +1149,12 @@ a,
 @keyframes page-in {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(10px);
+  }
+  /* Readable well before the movement finishes: a near-second fade would
+     otherwise leave the page dim for most of it. */
+  60% {
+    opacity: 1;
   }
   to {
     opacity: 1;
@@ -1154,7 +1164,7 @@ a,
 .app-page,
 .inner-page,
 .minimal-home {
-  animation: page-in var(--t-page) var(--ease) both;
+  animation: page-in var(--t-page) var(--ease-page) both;
 }
 
 @media (prefers-reduced-motion: reduce) {
