@@ -9,7 +9,7 @@ import "./picker.css";
 import "./uniform.css";
 
 export const metadata: Metadata = {
-  title: "Maroonway | Build a Better TAMU Schedule",
+  title: "MaroonWay | Build a Better TAMU Schedule",
   description: "AI-powered course schedule recommendations for Texas A&M students.",
   icons: {
     icon: "/favicon.svg",
