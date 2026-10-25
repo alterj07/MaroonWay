@@ -92,8 +92,9 @@ async def engine(monkeypatch):
     async with engine.begin() as conn:
         await conn.exec_driver_sql("drop schema if exists public cascade")
         await conn.exec_driver_sql("create schema public")
-        for name in ("001_schema.sql", "002_indexes.sql"):
-            for statement in split_sql((SQL_DIR / name).read_text()):
+        # Apply every numbered migration in order, including later additions.
+        for path in sorted(SQL_DIR.glob("[0-9][0-9][0-9]_*.sql")):
+            for statement in split_sql(path.read_text()):
                 await conn.exec_driver_sql(statement)
     try:
         yield engine
