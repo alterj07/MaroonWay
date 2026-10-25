@@ -219,3 +219,83 @@ export function getCourseInstructors(
 export function getHealth(): Promise<Health> {
   return get<Health>('/healthz');
 }
+
+// --- scheduling --------------------------------------------------------------
+
+export type Meeting = {
+  day: string;
+  start: string;
+  end: string;
+  building: string | null;
+  room: string | null;
+};
+
+export type ScheduleSection = {
+  section_id: number;
+  course_id: number;
+  code: string;
+  section_code: string;
+  instructor_id: number | null;
+  instructor_name: string | null;
+  campus: string | null;
+  delivery: string | null;
+  honors: boolean;
+  seats_open: number | null;
+  meetings: Meeting[];
+  adj_rating: number | null;
+  adj_difficulty: number | null;
+  adj_gpa: number | null;
+};
+
+export type Schedule = {
+  sections: ScheduleSection[];
+  tightest_gap: number | null;
+  mean_rating: number;
+  mean_difficulty: number;
+  mean_gpa: number | null;
+  earliest_start: string | null;
+  days_on_campus: number;
+};
+
+export type ScheduleRequest = {
+  term: string;
+  courses: string[];
+  min_gap_minutes?: number;
+  earliest?: string;
+  latest?: string;
+  excluded_days?: string[];
+  campus?: string;
+  honors?: boolean;
+  delivery?: string;
+  open_only?: boolean;
+  limit?: number;
+};
+
+export type ScheduleResponse = {
+  request: ScheduleRequest;
+  count: number;
+  schedules: Schedule[];
+  /** Set when nothing could be built — says which constraint bit. */
+  detail: string | null;
+};
+
+export type TermSummary = { term: string; sections: number; with_times: number };
+
+/** Terms that have sections loaded. `with_times` is what the scheduler needs. */
+export function getTerms(): Promise<TermSummary[]> {
+  return get<TermSummary[]>('/schedule/terms');
+}
+
+export async function buildSchedules(request: ScheduleRequest): Promise<ScheduleResponse> {
+  const response = await fetch(url('/schedule'), {
+    method: 'POST',
+    cache: 'no-store',
+    headers: { 'content-type': 'application/json', accept: 'application/json' },
+    body: JSON.stringify(request),
+  });
+  if (!response.ok) {
+    const detail = await response.text().catch(() => '');
+    throw new ApiError(response.status, '/schedule', `${response.status}: ${detail}`);
+  }
+  return (await response.json()) as ScheduleResponse;
+}

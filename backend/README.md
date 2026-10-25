@@ -63,6 +63,15 @@ python -m app.ingest.load_grades    ../Data/output/sections_all.csv  # 83,926 ro
 # RateMyProfessors: aggregates, review text, and professor matching.
 python -m app.ingest.load_rmp_dataset ../Data/output/schedule_dataset.csv
 
+# The full RMP roster, which is what professor coverage actually depends on.
+python -m app.ingest.load_rmp --school-id 1003 --detail-limit 0
+
+# Sections - the meeting times the scheduler needs. Until a real export exists,
+# generate a demo term from real courses and instructors (invented times, and
+# the term is labelled DEMO so it cannot be mistaken for the registrar's).
+python -m app.ingest.make_demo_sections
+python -m app.ingest.load_sections out/demo_sections.csv
+
 # Summaries. Read the prompts and the token estimate before spending quota.
 python -m app.ingest.run_summaries --limit 5 --dry-run
 python -m app.ingest.run_summaries --limit 5
@@ -117,6 +126,27 @@ means two independent caches and roughly half the hit rate — still correct, ju
 slower. Moving to Redis later means reimplementing `TTLCache` behind the same
 methods; no router changes.
 
+## Scheduling
+
+`app/services/scheduling.py`, behind `POST /schedule`. The planning doc's one
+REQUIRED rule is the minimum gap between classes: **20 minutes by default,
+raisable by the student**. A class that ends exactly when the next begins is a
+conflict, because the student still has to walk; 19 minutes is a conflict;
+exactly 20 is allowed; an online section has no meetings and cannot clash with
+anything.
+
+Schedules are ranked by the doc's rule — RMP score first, then difficulty — and
+when nothing fits, the response's `detail` names the near miss ("the closest
+any two of their sections come is 20 min, less than the 90 min required"), so
+the UI can say which constraint to relax.
+
+**Meeting times are the one thing no source has.** A&M closed its public course
+API in 2023 and the replacement requires a student login: `compass-ssb` answers
+403, the Banner 9 paths 404, and Howdy and College Scheduler redirect to auth.
+So `/schedule` runs against whatever `load_sections.py` is given. Until that is
+a real export, `make_demo_sections` builds a term from real courses, real
+instructors and real ratings with invented times, labelled `DEMO <term>`.
+
 ## Scoring
 
 `app/scoring.py` and the `instructor_scores` / `instructor_course_scores` views.
@@ -167,11 +197,11 @@ scratch database, **never at Supabase**.
   pipeline's RMP cache, where `school.legacyId` is 1003 and `school.id` decodes
   to "School-1003". Galveston is 1006. The 19496 in `rmp_roster.csv` is not the
   id the API takes. Blinn College is a separate school.
-- **Meeting times do not exist in any source yet.** Every CSV on the data
-  branch was checked: no days, times, building or room columns anywhere. The
-  20-minute-gap scheduler needs a term schedule-of-classes feed, which is a
-  different thing from the course catalog.
-- **Professor matching is roster-limited, not matcher-limited.** 1,919 of 5,548
-  instructors link to RateMyProfessors. Of the rest, most fail because the
-  professor is absent from the pipeline's roster, not because the names could
-  not be matched.
+- **Meeting times do not exist in any source yet**, and cannot be scraped: see
+  Scheduling above. The scheduler, its tests and its loader are all in place;
+  they need a sections export from an authenticated session.
+- **Professor matching depends on the roster.** With only the pipeline's 1,985
+  professors, 1,919 of 5,548 instructors linked. Fetching the school's full
+  6,022-professor roster took that to 3,127 (56%). Matching runs with the CSV
+  name as the target, since that is the side carrying "RODRIGUEZ C"; run the
+  other way round, fuzzy matching attaches it to the wrong Rodriguez.
