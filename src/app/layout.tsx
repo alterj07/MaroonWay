@@ -6,6 +6,7 @@ import "./pages.css";
 import "./continuity.css";
 import "./loading.css";
 import "./picker.css";
+import "./uniform.css";
 
 export const metadata: Metadata = {
   title: "Maroonway | Build a Better TAMU Schedule",
