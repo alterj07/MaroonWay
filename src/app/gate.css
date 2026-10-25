@@ -1322,18 +1322,50 @@ a,
  * would make them indistinguishable at a glance, which is the only moment
  * either is read.
  */
+/*
+ * Both marks sat at the block's own 9px text size, which is fine for a label
+ * you are already reading and useless for one you are meant to notice. They
+ * are their own size now, with a target big enough to hover without aiming.
+ */
 .mark-thin,
 .mark-alt {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  margin-left: 4px;
+  padding: 0 2px;
+  border-radius: 5px;
   font-style: normal;
-  font-weight: 700;
-  margin-left: 3px;
+  vertical-align: middle;
   cursor: help;
 }
+
+/* A thin rating: a full-size asterisk, raised so it reads as a mark on the
+   code rather than punctuation in it. */
 .mark-thin {
-  color: #ffd98a;
+  font-size: 1.05rem;
+  font-weight: 800;
+  line-height: 1;
+  padding-top: 5px;
+  color: #ffce6b;
+  background: #ffce6b26;
+  text-shadow: 0 1px 2px #00000055;
 }
+
+/* Several instructors in one slot: an information icon, since it is a note
+   about the choice rather than a warning about the data. */
 .mark-alt {
-  color: #bcd8ff;
+  color: #cfe4ff;
+  background: #9ec7ff26;
+}
+.mark-thin:hover,
+.mark-alt:hover {
+  background: #ffffff38;
+}
+.mark-alt svg {
+  display: block;
 }
 
 .hover-warn {
@@ -1502,4 +1534,22 @@ a,
 .chip-drop:hover {
   opacity: 1;
   background: #ffffff1a;
+}
+
+/* The legend in the hover card, matching the marks on the block. */
+.hover-warn {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+}
+.hover-warn svg {
+  flex: none;
+  margin-top: 1px;
+  color: #cfe4ff;
+}
+.warn-star {
+  flex: none;
+  color: #ffce6b;
+  font-size: 0.875rem;
+  line-height: 0.8;
 }

@@ -216,15 +216,18 @@ function CourseHover({ course }: { course: Course }) {
       <span className="hover-prof">{course.prof}</span>
       {(course.reviews ?? 0) < THIN_EVIDENCE ? (
         <span className="hover-warn">
-          * Only {course.reviews ?? 0} reviews — a weak signal, and the rating
-          has been pulled toward the average because of it.
+          <b className="warn-star">*</b>{" "}
+          {(course.reviews ?? 0) === 0
+            ? "No ratings for this one — nothing to go on, so treat the numbers above as unknown rather than average."
+            : `Only ${course.reviews} review${course.reviews === 1 ? "" : "s"} — a weak signal, and the rating has been pulled toward the average because of it.`}
         </span>
       ) : null}
       {(course.sameTimeAlternatives ?? 0) > 0 ? (
         <span className="hover-warn">
-          † {course.sameTimeAlternatives} other instructor
+          <Info size={12} /> {course.sameTimeAlternatives} other instructor
           {(course.sameTimeAlternatives ?? 0) === 1 ? "" : "s"} teach
-          {(course.sameTimeAlternatives ?? 0) === 1 ? "es" : ""} this slot.
+          {(course.sameTimeAlternatives ?? 0) === 1 ? "es" : ""} this course at
+          these exact times.
         </span>
       ) : null}
       <dl>
@@ -428,19 +431,23 @@ function Calendar({ plan }: { plan: Plan }) {
                     {(c.reviews ?? 0) < THIN_EVIDENCE ? (
                       <i
                         className="mark-thin"
-                        title={`Only ${c.reviews ?? 0} RateMyProfessors reviews behind this rating — treat it as a weak signal`}
+                        title={
+                          (c.reviews ?? 0) === 0
+                            ? "No RateMyProfessors ratings behind this one — nothing to go on"
+                            : `Only ${c.reviews} RateMyProfessors review${c.reviews === 1 ? "" : "s"} behind this rating — treat it as a weak signal`
+                        }
                       >
                         *
                       </i>
                     ) : null}
                     {/* Another instructor teaches this exact slot. */}
                     {(c.sameTimeAlternatives ?? 0) > 0 ? (
-                      <i
+                      <span
                         className="mark-alt"
-                        title={`${c.sameTimeAlternatives} other instructor${(c.sameTimeAlternatives ?? 0) === 1 ? "" : "s"} teach${(c.sameTimeAlternatives ?? 0) === 1 ? "es" : ""} this course at exactly these times`}
+                        title={`${c.sameTimeAlternatives} other instructor${(c.sameTimeAlternatives ?? 0) === 1 ? "" : "s"} teach${(c.sameTimeAlternatives ?? 0) === 1 ? "es" : ""} this course at exactly these times — the timetable looks the same whichever you take`}
                       >
-                        †
-                      </i>
+                        <Info size={13} />
+                      </span>
                     ) : null}
                   </strong>
                   {/* A 50-minute class is one row tall, so the time appears
