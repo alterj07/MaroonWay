@@ -1257,3 +1257,35 @@ a,
   flex: none;
   opacity: 0.8;
 }
+
+/* ---- marks on a class block ---- */
+
+/*
+ * Two different cautions, so two different marks: * is thin evidence behind a
+ * rating, † is another instructor teaching the same slot. One symbol for both
+ * would make them indistinguishable at a glance, which is the only moment
+ * either is read.
+ */
+.mark-thin,
+.mark-alt {
+  font-style: normal;
+  font-weight: 700;
+  margin-left: 3px;
+  cursor: help;
+}
+.mark-thin {
+  color: #ffd98a;
+}
+.mark-alt {
+  color: #bcd8ff;
+}
+
+.hover-warn {
+  display: block;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid #ffffff14;
+  font-size: 0.625rem;
+  line-height: 1.45;
+  opacity: 0.78;
+}

@@ -70,6 +70,8 @@ def to_section(row: dict[str, Any]) -> scheduling.Section:
         ),
         adj_gpa=None if row.get("adj_gpa") is None else float(row["adj_gpa"]),
         pct_a=None if row.get("pct_a") is None else float(row["pct_a"]),
+        class_reviews=int(row.get("class_rating_count") or 0),
+        professor_reviews=int(row.get("instructor_rating_count") or 0),
     )
 
 
@@ -102,10 +104,15 @@ def preferences_payload(preferences: Preferences) -> dict[str, Any]:
     }
 
 
-def to_payload(ranked: prefs_service.RankedSchedule) -> dict[str, Any]:
+def to_payload(
+    ranked: prefs_service.RankedSchedule, *, same_shape: bool = False
+) -> dict[str, Any]:
     schedule = ranked.schedule
     return {
         "preference_score": round(ranked.preference_score, 4),
+        #: True when an earlier option has exactly this timetable and only the
+        #: instructors differ.
+        "same_shape": same_shape,
         "reasons": list(ranked.reasons),
         "contributions": [
             {
@@ -142,6 +149,9 @@ def to_payload(ranked: prefs_service.RankedSchedule) -> dict[str, Any]:
                 "adj_difficulty": s.adj_difficulty,
                 "adj_gpa": s.adj_gpa,
                 "pct_a": s.pct_a,
+                "class_reviews": s.class_reviews,
+                "professor_reviews": s.professor_reviews,
+                "same_time_alternatives": s.same_time_alternatives,
             }
             for s in schedule.sections
         ],
@@ -260,6 +270,27 @@ async def generate_schedules(
         for row in rows:
             candidates.setdefault(row["code"], []).append(to_section(row))
 
+        # Sections of the same course at exactly the same times, taught by
+        # someone else. Three "options" that differ only in who teaches them
+        # look identical on a timetable, so the count travels with the section
+        # and the UI can say so rather than leaving a student to wonder.
+        for pool in candidates.values():
+            by_slot: dict[tuple[tuple[str, int, int], ...], set[int | None]] = {}
+            for section in pool:
+                slot = tuple(
+                    sorted((m.day, m.start, m.end) for m in section.meetings)
+                )
+                if slot:
+                    by_slot.setdefault(slot, set()).add(section.instructor_id)
+            for index, section in enumerate(pool):
+                slot = tuple(
+                    sorted((m.day, m.start, m.end) for m in section.meetings)
+                )
+                others = len(by_slot.get(slot, set())) - 1 if slot else 0
+                pool[index] = replace(
+                    section, same_time_alternatives=max(others, 0)
+                )
+
         request_availability = scheduling.Availability(
             earliest=scheduling.parse_time(request.earliest),
             latest=scheduling.parse_time(request.latest),
@@ -370,10 +401,18 @@ async def generate_schedules(
             ranked.append(candidate)
             if len(ranked) == request.limit:
                 break
+        # Fewer distinct shapes than asked for means the remaining choices
+        # differ only in who teaches them. Those are still real options, so
+        # they are offered -- flagged, so the student is told that is the only
+        # difference rather than shown the same timetable three times with no
+        # explanation.
+        same_shape: set[int] = set()
         if len(ranked) < request.limit:
             for candidate in ordered:
-                if candidate not in ranked:
-                    ranked.append(candidate)
+                if candidate in ranked:
+                    continue
+                same_shape.add(id(candidate))
+                ranked.append(candidate)
                 if len(ranked) == request.limit:
                     break
         detail = (
@@ -387,7 +426,9 @@ async def generate_schedules(
         return {
             "request": request.model_dump(),
             "count": len(ranked),
-            "schedules": [to_payload(r) for r in ranked],
+            "schedules": [
+                to_payload(r, same_shape=id(r) in same_shape) for r in ranked
+            ],
             "preferences": preferences_payload(resolved),
             "detail": detail,
             "relaxed": relaxed,

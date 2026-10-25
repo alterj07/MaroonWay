@@ -286,7 +286,12 @@ _SECTIONS_FOR_COURSES = text(
         ics.adj_rating,
         ics.adj_difficulty,
         ics.adj_gpa,
-        ics.pct_a
+        ics.pct_a,
+        -- How much evidence is behind the rating. A 4.9 from three reviews and
+        -- a 4.9 from ninety are not the same claim, and the shrinkage that
+        -- separates them is invisible once it has been applied.
+        coalesce(ics.class_rating_count, 0)      as class_rating_count,
+        coalesce(ics.instructor_rating_count, 0) as instructor_rating_count
     from sections s
     join courses c on c.id = s.course_id
     left join instructors i on i.id = s.instructor_id

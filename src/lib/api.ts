@@ -282,6 +282,11 @@ export type ScheduleSection = {
   adj_gpa: number | null;
   /** Share of students who earned an A in this course with this instructor. */
   pct_a: number | null;
+  /** Reviews behind the rating: for this course, and for the instructor. */
+  class_reviews: number;
+  professor_reviews: number;
+  /** Other sections at exactly these times taught by someone else. */
+  same_time_alternatives: number;
 };
 
 export type Schedule = {
@@ -299,6 +304,8 @@ export type Schedule = {
   mean_pct_a: number | null;
   earliest_start: string | null;
   days_on_campus: number;
+  /** An earlier option has this exact timetable; only the staff differ. */
+  same_shape?: boolean;
   /** Minutes waiting between classes, summed over the week. */
   idle_minutes: number;
 };

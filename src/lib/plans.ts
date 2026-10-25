@@ -60,6 +60,8 @@ export function toCourse(section: ScheduleSection, index: number): Course {
     // Carried through for the hover card: a block is a choice of instructor as
     // much as a time, so the numbers behind that choice belong on it.
     section: section.section_code,
+    reviews: Math.max(section.class_reviews, section.professor_reviews),
+    sameTimeAlternatives: section.same_time_alternatives,
     rating: section.adj_rating,
     difficulty: section.adj_difficulty,
     pctA: section.pct_a,
@@ -86,6 +88,7 @@ export function toPlan(schedule: Schedule, index: number): Plan {
     gap: schedule.tightest_gap === null ? 'no clash' : `${schedule.tightest_gap} min`,
     earliest: clockLabel(schedule.earliest_start),
     days: schedule.days_on_campus,
+    sameShape: schedule.same_shape ?? false,
     idle: schedule.idle_minutes,
     tags: reasons.length ? reasons : ['Conflict-free', 'At least 20 minutes between classes'],
     reasons,

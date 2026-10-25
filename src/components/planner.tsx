@@ -48,6 +48,10 @@ export type Course = {
   delivery?: string | null;
   honors?: boolean;
   seatsOpen?: number | null;
+  /** Reviews behind the rating; under 20 is thin evidence. */
+  reviews?: number;
+  /** Sections at these exact times taught by someone else. */
+  sameTimeAlternatives?: number;
 };
 export type Student = { email: string; name: string | null };
 
@@ -91,6 +95,8 @@ export type Plan = {
    *  two schedules that share every professor and so score the same. */
   days?: number;
   idle?: number;
+  /** An earlier option has this exact timetable; only the staff differ. */
+  sameShape?: boolean;
   id: number;
   name: string;
   subtitle: string;
@@ -206,6 +212,19 @@ function CourseHover({ course }: { course: Course }) {
         {course.section ? <em>sec {course.section}</em> : null}
       </b>
       <span className="hover-prof">{course.prof}</span>
+      {(course.reviews ?? 0) < THIN_EVIDENCE ? (
+        <span className="hover-warn">
+          * Only {course.reviews ?? 0} reviews — a weak signal, and the rating
+          has been pulled toward the average because of it.
+        </span>
+      ) : null}
+      {(course.sameTimeAlternatives ?? 0) > 0 ? (
+        <span className="hover-warn">
+          † {course.sameTimeAlternatives} other instructor
+          {(course.sameTimeAlternatives ?? 0) === 1 ? "" : "s"} teach
+          {(course.sameTimeAlternatives ?? 0) === 1 ? "es" : ""} this slot.
+        </span>
+      ) : null}
       <dl>
         <div>
           <dt>RMP rating</dt>
@@ -408,7 +427,28 @@ function Calendar({ plan }: { plan: Plan }) {
                 }}
               >
                 <span className="block-main">
-                  <strong>{c.code}</strong>
+                  <strong>
+                    {c.code}
+                    {/* Thin evidence: a 4.9 from three reviews and a 4.9 from
+                        ninety are not the same claim. */}
+                    {(c.reviews ?? 0) < THIN_EVIDENCE ? (
+                      <i
+                        className="mark-thin"
+                        title={`Only ${c.reviews ?? 0} RateMyProfessors reviews behind this rating — treat it as a weak signal`}
+                      >
+                        *
+                      </i>
+                    ) : null}
+                    {/* Another instructor teaches this exact slot. */}
+                    {(c.sameTimeAlternatives ?? 0) > 0 ? (
+                      <i
+                        className="mark-alt"
+                        title={`${c.sameTimeAlternatives} other instructor${(c.sameTimeAlternatives ?? 0) === 1 ? "" : "s"} teach${(c.sameTimeAlternatives ?? 0) === 1 ? "es" : ""} this course at exactly these times`}
+                      >
+                        †
+                      </i>
+                    ) : null}
+                  </strong>
                   {/* A 50-minute class is one row tall, so the time appears
                       only where there is a second line to put it on. */}
                   {hours >= 1 ? (
@@ -821,9 +861,11 @@ export function Planner({
                 </div>
                 <h3>{p.name}</h3>
                 <p>
-                  {tied && p.idle !== undefined
+                  {p.sameShape
+                    ? "Same timetable as above · different instructors"
+                    : tied && p.idle !== undefined
                     ? `${p.days ?? "?"} days on campus · ${Math.round((p.idle ?? 0) / 60)}h waiting`
-                    : p.subtitle}
+                      : p.subtitle}
                 </p>
                 <Mini courses={p.courses} />
                 <footer>
@@ -1195,6 +1237,9 @@ const SHOWCASE_TIMES = ["9:35", "9:35", "11:30", "12:45", "14:20"];
 
 /** Monday-first, matching the calendar's own day order. */
 const DAY_LETTERS = ["M", "T", "W", "R", "F"];
+
+/** Below this many reviews, a rating is marked as thin evidence. */
+const THIN_EVIDENCE = 20;
 
 const CAMPUS_NAMES: Record<string, string> = {
   CSTAT: "College Station",
