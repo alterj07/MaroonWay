@@ -1,0 +1,1 @@
+{"pid": 5945, "log": "/Users/josh/Documents/GitHub/MaroonWay/Data/output/office_hours_collection.log", "command": "collect_spring_schedule.py --office-hours 25000 --office-subjects CSCE,MATH"}
