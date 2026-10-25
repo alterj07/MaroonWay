@@ -34,6 +34,13 @@ from app.services.preferences import PREFERENCE_QUESTIONS, Preferences, Traits
 
 router = APIRouter(prefix="/schedule", tags=["schedule"])
 
+#: Where "early morning" stops, in minutes since midnight.
+#:
+#: A&M's first slot is 08:00 and the next common ones are 08:35 and 09:10, so a
+#: student who says "nothing early" means they will take the 09:10 but not the
+#: 08:00.
+EARLY_MORNING_ENDS = 9 * 60
+
 #: How many structurally-valid schedules to rank over before trimming to the
 #: caller's limit. Generation prunes as it goes, so this is cheap.
 SCHEDULE_POOL = 400
@@ -279,21 +286,48 @@ async def generate_schedules(
         # used to do. Ask for the constrained schedules first and fall back to
         # the unconstrained pool when the timetable cannot give them, so the
         # answer is still honest about being impossible rather than empty.
+        # Preferences stated clearly enough to be worth obeying rather than
+        # merely scoring. Each is applied on top of the last and kept only if
+        # schedules survive it, so a student gets as much of what they asked
+        # for as the timetable allows and is told about whatever it could not
+        # give. Scoring alone was not enough: with a hundred sections to a
+        # course the pool fills with the highest-rated combinations long before
+        # a Friday-free or late-starting one appears, so the preference was
+        # understood and then silently did nothing.
+        wanted: list[tuple[str, scheduling.Availability]] = []
+        tightened = availability
+        if (
+            preferences.avoid_fridays > prefs_service.CLEAR_SIGNAL
+            and "FRI" not in availability.excluded_days
+        ):
+            tightened = replace(
+                tightened,
+                excluded_days=tightened.excluded_days | frozenset({"FRI"}),
+            )
+            wanted.append(("no Friday classes", tightened))
+        if (
+            preferences.avoid_early_mornings > prefs_service.CLEAR_SIGNAL
+            and availability.earliest is None
+        ):
+            tightened = replace(tightened, earliest=EARLY_MORNING_ENDS)
+            wanted.append(("no early mornings", tightened))
+
         relaxed: list[str] = []
-        if preferences.avoid_fridays > prefs_service.CLEAR_SIGNAL and "FRI" not in availability.excluded_days:
-            friday_free = scheduling.generate(
+        for label, attempt_with in wanted:
+            attempt = scheduling.generate(
                 candidates,
                 min_gap=min_gap,
-                availability=replace(
-                    availability,
-                    excluded_days=availability.excluded_days | frozenset({"FRI"}),
-                ),
+                availability=attempt_with,
                 limit=pool_size,
             )
-            if friday_free:
-                schedules = friday_free
+            if attempt:
+                schedules = attempt
+                availability = attempt_with
             else:
-                relaxed.append("no Friday classes was impossible for these courses")
+                relaxed.append(f"{label} was impossible for these courses")
+                # Stop tightening: a later constraint builds on this one, and
+                # applying it would re-impose the one that just failed.
+                break
 
         # 3. What did Jev read about these professors?
         instructor_ids = sorted(

@@ -8,7 +8,7 @@ import {
   getStudentPreferences,
   getTerms,
 } from '@/lib/api';
-import { emptyPlan, leadCourses, plansFor } from '@/lib/plans';
+import { DEFAULT_PRIORITIES, emptyPlan, leadCourses, plansFor } from '@/lib/plans';
 import { currentStudent, studentHeaders } from '@/lib/session';
 
 /**
@@ -82,7 +82,13 @@ export default async function Home({
   if (!term) {
     plans = emptyPlan('No sections loaded', 'Import a term with meeting times to build schedules');
   } else {
-    plans = (await plansFor(term, chosen, saved?.wants).catch(() => ({
+    // The same priorities the planner shows as chips, so the first schedule is
+    // built against what the student can actually see.
+    plans = (await plansFor(
+      term,
+      chosen,
+      saved?.wants || DEFAULT_PRIORITIES.join(', ')
+    ).catch(() => ({
       plans: emptyPlan('Could not build schedules', 'The backend returned an error'),
     }))).plans;
   }

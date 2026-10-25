@@ -355,3 +355,70 @@ class TestCampusConflicts:
         known = self._section("ACCT229", "CSTAT", "MON", "09:00", "09:50")
         unknown = self._section("ENGL104", None, "WED", "13:00", "13:50")
         assert clash(known, unknown) is None
+
+
+class TestStatedConstraintsAreApplied:
+    """A clear preference has to shape the search, not just score it.
+
+    With a hundred sections to a course the candidate pool fills with the
+    highest-rated combinations long before a Friday-free or late-starting one
+    appears, so a preference that only scores is a preference that does
+    nothing.
+    """
+
+    def _section(self, code: str, day: str, start: str, end: str, rating: float) -> Section:
+        # Meeting times are minutes since midnight, the way parse_meetings
+        # stores them; parse_time is what does that conversion in production.
+        return Section(
+            section_id=abs(hash((code, day, start))) % 100_000,
+            course_id=abs(hash(code)) % 1000,
+            code=code,
+            section_code="500",
+            term="SPRING 2027",
+            adj_rating=rating,
+            meetings=(
+                Meeting(
+                    day=day,
+                    start=parse_time(start) or 0,
+                    end=parse_time(end) or 0,
+                ),
+            ),
+        )
+
+    def test_an_earliest_time_excludes_the_eight_am(self) -> None:
+        early = self._section("CSCE222", "TUE", "08:00", "09:15", 4.9)
+        later = self._section("CSCE222", "TUE", "10:20", "11:35", 3.1)
+        # Highest rated first, so without the constraint the 8am wins.
+        unconstrained = generate({"CSCE222": [early, later]}, limit=1)
+        assert unconstrained[0].sections[0].meetings[0].start == 8 * 60
+
+        constrained = generate(
+            {"CSCE222": [early, later]},
+            availability=Availability(earliest=9 * 60),
+            limit=1,
+        )
+        assert constrained
+        assert constrained[0].sections[0].meetings[0].start == 10 * 60 + 20
+
+    def test_excluding_friday_excludes_the_friday_section(self) -> None:
+        friday = self._section("ENGL203", "FRI", "10:20", "11:35", 4.9)
+        tuesday = self._section("ENGL203", "TUE", "10:20", "11:35", 3.1)
+        kept = generate(
+            {"ENGL203": [friday, tuesday]},
+            availability=Availability(excluded_days=frozenset({"FRI"})),
+            limit=1,
+        )
+        assert kept
+        assert kept[0].sections[0].meetings[0].day == "TUE"
+
+    def test_an_impossible_constraint_yields_nothing_to_fall_back_from(self) -> None:
+        """The caller needs an empty result to know it must relax and say so."""
+        only_early = self._section("CSCE222", "TUE", "08:00", "09:15", 4.9)
+        assert (
+            generate(
+                {"CSCE222": [only_early]},
+                availability=Availability(earliest=9 * 60),
+                limit=1,
+            )
+            == []
+        )

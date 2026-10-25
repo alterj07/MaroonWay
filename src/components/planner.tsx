@@ -2,6 +2,8 @@
 // The planner UI. Data comes from the backend via src/app/page.tsx, which
 // fetches real schedules and maps them into Plan/Course.
 import { useMemo, useState } from "react";
+
+import { DEFAULT_PRIORITIES } from "@/lib/plans";
 import { PlusIcon, SearchIcon } from "@animateicons/react/lucide";
 import {
   AlertTriangle,
@@ -82,6 +84,10 @@ export type ExploreCourse = {
 export type Plan = {
   /** Why no schedule could be built. Set means this is not a schedule at all. */
   failed?: string;
+  /** Why the ranker put it here, in its own words. Empty when nothing was
+   *  stated, which is different from "conflict-free" -- `tags` falls back to
+   *  generic copy, so it cannot answer "why this one". */
+  reasons?: string[];
   id: number;
   name: string;
   subtitle: string;
@@ -118,8 +124,9 @@ function Mini({ courses }: { courses: Course[] }) {
               gridColumn: d + 2,
               gridRow: Math.min(5, Math.floor((c.start - 8) / 2) + 2),
             }}
+            title={`${c.code} · ${c.prof}`}
           >
-            {c.code.split(" ")[0]}
+            {c.code}
           </span>
         )),
       )}
@@ -369,10 +376,16 @@ export function Planner({
     [saved, setSaved] = useState(false),
     [chat, setChat] = useState(true),
     [step, setStep] = useState(0),
-    [priorities, setPriorities] = useState([
-      "No classes before 9 AM",
-      "Avoid Friday classes",
-    ]),
+    // Seeded from what was actually saved, falling back to the shared
+    // defaults, so the chips always name the preferences the build used.
+    [priorities, setPriorities] = useState<string[]>(
+      savedWants
+        ? savedWants
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : DEFAULT_PRIORITIES,
+    ),
     // Each of these backs a control that previously did nothing.
     [term, setTerm] = useState(terms[0] ?? ""),
     [addingCourse, setAddingCourse] = useState(false),
@@ -386,7 +399,7 @@ export function Planner({
     [kept, setKept] = useState(false);
 
   /** Everything the student has asked for, as one sentence for the decider. */
-  const wants = [savedWants, ...priorities].filter(Boolean).join(", ");
+  const wants = priorities.filter(Boolean).join(", ");
 
   async function rebuild(codes = chosen, text = wants) {
     if (!codes.length || busy) return;
@@ -503,7 +516,7 @@ export function Planner({
             <button
               onClick={() => {
                 setPriorities([]);
-                void rebuild(chosen, savedWants);
+                void rebuild(chosen, "");
               }}
             >
               Reset
@@ -770,9 +783,13 @@ export function Planner({
               </span>
               <div>
                 <b>Why this works for you</b>
+                {/* The reasons the ranker actually gave. This was a fixed
+                    sentence claiming "no Friday classes" about every schedule,
+                    including ones with a Friday class in them. */}
                 <p>
-                  Strong professor ratings, no Friday classes, and a steady
-                  workload with enough time between demanding courses.
+                  {plan.reasons?.length
+                    ? `Ranked on ${plan.reasons.join(", ")}.`
+                    : "You have not said what you want yet, so this is ranked on professor rating, then on difficulty."}
                 </p>
               </div>
               <button onClick={() => setAnalysing((v) => !v)}>

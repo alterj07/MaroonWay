@@ -26,7 +26,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased">{children}</body>
+      {/* Extensions such as Grammarly add attributes to <body> before React
+          hydrates, which React reports as a mismatch against the server's
+          HTML. Suppressing it here covers the attributes themselves without
+          hiding a real mismatch inside the app. */}
+      <body className="antialiased" suppressHydrationWarning>
+        {children}
+      </body>
     </html>
   );
 }

@@ -13,6 +13,16 @@ import {
  * student presses Build), so both produce identical cards.
  */
 
+/**
+ * The priorities a student starts with.
+ *
+ * Shared by the server's first build and the planner's chips, because they
+ * used to disagree: the chips were a client-side default the server had never
+ * heard of, so the first schedule was built without them and arrived at 8am
+ * under a chip reading "No classes before 9 AM".
+ */
+export const DEFAULT_PRIORITIES = ['No classes before 9 AM', 'Avoid Friday classes'];
+
 /** The planner's day numbering: 0 = Monday. */
 const DAY_INDEX: Record<string, number> = { MON: 0, TUE: 1, WED: 2, THU: 3, FRI: 4 };
 const COLORS = ['berry', 'blue', 'gold', 'green'];
@@ -74,6 +84,7 @@ export function toPlan(schedule: Schedule, index: number): Plan {
     gap: schedule.tightest_gap === null ? 'no clash' : `${schedule.tightest_gap} min`,
     earliest: clockLabel(schedule.earliest_start),
     tags: reasons.length ? reasons : ['Conflict-free', 'At least 20 minutes between classes'],
+    reasons,
     courses: schedule.sections.map(toCourse),
   };
 }
