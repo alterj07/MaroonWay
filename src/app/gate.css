@@ -79,7 +79,7 @@
   font-family: inherit;
   cursor: pointer;
   box-shadow: 0 16px 40px #17000255, 0 0 0 1px #ffffff22;
-  transition: transform 0.14s ease, box-shadow 0.14s ease;
+  transition: transform 0.44s ease, box-shadow 0.44s ease;
 }
 .gate-google:hover {
   transform: translateY(-1px);
@@ -355,7 +355,7 @@
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transition: opacity 0.12s ease, transform 0.12s ease;
+  transition: opacity 0.42s ease, transform 0.42s ease;
   z-index: 50;
 }
 .cal article.block:hover .hover-card,
@@ -801,7 +801,7 @@
   border-right: 1px solid #ffffff14;
   backdrop-filter: blur(14px);
   color: #f6e8e3;
-  transition: width 0.16s ease;
+  transition: width 0.46s ease;
 }
 /* focus-within as well as hover: a rail only a mouse can open is a rail a
    keyboard cannot navigate. */
@@ -837,7 +837,7 @@
   font-weight: 600;
   opacity: 0;
   transform: translateX(-4px);
-  transition: opacity 0.14s ease, transform 0.14s ease;
+  transition: opacity 0.44s ease, transform 0.44s ease;
 }
 .rail:hover button > b,
 .rail:hover a > b,
@@ -1131,13 +1131,14 @@
 
 /*
  * One timing for the whole app, so nothing feels quicker or slower than its
- * neighbour. 150ms is about the shortest a change can be and still read as a
- * transition rather than a jump, and short enough not to sit between a click
- * and its result.
+ * neighbour. Deliberately unhurried: a hover is an invitation to look, not a
+ * result to deliver, so it can take its time where a click cannot. The press
+ * below keeps its own short duration for exactly that reason -- a button that
+ * took two thirds of a second to acknowledge a click would feel broken.
  */
 :root {
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
-  --t-hover: 350ms;
+  --t-hover: 650ms;
   --t-page: 920ms;
   /* The page change gets its own curve: almost all of the movement happens
      early and then eases out for a long tail, which is what reads as smooth
@@ -1191,7 +1192,7 @@ a,
   transform: translateX(-24%);
   transition:
     opacity var(--t-hover) var(--ease),
-    transform 620ms var(--ease);
+    transform 920ms var(--ease);
   pointer-events: none;
 }
 .use:hover::after,
