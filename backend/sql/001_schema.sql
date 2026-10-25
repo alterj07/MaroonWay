@@ -181,6 +181,33 @@ create table if not exists sections (
     constraint sections_identity unique (term, course_id, section_code)
 );
 
+-- What Jev read out of a professor's reviews: the planning doc's "types of
+-- teachers and classes", as typed values rather than prose. Each column is a
+-- probability or a normalised 0-1 level, with the confidence Jev reported, so
+-- the ranking can weight them and the UI can say how sure it is.
+create table if not exists instructor_traits (
+    id                  bigserial primary key,
+    instructor_id       bigint not null references instructors (id) on delete cascade,
+    -- Null for the professor overall, set for one of their courses.
+    course_id           bigint references courses (id) on delete set null,
+    lots_of_quizzes     numeric(4, 3),
+    exam_difficulty     numeric(4, 3),
+    lecture_quality     numeric(4, 3),
+    attendance_taken    numeric(4, 3),
+    extra_credit        numeric(4, 3),
+    heavy_workload      numeric(4, 3),
+    grades_generously   numeric(4, 3),
+    --- Mean confidence across the answers, and which model produced them.
+    confidence          numeric(4, 3),
+    model               text not null,
+    question_version    text not null,
+    review_count        integer not null default 0,
+    answers             jsonb not null default '{}'::jsonb,
+    decided_at          timestamptz not null default now(),
+    constraint instructor_traits_identity
+        unique nulls not distinct (instructor_id, course_id, question_version)
+);
+
 -- The audit trail for name matching: every link, its method, its confidence.
 -- A wrong match is fixable by hand because it is written down here.
 create table if not exists name_links (

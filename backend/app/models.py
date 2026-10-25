@@ -193,3 +193,29 @@ name_links = Table(
     Column("confidence", Numeric(5, 2), nullable=False),
     Column("linked_at", DateTime(timezone=True), server_default=func.now()),
 )
+
+instructor_traits = Table(
+    "instructor_traits",
+    metadata,
+    Column("id", BigInteger, primary_key=True),
+    Column(
+        "instructor_id",
+        BigInteger,
+        ForeignKey("instructors.id", ondelete="CASCADE"),
+        nullable=False,
+    ),
+    Column("course_id", BigInteger, ForeignKey("courses.id", ondelete="SET NULL")),
+    Column("lots_of_quizzes", Numeric(4, 3)),
+    Column("exam_difficulty", Numeric(4, 3)),
+    Column("lecture_quality", Numeric(4, 3)),
+    Column("attendance_taken", Numeric(4, 3)),
+    Column("extra_credit", Numeric(4, 3)),
+    Column("heavy_workload", Numeric(4, 3)),
+    Column("grades_generously", Numeric(4, 3)),
+    Column("confidence", Numeric(4, 3)),
+    Column("model", Text, nullable=False),
+    Column("question_version", Text, nullable=False),
+    Column("review_count", Integer, nullable=False, server_default="0"),
+    Column("answers", JSONB, nullable=False, server_default="{}"),
+    Column("decided_at", DateTime(timezone=True), server_default=func.now()),
+)

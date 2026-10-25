@@ -19,6 +19,8 @@ create unique index if not exists rmp_ratings_rating_id_key
 create index if not exists summaries_lookup_idx
     on summaries (instructor_id, course_id, prompt_version);
 create index if not exists sections_term_idx on sections (term, course_id);
+create index if not exists instructor_traits_lookup_idx
+    on instructor_traits (instructor_id, course_id);
 -- Which professors still need their comments pulled.
 create index if not exists rmp_professors_details_idx
     on rmp_professors (details_fetched_at nulls first, num_ratings desc);
@@ -155,6 +157,9 @@ instructor_course_gpa as (
         sum(gpa * coalesce(enrolled, 1)) / nullif(sum(coalesce(enrolled, 1)), 0) as avg_gpa,
         sum(coalesce(enrolled, 1))                                              as student_count,
         count(*)                                                                as section_count,
+        -- The share of students who got an A. The planning doc asks for grades,
+        -- and this is the form a student actually reads.
+        sum(coalesce(grade_a, 0))::numeric / nullif(sum(coalesce(enrolled, 0)), 0) as pct_a,
         -- Campus is a property of the offering, not the course, so it is
         -- aggregated from the sections actually taught. Null until the section
         -- data carries a campus column.
@@ -170,6 +175,7 @@ select
     isc.rating_count                                as instructor_rating_count,
     coalesce(icg.section_count, 0)                  as section_count,
     icg.campus,
+    icg.pct_a,
     icg.avg_gpa                                     as raw_gpa,
     case
         when coalesce(cr.class_rating_count, 0) = 0 or cr.avg_rating is null then isc.adj_rating
