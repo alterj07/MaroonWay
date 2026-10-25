@@ -55,6 +55,12 @@ class Settings(BaseSettings):
 
     # --- misc -------------------------------------------------------------
     admin_token: str | None = None
+    #: Shared secret the Next.js server sends with a signed-in student's
+    #: identity. The backend trusts the header only when this matches, because
+    #: the frontend is the only thing that has verified a Google session.
+    internal_token: str | None = None
+    #: Guards POST /sections/import. Falls back to admin_token when unset.
+    import_token: str | None = None
 
 
 @lru_cache

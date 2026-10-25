@@ -178,6 +178,69 @@ def parse_row(row: dict[str, str], cmap: ColumnMap) -> tuple[ParsedRow | None, s
     )
 
 
+async def persist(records: list[ParsedRow], *, stats: Stats | None = None) -> Stats:
+    """Write sections, resolving their course and instructor.
+
+    Shared by the CSV loader and by POST /sections/import, so a section
+    scraped from a browser goes through exactly the same normalisation,
+    resolution and upsert as one from a file.
+    """
+    stats = stats or Stats()
+    async with session_scope() as session:
+        courses = {
+            (row[1], row[2]): int(row[0])
+            for row in (
+                await session.execute(text("select id, upper(dept), upper(number) from courses"))
+            ).all()
+        }
+        instructors = {
+            str(row[1]): int(row[0])
+            for row in (
+                await session.execute(text("select id, canonical_key from instructors"))
+            ).all()
+        }
+
+        payload: list[dict[str, Any]] = []
+        for record in records:
+            course_id = courses.get((record.dept, record.number))
+            if course_id is None:
+                stats.unknown_courses.add(f"{record.dept} {record.number}")
+                stats.skip("unknown_course")
+                continue
+            instructor_id = None
+            if record.instructor:
+                instructor_id = instructors.get(canonical_key(record.instructor))
+                if instructor_id is None:
+                    stats.unknown_instructors.add(record.instructor)
+            if parse_term(record.term) is None:
+                stats.skip("unparsed_term")
+            payload.append(
+                {
+                    "course_id": course_id,
+                    "instructor_id": instructor_id,
+                    "term": record.term,
+                    "section_code": record.section_code,
+                    "campus": record.campus,
+                    "delivery": record.delivery,
+                    "honors": record.honors,
+                    "meets": record.meetings,
+                    "seats": record.seats,
+                    "seats_open": record.seats_open,
+                }
+            )
+            stats.meetings += len(record.meetings)
+
+        for start in range(0, len(payload), BATCH_SIZE):
+            batch = payload[start : start + BATCH_SIZE]
+            await session.execute(_UPSERT, batch)
+            stats.sections_loaded += len(batch)
+        await session.commit()
+        if stats.sections_loaded:
+            version = await bump_data_version(session)
+            log.info("data_version now %d (hot cache invalidated)", version)
+    return stats
+
+
 async def load(path: Path, *, dry_run: bool = False, limit: int | None = None) -> Stats:
     headers, rows = read_rows(path, None)
     cmap = resolve_columns(headers)
@@ -226,56 +289,8 @@ async def load(path: Path, *, dry_run: bool = False, limit: int | None = None) -
         log.info("DRY RUN %s (nothing written)", stats.report())
         return stats
 
-    async with session_scope() as session:
-        courses = {
-            (row[1], row[2]): int(row[0])
-            for row in (
-                await session.execute(text("select id, upper(dept), upper(number) from courses"))
-            ).all()
-        }
-        instructors = {
-            str(row[1]): int(row[0])
-            for row in (await session.execute(text("select id, canonical_key from instructors"))).all()
-        }
-
-        payload: list[dict[str, Any]] = []
-        for record in grouped.values():
-            course_id = courses.get((record.dept, record.number))
-            if course_id is None:
-                stats.unknown_courses.add(f"{record.dept} {record.number}")
-                stats.skip("unknown_course")
-                continue
-            instructor_id = None
-            if record.instructor:
-                instructor_id = instructors.get(canonical_key(record.instructor))
-                if instructor_id is None:
-                    stats.unknown_instructors.add(record.instructor)
-            term = parse_term(record.term)
-            payload.append(
-                {
-                    "course_id": course_id,
-                    "instructor_id": instructor_id,
-                    "term": record.term,
-                    "section_code": record.section_code,
-                    "campus": record.campus,
-                    "delivery": record.delivery,
-                    "honors": record.honors,
-                    "meets": record.meetings,
-                    "seats": record.seats,
-                    "seats_open": record.seats_open,
-                }
-            )
-            stats.meetings += len(record.meetings)
-            if term is None:
-                stats.skip("unparsed_term")
-
-        for start in range(0, len(payload), BATCH_SIZE):
-            batch = payload[start : start + BATCH_SIZE]
-            await session.execute(_UPSERT, batch)
-            stats.sections_loaded += len(batch)
-        await session.commit()
-        version = await bump_data_version(session)
-        log.info("data_version now %d (hot cache invalidated)", version)
+    written = await persist(list(grouped.values()), stats=stats)
+    stats = written
 
     if stats.unknown_courses:
         log.warning(

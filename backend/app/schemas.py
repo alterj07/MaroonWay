@@ -268,3 +268,104 @@ class PreferenceResponse(BaseModel):
     #: Every question Jev was asked and what it answered, so the UI can show
     #: the student what was understood before building anything.
     answers: dict[str, Any] = {}
+
+
+# --- importing sections from a browser session --------------------------------
+
+
+class ImportedMeeting(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    #: "MWF", "TR", "Mon,Wed" or a list -- parsed server-side.
+    days: str | list[str] | None = None
+    start: str | None = None
+    end: str | None = None
+    building: str | None = None
+    room: str | None = None
+
+
+class ImportedSection(BaseModel):
+    """One section as a browser scraped it. Deliberately forgiving: the point
+    is to accept whatever the page gives and normalise here."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    term: str
+    subject: str | None = None
+    number: str | None = None
+    #: "CSCE 121" as an alternative to subject + number.
+    course: str | None = None
+    section: str
+    instructor: str | None = None
+    campus: str | None = None
+    delivery: str | None = None
+    honors: bool | None = None
+    seats: int | None = None
+    seats_open: int | None = None
+    meetings: list[ImportedMeeting] = []
+
+
+class SectionImportRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    sections: list[ImportedSection] = Field(min_length=1, max_length=5000)
+    #: True reports what would happen and writes nothing.
+    dry_run: bool = False
+
+
+class SectionImportResponse(BaseModel):
+    received: int
+    accepted: int
+    sections_written: int
+    meetings: int
+    skipped: dict[str, int] = {}
+    unknown_courses: list[str] = []
+    unknown_instructors: list[str] = []
+    dry_run: bool = False
+
+
+# --- students -----------------------------------------------------------------
+
+
+class StudentOut(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    id: int
+    subject: str
+    email: str
+    name: str | None = None
+
+
+class StudentPreferencesRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    wants: str | None = Field(default=None, max_length=2000)
+    weights: dict[str, Any] = {}
+    engine: str | None = None
+
+
+class StudentPreferencesOut(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    wants: str | None = None
+    weights: dict[str, Any] = {}
+    engine: str | None = None
+    updated_at: datetime | None = None
+
+
+class SaveScheduleRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    term: str
+    label: str | None = Field(default=None, max_length=120)
+    payload: dict[str, Any]
+
+
+class SavedScheduleOut(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    id: int
+    term: str
+    label: str | None = None
+    payload: dict[str, Any]
+    created_at: datetime | None = None
