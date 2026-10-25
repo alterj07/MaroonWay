@@ -245,3 +245,45 @@ ratings, and **no meeting times at all** -- the only clock times in them are
 inside review comments ("exams were at 7:30pm"). `make_demo_sections` exists for
 when no schedule file is available: it invents times and labels the term
 `DEMO <term>` so they cannot be mistaken for the registrar's.
+
+## Deploying to Render
+
+The frontend goes to Vercel; this backend needs a host that runs a long-lived
+process, because the hot cache is an in-process LRU warmed at boot. Render's
+free web service does that. `render.yaml` at the repository root is a blueprint
+for it -- in Render, **New > Blueprint**, point it at this repository, and it
+reads that file.
+
+Nothing in the application code changes. The engine already sets
+`statement_cache_size=0` so either Supabase pooler works, the lifespan survives
+a database it cannot reach (so `/healthz` reports the problem instead of the
+deploy failing), and nothing binds to localhost.
+
+Render will prompt for every secret, because each is marked `sync: false`:
+
+| Variable | Value |
+| --- | --- |
+| `DATABASE_URL` | the Supabase **session pooler** string, scheme rewritten to `postgresql+asyncpg://` |
+| `INTERNAL_TOKEN` | any random string -- **must match the one set on Vercel** |
+| `ADMIN_TOKEN`, `IMPORT_TOKEN` | separate random strings |
+| `GEMINI_API_KEY` | from Google AI Studio |
+
+Then set `BACKEND_URL` on Vercel to the Render URL
+(`https://maroonway-api.onrender.com`), with the same `INTERNAL_TOKEN`.
+
+Three things to know:
+
+- **One worker, deliberately.** A second worker holds a second, independent
+  copy of the cache and halves the hit rate. Scale by moving the cache behind
+  Redis, not by adding workers.
+- **The free plan sleeps after 15 minutes idle.** The first request after that
+  pays for a cold start plus the cache warm-up, which is why the blueprint sets
+  `CACHE_WARM_COUNT=10` rather than the default 25.
+- **Migrations and loaders run from a laptop, not from Render.** The free plan
+  has no shell, and both talk to the same Supabase database anyway, so
+  `apply_sql` and the ingest commands stay where they are.
+
+Once deployed the API is reachable by anyone who finds the URL. The `/me`
+endpoints are guarded by `INTERNAL_TOKEN` and the admin ones by `ADMIN_TOKEN`,
+but the course and professor reads are open. That is fine for public catalog
+data; it is not a place to put anything student-specific.

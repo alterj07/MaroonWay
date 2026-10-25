@@ -1,0 +1,47 @@
+# Render blueprint for the MaroonWay backend.
+#
+# The repository root is the Next.js app, which deploys to Vercel; only
+# backend/ belongs here, hence rootDir. Apply it from the Render dashboard with
+# New > Blueprint, pointed at this repository.
+#
+# Every secret is marked sync: false, so Render prompts for it once and stores
+# it rather than reading it from this file. Nothing sensitive is committed.
+services:
+  - type: web
+    name: maroonway-api
+    runtime: python
+    rootDir: backend
+    plan: free
+    region: ohio
+    buildCommand: pip install --upgrade pip && pip install .
+    # One worker, deliberately. The hot cache is an in-process LRU warmed at
+    # boot; a second worker would hold a second, independent copy and halve the
+    # hit rate. Scale by moving the cache to Redis, not by adding workers.
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 1
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.13.14"
+      # Supabase, via the session pooler (port 5432 on the pooler host). The
+      # scheme must be postgresql+asyncpg://, not postgresql://, or SQLAlchemy
+      # loads the synchronous driver and the app will not start.
+      - key: DATABASE_URL
+        sync: false
+      # Must match the value set on the Vercel frontend: it is what proves a
+      # request carrying a student's identity came from the frontend and not
+      # from someone calling this API directly.
+      - key: INTERNAL_TOKEN
+        sync: false
+      - key: ADMIN_TOKEN
+        sync: false
+      - key: IMPORT_TOKEN
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: RMP_SCHOOL_ID
+        value: "1003"
+      # The free plan sleeps after 15 minutes idle, and a cold start pays for
+      # this warm-up before serving. Keep it small there; raise it on a paid
+      # instance, where the process stays alive and the cache stays hot.
+      - key: CACHE_WARM_COUNT
+        value: "10"
