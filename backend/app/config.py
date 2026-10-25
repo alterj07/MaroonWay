@@ -24,6 +24,14 @@ class Settings(BaseSettings):
     summary_max_comments: int = 60
     summary_comment_chars: int = 600
 
+    # --- Jev (TypeSafe AI decision model) ---
+    typesafe_api_key: str | None = None
+    jev_model: str = "jev-latest"
+    jev_base_url: str | None = None
+    #: Reviews fed to one trait decision. Jev's context is 32k tokens and bills
+    #: input only, so this can be generous.
+    trait_max_reviews: int = 40
+
     # --- hot cache --------------------------------------------------------
     # The professor cache is the "recently viewed" cache: LRU eviction means the
     # professors people just opened are exactly the ones that stay resident.
