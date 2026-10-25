@@ -1596,3 +1596,21 @@ a,
   font-size: 0.875rem;
   line-height: 0.8;
 }
+
+/* ---- who teaches it, on the block ---- */
+
+/*
+ * The professor was only in the hover card, which meant comparing two
+ * schedules took a hover per class. The rows are tall enough for it now.
+ */
+.block-who {
+  display: block;
+  margin-top: 2px;
+  font-size: 10px;
+  line-height: 1.3;
+  letter-spacing: 0.01em;
+  opacity: 0.82;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

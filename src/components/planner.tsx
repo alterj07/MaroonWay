@@ -450,12 +450,21 @@ function Calendar({ plan }: { plan: Plan }) {
                       </span>
                     ) : null}
                   </strong>
-                  {/* A 50-minute class is one row tall, so the time appears
-                      only where there is a second line to put it on. */}
-                  {hours >= 1 ? (
-                    <span>
-                      {time(c.start)}–{time(c.end)}
-                    </span>
+                  {/* The rows are tall enough for three lines at the shortest
+                      class A&M timetables, so the time and who teaches it are
+                      both on the card rather than only in the hover. Anything
+                      shorter still drops them rather than overflowing. */}
+                  {hours >= 0.7 ? (
+                    <>
+                      <span>
+                        {time(c.start)}–{time(c.end)}
+                      </span>
+                      {c.prof ? (
+                        <span className="block-who" title={c.prof}>
+                          {c.prof}
+                        </span>
+                      ) : null}
+                    </>
                   ) : null}
                 </span>
                 {/* The room goes on the right rather than on a third line, so
