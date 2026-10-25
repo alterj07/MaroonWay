@@ -1,7 +1,7 @@
 "use client";
 // The planner UI. Data comes from the backend via src/app/page.tsx, which
 // fetches real schedules and maps them into Plan/Course.
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 
 import { DEFAULT_PRIORITIES } from "@/lib/plans";
 import { PlusIcon, SearchIcon } from "@animateicons/react/lucide";
@@ -622,12 +622,12 @@ export function Planner({
     );
   return (
     <main className={`app-page ${dark ? "site-dark" : "site-light"}`}>
-      <AppHeader
+      <NavRail
         page="planner"
         onNav={setPage}
+        student={student}
         dark={dark}
         setDark={setDark}
-        student={student}
       />
       <div className="work builder-work">
         <aside className="filters">
@@ -1047,61 +1047,103 @@ function Account({ student }: { student?: Student | null }) {
 }
 /* eslint-enable @next/next/no-html-link-for-pages */
 
-function AppHeader({
+/**
+ * Navigation, as a rail down the left that opens on hover.
+ *
+ * One component for every view, including the landing page, which previously
+ * had a header of its own that shared nothing with the others -- so the same
+ * three destinations looked and sat differently depending on where you were.
+ *
+ * Collapsed it is icons only; hovering or tabbing into it reveals the labels.
+ * `focus-within` matters as much as `:hover` here: a rail that only answers to
+ * a mouse cannot be navigated by keyboard.
+ */
+function NavRail({
   page,
   onNav,
   student,
-  dark = true,
+  dark,
   setDark,
 }: {
-  page: string;
+  page: "home" | "planner" | "explore" | "saved";
   onNav: (p: "home" | "planner" | "explore" | "saved") => void;
-  dark?: boolean;
-  setDark?: (v: boolean) => void;
   student?: Student | null;
+  dark: boolean;
+  setDark: (v: boolean) => void;
 }) {
+  const items: {
+    key: "planner" | "explore" | "saved";
+    label: string;
+    icon: ReactNode;
+  }[] = [
+    { key: "planner", label: "Schedule builder", icon: <CalendarDays size={18} /> },
+    { key: "explore", label: "Course explorer", icon: <BookOpen size={18} /> },
+    { key: "saved", label: "Saved schedules", icon: <Heart size={18} /> },
+  ];
+
+  const label = (student?.name || student?.email || "").trim();
+  const initials = label
+    ? label
+        .split(/[\s@.]+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((w) => w[0]!.toUpperCase())
+        .join("")
+    : "";
+
   return (
-    <header className="top">
-      <button className="brand nav-brand" onClick={() => onNav("home")}>
+    <nav className="rail" aria-label="Main">
+      <button className="rail-brand" onClick={() => onNav("home")}>
         <span>
-          <CalendarDays size={20} />
+          <CalendarDays size={19} />
         </span>
         <b>MaroonWay</b>
       </button>
-      <nav>
+
+      <ul>
+        {items.map((item) => (
+          <li key={item.key}>
+            <button
+              className={page === item.key ? "active" : ""}
+              aria-current={page === item.key ? "page" : undefined}
+              onClick={() => onNav(item.key)}
+            >
+              {item.icon}
+              <b>{item.label}</b>
+            </button>
+          </li>
+        ))}
+      </ul>
+
+      <div className="rail-foot">
         <button
-          className={page === "planner" ? "active" : ""}
-          onClick={() => onNav("planner")}
-        >
-          Schedule builder
-        </button>
-        <button
-          className={page === "explore" ? "active" : ""}
-          onClick={() => onNav("explore")}
-        >
-          Course explorer
-        </button>
-        <button
-          className={page === "saved" ? "active" : ""}
-          onClick={() => onNav("saved")}
-        >
-          Saved schedules
-        </button>
-      </nav>
-      <div className="account">
-        <button
-          onClick={() => setDark?.(!dark)}
+          onClick={() => setDark(!dark)}
           aria-label={`Switch to ${dark ? "light" : "dark"} mode`}
         >
           {dark ? <Sun size={17} /> : <Moon size={17} />}
+          <b>{dark ? "Light mode" : "Dark mode"}</b>
         </button>
-        <Account student={student} />
+
+        {student ? (
+          <>
+            <span className="rail-me" title={student.email}>
+              <i>{initials}</i>
+              <b>{student.name || label.split("@")[0]}</b>
+            </span>
+            {/* A real <a>: NextAuth's routes return HTML pages, so a
+                client-side navigation would fetch an RSC payload and fail. */}
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+            <a href="/api/auth/signout?callbackUrl=/" title="Sign out">
+              <LogOut size={17} />
+              <b>Sign out</b>
+            </a>
+          </>
+        ) : null}
       </div>
-    </header>
+    </nav>
   );
 }
 
-/** Rating bands, so a card shows at a glance who is worth taking. */
 function band(rating: number | string | null) {
   const value = num(rating);
   if (value === null) return "prof-unrated";
@@ -1278,12 +1320,12 @@ function Explorer({
 
   return (
     <main className="inner-page">
-      <AppHeader
+      <NavRail
         page="explore"
         onNav={onNav}
+        student={student}
         dark={dark}
         setDark={setDark}
-        student={student}
       />
       <section className="page-wrap">
         <div className="page-intro">
@@ -1465,12 +1507,12 @@ function SavedSchedules({
   const [favorites, setFavorites] = useState([1, 2]);
   return (
     <main className={`inner-page ${dark ? "site-dark" : "site-light"}`}>
-      <AppHeader
+      <NavRail
         page="saved"
         onNav={onNav}
+        student={student}
         dark={dark}
         setDark={setDark}
-        student={student}
       />
       <section className="page-wrap">
         <div className="page-intro saved-intro">
@@ -1631,27 +1673,13 @@ function Landing({
   };
   return (
     <main className={`minimal-home ${dark ? "dark-mode" : "light-mode"}`}>
-      <header className="minimal-nav">
-        <a className="minimal-brand">
-          <span>
-            <CalendarDays size={18} />
-          </span>
-          <b>MaroonWay</b>
-        </a>
-        <div>
-          <span>Made for Aggies</span>
-          <button
-            className="theme-toggle"
-            onClick={() => setDark(!dark)}
-            aria-label={`Switch to ${dark ? "light" : "dark"} mode`}
-          >
-            {dark ? <Sun size={15} /> : <Moon size={15} />}
-            <i>{dark ? "Light" : "Dark"}</i>
-          </button>
-          <button onClick={onSaved}>My schedules</button>
-          <Account student={student} />
-        </div>
-      </header>
+      <NavRail
+        page="home"
+        onNav={(p) => (p === "saved" ? onSaved() : p === "home" ? undefined : onStart())}
+        student={student}
+        dark={dark}
+        setDark={setDark}
+      />
       {analyzing && (
         <div className="analysis-overlay">
           <div className="analysis-orbit">

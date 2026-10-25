@@ -714,3 +714,173 @@
 .confirm-go:hover {
   background: #a3262f;
 }
+
+/* ---- navigation: a rail down the left that opens on hover ---- */
+
+/*
+ * One rail for every view, the landing page included. The top header it
+ * replaced existed in two unrelated forms -- `.top` on the inner pages,
+ * `.minimal-nav` on the landing one -- so the same three destinations looked
+ * and sat differently depending on where you were.
+ */
+:root {
+  --rail-closed: 58px;
+  --rail-open: 216px;
+}
+
+.rail {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 60;
+  width: var(--rail-closed);
+  display: flex;
+  flex-direction: column;
+  padding: 14px 10px 16px;
+  gap: 6px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: #1a0206ee;
+  border-right: 1px solid #ffffff14;
+  backdrop-filter: blur(14px);
+  color: #f6e8e3;
+  transition: width 0.16s ease;
+}
+/* focus-within as well as hover: a rail only a mouse can open is a rail a
+   keyboard cannot navigate. */
+.rail:hover,
+.rail:focus-within {
+  width: var(--rail-open);
+  box-shadow: 0 0 60px #0c000266;
+}
+
+/* Everything in the rail is an icon with a label that appears on expand. */
+.rail button,
+.rail a,
+.rail .rail-me {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 9px 8px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.8125rem;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.rail button > b,
+.rail a > b,
+.rail .rail-me > b {
+  font-weight: 600;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 0.14s ease, transform 0.14s ease;
+}
+.rail:hover button > b,
+.rail:hover a > b,
+.rail:hover .rail-me > b,
+.rail:focus-within button > b,
+.rail:focus-within a > b,
+.rail:focus-within .rail-me > b {
+  opacity: 1;
+  transform: translateX(0);
+}
+.rail button:hover,
+.rail a:hover {
+  background: #ffffff14;
+}
+.rail button:focus-visible,
+.rail a:focus-visible {
+  outline: 2px solid #efb9ae;
+  outline-offset: -2px;
+}
+
+.rail-brand {
+  margin-bottom: 10px;
+  font-weight: 750 !important;
+  letter-spacing: -0.4px;
+}
+.rail-brand > span {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 10px;
+  background: #fff5ef;
+  color: #500000;
+}
+.rail-brand > b {
+  font-size: 1rem;
+}
+
+.rail ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 3px;
+}
+.rail ul button.active {
+  background: #ffffff1c;
+  box-shadow: inset 2px 0 0 #efb9ae;
+}
+.rail svg {
+  flex: none;
+}
+
+.rail-foot {
+  margin-top: auto;
+  padding-top: 10px;
+  /* The rail hides its overflow so labels do not spill while collapsed, which
+     also clipped the last item against the bottom edge. */
+  padding-bottom: 4px;
+  border-top: 1px solid #ffffff14;
+  display: grid;
+  gap: 3px;
+}
+.rail-me {
+  cursor: default;
+}
+.rail-me > i {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  border-radius: 50%;
+  background: #8c1f2b;
+  color: #fff;
+  font-style: normal;
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
+/* Every page sits beside the closed rail; expanding it overlays rather than
+   reflows, so hovering does not shuffle the content underneath. */
+.app-page,
+.inner-page,
+.minimal-home {
+  padding-left: var(--rail-closed);
+}
+
+@media (max-width: 720px) {
+  :root {
+    --rail-closed: 48px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rail,
+  .rail button > b,
+  .rail a > b,
+  .rail .rail-me > b {
+    transition: none;
+  }
+}

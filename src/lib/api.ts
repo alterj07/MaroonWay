@@ -195,8 +195,13 @@ async function get<T>(path: string, query?: Query, signal?: AbortSignal): Promis
   });
 
   if (!response.ok) {
-    const detail = await response.text().catch(() => '');
-    throw new ApiError(response.status, path, `${response.status} from ${path}: ${detail}`);
+    const body = await response.text().catch(() => '');
+    // A gateway error arrives as a full HTML page, which is useless in a
+    // message and drowns the one part that matters -- the status.
+    const detail = /^\s*<(!doctype|html)/i.test(body)
+      ? ''
+      : `: ${body.slice(0, 200)}`;
+    throw new ApiError(response.status, path, `${response.status} from ${path}${detail}`);
   }
   return (await response.json()) as T;
 }
@@ -561,16 +566,22 @@ export async function backendStatus(): Promise<{ ok: boolean; detail: string | n
   ];
 
   let lastDetail: string | null = null;
-  for (const attempt of attempts) {
+  for (const [index, attempt] of attempts.entries()) {
     try {
       const health = await getHealth(AbortSignal.timeout(attempt.timeout));
       return { ok: health.database === 'ok', detail: health.detail };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      lastDetail =
-        attempt.note === 'cold start'
-          ? `${message} (tried for 60s, long enough for a sleeping instance to wake)`
-          : message;
+      // A waking instance answers 502 immediately rather than hanging, so a
+      // timeout-only retry fails twice in under a second and reports the
+      // backend as down. Pause before trying again.
+      const waking = error instanceof ApiError && [502, 503, 504].includes(error.status);
+      lastDetail = waking
+        ? `the API returned ${error instanceof ApiError ? error.status : ''}, which is what a host returns while a service is starting`
+        : message;
+      if (index < attempts.length - 1 && waking) {
+        await new Promise((resume) => setTimeout(resume, 4000));
+      }
     }
   }
   return { ok: false, detail: lastDetail };
