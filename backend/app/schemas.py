@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ScoreOut(BaseModel):
@@ -144,4 +144,71 @@ class HealthOut(BaseModel):
     status: str
     database: str
     data_version: int
+    detail: str | None = None
+
+
+# --- scheduling ---------------------------------------------------------------
+
+
+class MeetingOut(BaseModel):
+    day: str
+    start: str
+    end: str
+    building: str | None = None
+    room: str | None = None
+
+
+class ScheduleSectionOut(BaseModel):
+    section_id: int
+    course_id: int
+    code: str
+    section_code: str
+    instructor_id: int | None = None
+    instructor_name: str | None = None
+    campus: str | None = None
+    delivery: str | None = None
+    honors: bool = False
+    seats_open: int | None = None
+    meetings: list[MeetingOut] = []
+    adj_rating: float | None = None
+    adj_difficulty: float | None = None
+    adj_gpa: float | None = None
+
+
+class ScheduleOut(BaseModel):
+    sections: list[ScheduleSectionOut]
+    #: Minutes between the two closest classes. Null when nothing shares a day.
+    tightest_gap: int | None = None
+    mean_rating: float
+    mean_difficulty: float
+    mean_gpa: float | None = None
+    earliest_start: str | None = None
+    days_on_campus: int
+
+
+class ScheduleRequest(BaseModel):
+    """What the student is asking for."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    term: str
+    #: Course codes, e.g. ["CSCE121", "MATH151"].
+    courses: list[str] = Field(min_length=1, max_length=10)
+    #: The planning doc's hard floor, raisable but not lowerable below 0.
+    min_gap_minutes: int = Field(default=20, ge=0, le=240)
+    earliest: str | None = Field(default=None, description='e.g. "09:00"')
+    latest: str | None = Field(default=None, description='e.g. "17:00"')
+    excluded_days: list[str] = []
+    campus: str | None = None
+    honors: bool | None = None
+    delivery: str | None = Field(default=None, description="F2F, WEB or HYBRID")
+    open_only: bool = False
+    limit: int = Field(default=10, ge=1, le=50)
+
+
+class ScheduleResponse(BaseModel):
+    request: ScheduleRequest
+    count: int
+    schedules: list[ScheduleOut]
+    #: Set when nothing could be built, explaining which constraint bit.
     detail: str | None = None

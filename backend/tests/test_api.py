@@ -104,6 +104,7 @@ class FakeRepo:
         self.professor_calls: list[int] = []
         self.search_calls: list[dict] = []
         self.course_calls: list[dict] = []
+        self.section_calls: list[dict] = []
 
     async def load_professor(self, session, instructor_id, *, prompt_version, **kwargs):
         self.professor_calls.append(instructor_id)
@@ -124,6 +125,45 @@ class FakeRepo:
         self.course_calls.append({"dept": dept, "number": number})
         return [COURSE_ROW]
 
+    async def sections_for_courses(self, session, *, term, codes, **kwargs):
+        self.section_calls.append({"term": term, "codes": list(codes), **kwargs})
+        if term != "FALL 2026":
+            return []
+        rows = []
+        for code, section_code, days, start, end in (
+            ("CSCE121", "500", "MWF", "09:10", "10:00"),
+            ("CSCE121", "501", "MWF", "10:00", "10:50"),  # back-to-back with MATH151
+            ("MATH151", "200", "MWF", "10:20", "11:10"),
+        ):
+            if code.upper() not in [c.upper() for c in codes]:
+                continue
+            rows.append(
+                {
+                    "section_id": int(section_code),
+                    "course_id": 1 if code == "CSCE121" else 2,
+                    "code": code,
+                    "section_code": section_code,
+                    "term": term,
+                    "instructor_id": 7,
+                    "instructor_name": "DOE J",
+                    "campus": "CSTAT",
+                    "delivery": "F2F",
+                    "honors": False,
+                    "seats": 60,
+                    "seats_open": 5,
+                    "meets": [
+                        {"days": days, "start": start, "end": end, "building": "ZACH", "room": "350"}
+                    ],
+                    "adj_rating": Decimal("4.2"),
+                    "adj_difficulty": Decimal("3.1"),
+                    "adj_gpa": None,
+                }
+            )
+        return rows
+
+    async def available_terms(self, session):
+        return [{"term": "FALL 2026", "sections": 3, "with_times": 3}]
+
     async def current_data_version(self, session):
         return 0
 
@@ -138,6 +178,8 @@ def repo(monkeypatch) -> FakeRepo:
         "load_professor",
         "search_instructors",
         "course_instructors",
+        "sections_for_courses",
+        "available_terms",
         "current_data_version",
         "popular_instructor_ids",
     ):
@@ -340,3 +382,90 @@ def test_openapi_lists_the_endpoints(client):
     assert "/professors/{instructor_id}/summary" in paths
     assert "/courses/{dept}/{number}/instructors" in paths
     assert "/cache/stats" in paths
+
+
+# --- scheduling ---------------------------------------------------------------
+
+
+def test_terms_report_how_many_sections_carry_times(client):
+    body = client.get("/schedule/terms").json()
+    assert body == [{"term": "FALL 2026", "sections": 3, "with_times": 3}]
+
+
+def test_a_schedule_is_built_and_honours_the_twenty_minute_gap(client):
+    response = client.post(
+        "/schedule",
+        json={"term": "FALL 2026", "courses": ["CSCE121", "MATH151"], "min_gap_minutes": 20},
+    )
+    assert response.status_code == 200
+    body = response.json()
+
+    # Section 501 ends at 10:00 and MATH151 starts at 10:20 -> 20 min, allowed.
+    # Section 500 ends at 10:00 too, so both are legal here; what must NOT
+    # appear is any pairing with a gap under 20.
+    assert body["count"] >= 1
+    for schedule in body["schedules"]:
+        assert schedule["tightest_gap"] >= 20
+        assert len(schedule["sections"]) == 2
+
+
+def test_raising_the_gap_rules_everything_out_and_says_why(client):
+    body = client.post(
+        "/schedule",
+        json={"term": "FALL 2026", "courses": ["CSCE121", "MATH151"], "min_gap_minutes": 90},
+    ).json()
+
+    assert body["count"] == 0
+    assert body["schedules"] == []
+    assert "closest any two of their sections come is 20 min" in body["detail"]
+    assert "less than the 90 min required" in body["detail"]
+
+
+def test_meetings_come_back_expanded_per_day(client):
+    body = client.post("/schedule", json={"term": "FALL 2026", "courses": ["CSCE121"]}).json()
+    meetings = body["schedules"][0]["sections"][0]["meetings"]
+
+    assert [m["day"] for m in meetings] == ["MON", "WED", "FRI"]
+    assert meetings[0]["start"] == "09:10"
+    assert meetings[0]["building"] == "ZACH"
+
+
+def test_a_term_with_no_sections_explains_itself(client):
+    body = client.post("/schedule", json={"term": "SPRING 2027", "courses": ["CSCE121"]}).json()
+    assert body["count"] == 0
+    assert "no sections on record" in body["detail"]
+
+
+def test_availability_is_passed_through(client):
+    body = client.post(
+        "/schedule",
+        json={"term": "FALL 2026", "courses": ["CSCE121"], "earliest": "12:00"},
+    ).json()
+    assert body["count"] == 0
+    assert "availability" in body["detail"]
+
+
+def test_schedules_are_cached_per_request(client, repo):
+    payload = {"term": "FALL 2026", "courses": ["CSCE121"]}
+    client.post("/schedule", json=payload)
+    client.post("/schedule", json=payload)
+    assert len(repo.section_calls) == 1
+
+    client.post("/schedule", json={**payload, "min_gap_minutes": 45})
+    assert len(repo.section_calls) == 2, "a different constraint is a different question"
+
+
+def test_an_unknown_field_is_rejected(client):
+    assert client.post(
+        "/schedule", json={"term": "FALL 2026", "courses": ["CSCE121"], "wat": 1}
+    ).status_code == 422
+
+
+def test_a_silly_gap_is_rejected(client):
+    assert client.post(
+        "/schedule", json={"term": "FALL 2026", "courses": ["CSCE121"], "min_gap_minutes": 999}
+    ).status_code == 422
+
+
+def test_at_least_one_course_is_required(client):
+    assert client.post("/schedule", json={"term": "FALL 2026", "courses": []}).status_code == 422

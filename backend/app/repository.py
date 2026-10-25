@@ -265,3 +265,88 @@ async def popular_instructor_ids(session: AsyncSession, limit: int) -> list[int]
     """Most-rated professors first -- a decent proxy for "who gets looked up"."""
     rows = (await session.execute(_POPULAR_INSTRUCTORS, {"limit": limit})).all()
     return [int(row[0]) for row in rows]
+
+
+_SECTIONS_FOR_COURSES = text(
+    """
+    select
+        s.id            as section_id,
+        s.course_id,
+        upper(c.dept || c.number) as code,
+        s.section_code,
+        s.term,
+        s.instructor_id,
+        i.full_name     as instructor_name,
+        s.campus,
+        s.delivery,
+        s.honors,
+        s.seats,
+        s.seats_open,
+        s.meets,
+        ics.adj_rating,
+        ics.adj_difficulty,
+        ics.adj_gpa
+    from sections s
+    join courses c on c.id = s.course_id
+    left join instructors i on i.id = s.instructor_id
+    left join instructor_course_scores ics
+        on ics.instructor_id = s.instructor_id and ics.course_id = s.course_id
+    where s.term = cast(:term as text)
+      and upper(c.dept || c.number) = any(cast(:codes as text[]))
+      and (cast(:campus as text) is null or s.campus is null or s.campus = cast(:campus as text))
+      and (cast(:honors as boolean) is null or s.honors = cast(:honors as boolean))
+      and (cast(:delivery as text) is null or s.delivery is null or s.delivery = cast(:delivery as text))
+      and (not cast(:open_only as boolean) or coalesce(s.seats_open, 1) > 0)
+    order by code, s.section_code
+    """
+)
+
+async def sections_for_courses(
+    session: AsyncSession,
+    *,
+    term: str,
+    codes: list[str],
+    campus: str | None = None,
+    honors: bool | None = None,
+    delivery: str | None = None,
+    open_only: bool = False,
+) -> list[dict[str, Any]]:
+    """Every section of the requested courses, with its instructor's scores.
+
+    Filters that the data may not know are permissive: a section with a null
+    campus is not excluded by a campus filter, because excluding it would hide
+    a real class over missing metadata.
+    """
+    rows = (
+        await session.execute(
+            _SECTIONS_FOR_COURSES,
+            {
+                "term": term,
+                "codes": [code.upper() for code in codes],
+                "campus": campus,
+                "honors": honors,
+                "delivery": delivery,
+                "open_only": open_only,
+            },
+        )
+    ).mappings().all()
+    return [dict(row) for row in rows]
+
+
+async def available_terms(session: AsyncSession) -> list[dict[str, Any]]:
+    """Terms that have sections loaded, and how many carry meeting times."""
+    rows = (
+        await session.execute(
+            text(
+                """
+                select term,
+                       count(*) as sections,
+                       count(*) filter (where meets <> '[]'::jsonb) as with_times
+                from sections
+                group by term
+                order by term desc
+                """
+            )
+        )
+    ).mappings().all()
+    return [dict(row) for row in rows]
