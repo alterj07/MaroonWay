@@ -91,6 +91,7 @@ def preferences_payload(preferences: Preferences) -> dict[str, Any]:
         "attendance": preferences.attendance,
         "avoid_early_mornings": preferences.avoid_early_mornings,
         "avoid_fridays": preferences.avoid_fridays,
+        "day_shape": preferences.day_shape,
         "delivery": preferences.delivery,
         "campus": preferences.campus,
         "honors": preferences.honors,
@@ -346,7 +347,35 @@ async def generate_schedules(
             )
 
         # 4. Rank.
-        ranked = prefs_service.rank(schedules, preferences, traits)[: request.limit]
+        # Options the student can tell apart. Several schedules can share the
+        # same shape -- the same courses at the same hours, differing only in
+        # which section number teaches them -- and offering three of those as
+        # "Option 1, 2, 3" is offering one option three times. Take the best of
+        # each distinct timetable, and fall back to the plain order if that
+        # leaves fewer than asked for.
+        ordered = prefs_service.rank(schedules, preferences, traits)
+        ranked: list[prefs_service.RankedSchedule] = []
+        seen: set[tuple[tuple[str, str, int, int], ...]] = set()
+        for candidate in ordered:
+            shape = tuple(
+                sorted(
+                    (section.code, meeting.day, meeting.start, meeting.end)
+                    for section in candidate.schedule.sections
+                    for meeting in section.meetings
+                )
+            )
+            if shape in seen:
+                continue
+            seen.add(shape)
+            ranked.append(candidate)
+            if len(ranked) == request.limit:
+                break
+        if len(ranked) < request.limit:
+            for candidate in ordered:
+                if candidate not in ranked:
+                    ranked.append(candidate)
+                if len(ranked) == request.limit:
+                    break
         detail = (
             None
             if ranked

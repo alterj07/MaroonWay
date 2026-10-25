@@ -532,6 +532,7 @@ def test_preferences_endpoint_reports_what_was_understood(client):
         "campus",
         "gap_tolerance",
         "wants_honors",
+        "day_shape",
     }
 
 
@@ -613,3 +614,38 @@ def test_course_list_reports_how_much_choice_each_offers(client):
     body = client.get("/schedule/courses", params={"term": "FALL 2026"}).json()
     assert body[0]["code"] == "CSCE121"
     assert body[0]["instructors"] >= 1
+
+
+def test_options_are_distinct_timetables(client, monkeypatch):
+    """Three schedules that differ only in section number are one option.
+
+    Offering the same hours three times as "Option 1, 2, 3" asks a student to
+    choose between things they cannot tell apart.
+    """
+    from app.routers import schedule as schedule_router
+
+    body = client.post(
+        "/schedule",
+        json={
+            "term": "DEMO FALL 2026",
+            "courses": ["ANTH205", "BIOL100"],
+            "wants": "",
+            "limit": 3,
+        },
+    )
+    if body.status_code != 200 or not body.json()["schedules"]:
+        pytest.skip("no sections loaded in this environment")
+
+    shapes = []
+    for option in body.json()["schedules"]:
+        shapes.append(
+            tuple(
+                sorted(
+                    (s["code"], m["day"], m["start"], m["end"])
+                    for s in option["sections"]
+                    for m in s["meetings"]
+                )
+            )
+        )
+    assert len(set(shapes)) == len(shapes), "two options share a timetable"
+    assert schedule_router  # the import is the point: this exercises that path

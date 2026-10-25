@@ -87,6 +87,17 @@ PREFERENCE_QUESTIONS: dict[str, Question] = {
         },
     ),
     "wants_honors": noul("Does this student want honors sections?"),
+    # Students say this constantly -- "don't stack my classes", "spread them
+    # out", "give me two long days" -- and nothing was asking about it, so the
+    # words went in and no preference came out.
+    "day_shape": choice(
+        "How does this student want their classes spread over the week?",
+        {
+            "either": "No view either way about how classes sit across the week",
+            "spread": "Wants classes spread out, not stacked or packed together",
+            "compact": "Wants classes packed into as few days as possible",
+        },
+    ),
 }
 
 #: gap_tolerance -> minutes. Never below the doc's 20-minute floor.
@@ -113,6 +124,9 @@ class Preferences:
     attendance: float = 0.0
     avoid_early_mornings: float = 0.0
     avoid_fridays: float = 0.0
+    #: "spread" | "compact" | None. Spread prefers more days and fewer hours
+    #: waiting between classes; compact prefers the opposite.
+    day_shape: str | None = None
     delivery: str | None = None  # F2F | WEB | None
     campus: str | None = None  # CSTAT | BLINN | None
     honors: bool | None = None
@@ -151,6 +165,11 @@ class Preferences:
             # asked for.
             avoid_early_mornings=_clear(decisions.unit("avoid_early_mornings", 0.0)),
             avoid_fridays=_clear(decisions.unit("avoid_fridays", 0.0)),
+            day_shape=(
+                None
+                if (shape := decisions.chose("day_shape", "either")) == "either"
+                else shape
+            ),
             delivery=delivery,
             campus=campus,
             honors=True if decisions.yes("wants_honors", 0.6) else None,
@@ -354,6 +373,28 @@ def score_schedule(
         )
         components.append(
             Contribution("no early mornings", preferences.avoid_early_mornings, late_enough)
+        )
+
+    if preferences.day_shape is not None:
+        # Spread: more days, less waiting between the classes on each. Compact:
+        # the reverse. Both are read off the same two measures, so the score
+        # moves on the thing the student actually described rather than on a
+        # proxy for it.
+        days = schedule.days_on_campus
+        spread_days = min(max(days - 1, 0) / 4.0, 1.0)  # 1 day -> 0, 5 -> 1
+        # Three hours of waiting in a week is a thoroughly packed-out week.
+        waiting = min(schedule.idle_minutes / 180.0, 1.0)
+        value = (
+            (spread_days * 0.6 + (1.0 - waiting) * 0.4)
+            if preferences.day_shape == "spread"
+            else ((1.0 - spread_days) * 0.6 + waiting * 0.4)
+        )
+        components.append(
+            Contribution(
+                "spread out" if preferences.day_shape == "spread" else "compact days",
+                1.0,
+                value,
+            )
         )
 
     if preferences.avoid_fridays > 0:

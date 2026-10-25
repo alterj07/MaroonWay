@@ -188,6 +188,8 @@ class PreferencesOut(BaseModel):
     attendance: float
     avoid_early_mornings: float
     avoid_fridays: float
+    #: "spread" | "compact" | None.
+    day_shape: str | None = None
     delivery: str | None = None
     campus: str | None = None
     honors: bool | None = None

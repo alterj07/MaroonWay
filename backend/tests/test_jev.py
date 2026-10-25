@@ -61,7 +61,7 @@ def test_an_unknown_kind_is_rejected():
 
 def test_every_preference_and_trait_question_is_valid():
     """Construction validates, so merely building them is the assertion."""
-    assert len(PREFERENCE_QUESTIONS) == 12
+    assert len(PREFERENCE_QUESTIONS) == 13
     assert len(TRAIT_QUESTIONS) == 7
     assert all(q.kind in (NOUL, CHOICE, SCORE) for q in PREFERENCE_QUESTIONS.values())
 
