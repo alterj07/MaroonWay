@@ -407,17 +407,21 @@ function Calendar({ plan }: { plan: Plan }) {
                   height: `calc(${hours} * var(--cal-row))`,
                 }}
               >
-                <strong>{c.code}</strong>
-                {/* A 50-minute class is one row tall; three lines do not fit in
-                    it, and clipped text reads as a rendering fault. The hover
-                    card carries the rest. */}
-                {hours >= 1 ? (
-                  <span>
-                    {time(c.start)}–{time(c.end)}
-                  </span>
-                ) : null}
-                {hours >= 1.5 ? (
-                  <small>
+                <span className="block-main">
+                  <strong>{c.code}</strong>
+                  {/* A 50-minute class is one row tall, so the time appears
+                      only where there is a second line to put it on. */}
+                  {hours >= 1 ? (
+                    <span>
+                      {time(c.start)}–{time(c.end)}
+                    </span>
+                  ) : null}
+                </span>
+                {/* The room goes on the right rather than on a third line, so
+                    a short class can show it too instead of hiding where it
+                    actually is. */}
+                {c.room ? (
+                  <small className="block-where" title={c.room}>
                     <MapPin size={10} />
                     {c.room}
                   </small>

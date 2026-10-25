@@ -1214,3 +1214,46 @@ a,
   max-height: none;
   overflow-y: visible;
 }
+
+/* ---- a class block: what, when, and where ---- */
+
+.cal article.block {
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 7px;
+}
+.block-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.block-main > strong,
+.block-main > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/*
+ * The room was a third line, which only fitted on blocks of 90 minutes or
+ * more -- so the shorter the class, the less likely it told you where to go.
+ * On the right it costs no height at all.
+ */
+.block-where {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex: none;
+  max-width: 48%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.85;
+  font-size: 0.5625rem;
+  letter-spacing: 0.01em;
+}
+.block-where svg {
+  flex: none;
+  opacity: 0.8;
+}
