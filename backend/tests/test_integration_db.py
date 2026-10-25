@@ -4,12 +4,12 @@ The SQL views carry the ranking arithmetic, so they need a database to be
 checked at all. Skipped unless TEST_DATABASE_URL is set:
 
     podman run -d --rm --name maroonway-pg -e POSTGRES_PASSWORD=maroonway \\
-        -e POSTGRES_DB=maroonway -p 55432:5432 docker.io/library/postgres:17-alpine
-    TEST_DATABASE_URL=postgresql+asyncpg://postgres:maroonway@127.0.0.1:55432/maroonway \\
+        -e POSTGRES_DB=maroonway_test -p 55432:5432 docker.io/library/postgres:17-alpine
+    TEST_DATABASE_URL=postgresql+asyncpg://postgres:maroonway@127.0.0.1:55432/maroonway_test \\
         .venv/bin/python -m pytest tests/test_integration_db.py -q
 
-The fixture drops and recreates the public schema, so point it at a scratch
-database, never at Supabase.
+The fixture drops and recreates the public schema, so it refuses to run unless
+the database name says it is for tests. Never point it at Supabase.
 """
 
 from __future__ import annotations
@@ -62,8 +62,29 @@ insert into rmp_ratings (
 """
 
 
+def _assert_disposable(url: str) -> None:
+    """Refuse to wipe a database that was not obviously set aside for tests.
+
+    This fixture drops the public schema. That is fine for a scratch database
+    and catastrophic for one holding loaded data, and the difference is one
+    environment variable -- so the name has to say so, or the override has to
+    be explicit.
+    """
+    database = url.rsplit("/", 1)[-1].split("?")[0].lower()
+    if "test" in database or "scratch" in database:
+        return
+    if os.environ.get("TEST_DATABASE_ALLOW_DESTRUCTIVE") == "1":
+        return
+    pytest.fail(
+        f"refusing to drop the public schema of {database!r}: these tests are "
+        "destructive. Point TEST_DATABASE_URL at a database whose name contains "
+        "'test', or set TEST_DATABASE_ALLOW_DESTRUCTIVE=1 if you really mean it."
+    )
+
+
 @pytest.fixture
 async def engine(monkeypatch):
+    _assert_disposable(TEST_DATABASE_URL)
     monkeypatch.setenv("DATABASE_URL", TEST_DATABASE_URL)
     get_settings.cache_clear()
 
