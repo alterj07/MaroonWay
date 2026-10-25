@@ -1,0 +1,251 @@
+/* The sign-in gate: copy and one button on the left, a still of the product on
+   the right, the way the reference layout splits it. */
+
+.gate {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 48px 24px;
+  background:
+    radial-gradient(circle at 78% 18%, #a34f4f 0, transparent 28%),
+    radial-gradient(circle at 15% 78%, #792f4a 0, transparent 32%),
+    linear-gradient(135deg, #270006 0, #4b0008 38%, #65121e 68%, #310009 100%);
+  color: #f8eee8;
+}
+
+.gate-inner {
+  width: 100%;
+  max-width: 1080px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  align-items: center;
+  gap: 56px;
+}
+
+/* ---- left: the ask ---- */
+
+.gate-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #fff5ef;
+  margin-bottom: 34px;
+}
+.gate-brand > span {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: #fff5ef;
+  color: #500000;
+}
+
+.gate-copy h1 {
+  margin: 0 0 12px;
+  font-size: clamp(2rem, 4.4vw, 2.9rem);
+  line-height: 1.07;
+  letter-spacing: -0.03em;
+  color: #fff4ee;
+  text-shadow: 0 3px 22px #17000240;
+}
+
+.gate-copy p {
+  margin: 0 0 28px;
+  max-width: 46ch;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: #dfc0b9;
+}
+
+/* One provider, so it is the only thing that looks like a button here. */
+.gate-google {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 11px;
+  width: min(100%, 360px);
+  padding: 13px 18px;
+  border-radius: 11px;
+  border: 1px solid #f3cabe;
+  background: linear-gradient(135deg, #fffaf6, #f3e3dc);
+  color: #2c1715;
+  font-size: 0.9375rem;
+  font-weight: 650;
+  text-decoration: none;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 16px 40px #17000255, 0 0 0 1px #ffffff22;
+  transition: transform 0.14s ease, box-shadow 0.14s ease;
+}
+.gate-google:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 20px 48px #17000266, 0 0 0 1px #ffffff33;
+}
+.gate-google:active {
+  transform: translateY(0);
+}
+.gate-google:disabled {
+  cursor: progress;
+  opacity: 0.72;
+  transform: none;
+}
+.gate-google:focus-visible {
+  outline: 2px solid #f0b5a8;
+  outline-offset: 3px;
+}
+
+.gate-note {
+  display: block;
+  margin-top: 18px;
+  max-width: 44ch;
+  font-size: 0.75rem;
+  line-height: 1.55;
+  color: #cfa79f;
+}
+.gate-note strong {
+  color: #f4d7d0;
+}
+
+/* ---- right: the still ---- */
+
+.gate-preview {
+  position: relative;
+}
+.gate-preview:before {
+  content: '';
+  position: absolute;
+  inset: -12% -6%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, #f0b5a52e 0, #d97d7426 42%, transparent 72%);
+  pointer-events: none;
+}
+
+.gate-card {
+  position: relative;
+  border-radius: 16px;
+  padding: 16px 17px 13px;
+  background: linear-gradient(145deg, #fffaf5 0, #f5e7df 100%);
+  border: 1px solid #f5c9bb;
+  box-shadow: 0 30px 70px #16000370, 0 0 0 1px #ffffff22;
+  color: #3a1d1a;
+}
+
+.gate-card > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: -16px -17px 14px;
+  padding: 13px 17px 11px;
+  background: linear-gradient(90deg, #50000008, #8e3b3b13);
+  border-bottom: 1px solid #f0cfc5;
+}
+.gate-card > header span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #8a5349;
+}
+.gate-card > header i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #7c2020;
+}
+.gate-card > header em {
+  font-style: normal;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #1c7a4b1a;
+  color: #1b6b43;
+}
+
+.gate-week {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 5px;
+}
+.gate-week > b {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #9a6659;
+  text-align: center;
+  padding-bottom: 5px;
+}
+.gate-col {
+  position: relative;
+  height: 190px;
+  border-radius: 7px;
+  background: #5000000a;
+  box-shadow: inset 0 0 0 1px #50000010;
+}
+
+.gate-block {
+  position: absolute;
+  left: 3px;
+  right: 3px;
+  min-height: 26px;
+  border-radius: 6px;
+  padding: 5px 6px;
+  color: #fff;
+  overflow: hidden;
+  box-shadow: 0 4px 12px #4a070718;
+}
+.gate-block b {
+  display: block;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1.25;
+}
+.gate-block small {
+  font-size: 0.5rem;
+  opacity: 0.82;
+}
+.gate-block.t-a { background: linear-gradient(135deg, #701b35, #9a536d); }
+.gate-block.t-b { background: linear-gradient(135deg, #500000, #7b2929); }
+.gate-block.t-c { background: linear-gradient(135deg, #994f3b, #c2775e); }
+
+.gate-card > footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 13px;
+  padding-top: 11px;
+  border-top: 1px solid #f0cfc5;
+}
+.gate-card > footer span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #8a5349;
+}
+
+/* ---- narrow screens: the still is decoration, so it goes ---- */
+
+@media (max-width: 860px) {
+  .gate-inner {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+  .gate-preview {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gate-google {
+    transition: none;
+  }
+}

@@ -1,5 +1,6 @@
 import { buildPlans, saveCourses } from '@/app/actions';
 import { Planner, type Plan } from '@/components/planner';
+import { Welcome } from '@/components/welcome';
 import {
   backendStatus,
   exploreCourses,
@@ -23,7 +24,15 @@ import { currentStudent, studentHeaders } from '@/lib/session';
  * different fix.
  */
 export default async function Home() {
-  const [student, status] = await Promise.all([currentStudent(), backendStatus()]);
+  const student = await currentStudent();
+
+  // The gate comes first, and before the backend is touched. Everything here
+  // is per-student, so there is nothing to show an anonymous visitor -- and
+  // asking the API for a catalogue nobody will see would make a signed-out
+  // visitor wait on a cold start for a screen that needs no data.
+  if (!student) return <Welcome />;
+
+  const status = await backendStatus();
 
   if (!status.ok) {
     return (

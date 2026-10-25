@@ -2,34 +2,18 @@ import { Text } from '@/components/text';
 import { currentStudent } from '@/lib/session';
 
 /**
- * Sign in with a Texas A&M Google account.
+ * Who you are signed in as, and the way out.
  *
- * Deliberately explicit about what this does and does not do: students will
- * reasonably assume a tamu.edu login reaches their Howdy schedule, and it does
- * not — Howdy is a NetID/CAS login with Duo. This only remembers their
- * preferences.
+ * The sign-*in* half lives on the gate (`components/welcome.tsx`), which every
+ * route redirects to while signed out, so this only ever renders for a student
+ * who is already through it.
  */
 export async function SignIn() {
   const student = await currentStudent();
 
-  if (!student) {
-    return (
-      <div className="flex flex-wrap items-center justify-between gap-2 rounded-card border border-line bg-surface px-4 py-3">
-        <Text variant="caption" muted>
-          Sign in with your <strong>@tamu.edu</strong> Google account to save what you want.
-          This is not your Howdy login and cannot see your registration.
-        </Text>
-        {/* A real <a>, not <Link>: NextAuth's routes return HTML pages, and a
-            client-side navigation to them would try to fetch an RSC payload. */}
-        {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-        <a
-          href="/api/auth/signin?callbackUrl=/schedule"
-          className="shrink-0 rounded-md bg-primary px-3 py-1.5 text-sm font-semibold text-white">
-          Sign in
-        </a>
-      </div>
-    );
-  }
+  // Signed out is the gate's job now, and a second sign-in button here would
+  // undercut having a single way in.
+  if (!student) return null;
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-2 rounded-card border border-line bg-surface px-4 py-3">

@@ -14,6 +14,7 @@ import {
   type Schedule,
   type ScheduleSection,
 } from '@/lib/api';
+import { Welcome } from '@/components/welcome';
 import { leadCourses } from '@/lib/plans';
 import { currentStudent, studentHeaders } from '@/lib/session';
 
@@ -189,10 +190,13 @@ export default async function SchedulePage({
   await connection();
   const params = await searchParams;
 
-  // A signed-in student's saved courses and wants prefill the form, so they do
-  // not retype them. Anything in the query string wins, since that is this
-  // visit's intent.
+  // Same gate as the planner: a schedule is built from a student's own courses
+  // and saved against their account, so there is nothing to build anonymously.
   const student = await currentStudent();
+  if (!student) return <Welcome />;
+
+  // Their saved courses and wants prefill the form, so they do not retype them.
+  // Anything in the query string wins, since that is this visit's intent.
   const headers = student ? studentHeaders(student) : null;
   const saved = headers ? await getStudentPreferences(headers).catch(() => null) : null;
 

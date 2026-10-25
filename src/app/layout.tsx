@@ -8,6 +8,7 @@ import "./loading.css";
 import "./picker.css";
 import "./explorer.css";
 import "./uniform.css";
+import "./gate.css";
 
 export const metadata: Metadata = {
   title: "MaroonWay | Build a Better TAMU Schedule",
