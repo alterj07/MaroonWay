@@ -1,0 +1,7 @@
+Term,Subject,Course Number,Section,Instructor,A,B,C,D,F,Q,Average GPA,Course Title,Campus
+202531,CSCE,121,501,"DOE, JANE M",30,20,10,5,2,3,3.102,Introduction to Program Design,College Station
+202531,CSCE,121,502,"SMITH, JOHN",10,25,30,12,8,5,2.401,Introduction to Program Design,College Station
+202511,MATH,151,201,"DOE, JANE M",40,30,15,5,1,2,3.455,Engineering Mathematics I,College Station
+202511,ENGL,104,100,"ROE, RICHARD A",5,6,7,1,0,1,2.950,Composition and Rhetoric,Blinn
+202531,CSCE,221,500,,12,10,4,1,0,0,3.300,Data Structures,College Station
+202531,PHYS,206,900,"LEE, SAM",,,,,,,,Newtonian Mechanics,College Station
