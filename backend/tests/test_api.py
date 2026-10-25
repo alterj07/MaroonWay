@@ -7,6 +7,8 @@ is checked by tests/test_integration_db.py, which needs a real Postgres.
 
 from __future__ import annotations
 
+from itertools import permutations
+
 from decimal import Decimal
 
 import pytest
@@ -607,6 +609,58 @@ def test_jev_traits_appear_in_the_breakdown(client, repo):
     names = {c["name"] for c in body["schedules"][0]["contributions"]}
     assert "light workload" in names
     assert "good lecturers" in names
+
+
+@pytest.mark.parametrize("order", list(permutations([None, 1, 2])))
+@pytest.mark.parametrize("courses, expected_quality", [
+    (["CSCE121"], 0.9), (["MATH151"], 0.1), (["CSCE121", "MATH151"], 0.5),
+])
+def test_course_traits_do_not_leak_between_a_professors_courses(client, monkeypatch, order, courses, expected_quality):
+    async def traits_for_instructors(session, instructor_ids, *, version):
+        quality = {None: 0.3, 1: 0.9, 2: 0.1}
+        return [{
+            "instructor_id": 7, "course_id": course_id,
+            "lots_of_quizzes": None, "exam_difficulty": None,
+            "lecture_quality": quality[course_id], "attendance_taken": None,
+            "extra_credit": None, "heavy_workload": None,
+            "grades_generously": None, "model": "test", "review_count": 10,
+        } for course_id in order]
+
+    monkeypatch.setattr(repository, "traits_for_instructors", traits_for_instructors)
+    response = client.post("/schedule", json={
+        "term": "FALL 2026", "courses": courses, "wants": "I want good lecturers",
+    })
+    assert response.status_code == 200
+    body = response.json()
+    assert body["count"] > 0
+    for schedule in body["schedules"]:
+        lecture = next(c for c in schedule["contributions"] if c["name"] == "good lecturers")
+        assert lecture["value"] == pytest.approx(expected_quality)
+
+
+@pytest.mark.parametrize("order, expected_quality", [([None, 1], 0.3), ([1, None], 0.3), ([1], None)])
+def test_an_unanalysed_course_never_uses_another_courses_notes(client, monkeypatch, order, expected_quality):
+    async def traits_for_instructors(session, instructor_ids, *, version):
+        return [{
+            "instructor_id": 7, "course_id": course_id,
+            "lots_of_quizzes": None, "exam_difficulty": None,
+            "lecture_quality": 0.3 if course_id is None else 0.9,
+            "attendance_taken": None, "extra_credit": None, "heavy_workload": None,
+            "grades_generously": None, "model": "test", "review_count": 10,
+        } for course_id in order]
+
+    monkeypatch.setattr(repository, "traits_for_instructors", traits_for_instructors)
+    body = client.post("/schedule", json={
+        "term": "FALL 2026", "courses": ["MATH151"], "wants": "I want good lecturers",
+    }).json()
+    assert body["count"] > 0
+    for schedule in body["schedules"]:
+        lecture = [c for c in schedule["contributions"] if c["name"] == "good lecturers"]
+        if expected_quality is None:
+            assert lecture == []
+        else:
+            assert len(lecture) == 1
+            assert lecture[0]["value"] == pytest.approx(expected_quality)
 
 
 def test_an_explicit_gap_beats_what_jev_inferred(client):

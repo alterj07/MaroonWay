@@ -7,6 +7,8 @@ that the ranking does what the planning doc asks.
 
 from __future__ import annotations
 
+from dataclasses import replace
+
 import pytest
 
 from app.services.jev import (
@@ -214,7 +216,7 @@ def test_traits_from_jev_drive_the_workload_preference():
     quizzy = section("A", rating=4.5, difficulty=3.0)
     calm = section("B", rating=4.5, difficulty=3.0)
     traits = {
-        quizzy.instructor_id: Traits(heavy_workload=1.0, lots_of_quizzes=1.0, engine="jev-1.14"),
+        (quizzy.instructor_id, None): Traits(heavy_workload=1.0, lots_of_quizzes=1.0, engine="jev-1.14"),
     }
     prefs = Preferences(rating=0.1, difficulty=0.0, grades=0.0, workload=1.0, engine="jev")
 
@@ -229,6 +231,32 @@ def test_a_professor_with_no_reviews_is_not_punished_for_our_missing_data():
     result = score_schedule(schedule_of(section("A", rating=4.0)), prefs, {})
     # Lecture quality is unknown, so it is skipped rather than scored zero.
     assert [c.name for c in result.contributions] == ["professor rating", "easier classes"]
+
+
+@pytest.mark.parametrize("traits, expected_quality", [
+    ({(7, None): Traits(lecture_quality=0.4), (7, 1): Traits(lecture_quality=0.9)}, 0.9),
+    ({(7, None): Traits(lecture_quality=0.4), (7, 2): Traits(lecture_quality=0.1)}, 0.4),
+    ({(7, None): Traits(lecture_quality=0.4), (7, 1): Traits()}, None),
+    ({(7, 2): Traits(lecture_quality=0.1)}, None),
+    ({(8, 1): Traits(lecture_quality=0.9)}, None),
+])
+def test_lecture_traits_use_the_exact_course_then_general_professor_notes(traits, expected_quality):
+    candidate = replace(section("A"), instructor_id=7, course_id=1)
+    result = score_schedule(schedule_of(candidate), Preferences(lecture=1.0), traits)
+    lecture = [c for c in result.contributions if c.name == "good lecturers"]
+    if expected_quality is None:
+        assert lecture == []
+    else:
+        assert len(lecture) == 1
+        assert lecture[0].value == pytest.approx(expected_quality)
+
+
+def test_ranking_uses_each_courses_own_notes_for_the_same_professor():
+    good = schedule_of(replace(section("A"), instructor_id=7, course_id=1))
+    poor = schedule_of(replace(section("B"), instructor_id=7, course_id=2))
+    traits = {(7, 1): Traits(lecture_quality=0.9), (7, 2): Traits(lecture_quality=0.1)}
+    ranked = rank([poor, good], Preferences(rating=0, difficulty=0, grades=0, lecture=1, engine="test"), traits)
+    assert ranked[0].schedule is good
 
 
 def test_reasons_name_what_earned_the_place():
