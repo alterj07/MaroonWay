@@ -489,7 +489,10 @@ export function Planner({
     codes: string[],
     term?: string | null,
   ) => Promise<{ saved: boolean }>;
-  onBuildPlans: (codes: string[], wants: string) => Promise<Plan[]>;
+  onBuildPlans: (
+    codes: string[],
+    wants: string,
+  ) => Promise<{ plans: Plan[]; relaxed: string[] }>;
   /** Terms with sections loaded, for the semester picker. */
   terms: string[];
   /** Persists a built schedule; what "Use this schedule" means. */
@@ -507,7 +510,9 @@ export function Planner({
   const [chosen, setChosen] = useState<string[]>(savedCourses);
   const build = async (codes: string[], wants: string) => {
     setChosen(codes);
-    setPlans(await onBuildPlans(codes, wants));
+    const result = await onBuildPlans(codes, wants);
+    setPlans(result.plans);
+    setRelaxed(result.relaxed);
   };
   // The sidebar shows the student's own courses; the showcase is only a
   // stand-in for a first visit when nothing has been chosen yet.
@@ -554,6 +559,10 @@ export function Planner({
     [comparing, setComparing] = useState(false),
     [analysing, setAnalysing] = useState(false),
     [busy, setBusy] = useState(false),
+    // Preferences the timetable could not honour. Shown rather than swallowed:
+    // a schedule that quietly disobeys is worse than one that says it had to.
+    [relaxed, setRelaxed] = useState<string[]>([]),
+    [editing, setEditing] = useState<number | null>(null),
     // What the overlay should say: one flag covers building and saving, and an
     // overlay reporting the wrong one is worse than no overlay.
     [busyWhat, setBusyWhat] = useState<"build" | "save">("build"),
@@ -853,18 +862,58 @@ export function Planner({
             />
           ) : null}
           <div className="chips">
-            {priorities.map((p, i) => (
-              <button
-                onClick={() =>
-                  setPriorities((v) => v.filter((_, x) => x !== i))
-                }
-                key={p}
-              >
-                <Check size={12} />
-                {p}
-                <X size={11} />
-              </button>
-            ))}
+            {priorities.map((p, i) =>
+              editing === i ? (
+                <input
+                  key={p}
+                  className="side-add"
+                  autoFocus
+                  defaultValue={p}
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape") setEditing(null);
+                    if (e.key !== "Enter") return;
+                    const text = e.currentTarget.value.trim();
+                    setEditing(null);
+                    setPriorities((v) =>
+                      text
+                        ? v.map((old, x) => (x === i ? text : old))
+                        : v.filter((_, x) => x !== i),
+                    );
+                  }}
+                  onBlur={(e) => {
+                    const text = e.currentTarget.value.trim();
+                    setEditing(null);
+                    setPriorities((v) =>
+                      text
+                        ? v.map((old, x) => (x === i ? text : old))
+                        : v.filter((_, x) => x !== i),
+                    );
+                  }}
+                />
+              ) : (
+                /* The chip edits; the × deletes. Clicking the body used to
+                   delete it, so correcting a word meant retyping the lot. */
+                <span className="chip" key={p}>
+                  <button
+                    className="chip-edit"
+                    title="Edit this priority"
+                    onClick={() => setEditing(i)}
+                  >
+                    <Check size={12} />
+                    {p}
+                  </button>
+                  <button
+                    className="chip-drop"
+                    aria-label={`Remove "${p}"`}
+                    onClick={() =>
+                      setPriorities((v) => v.filter((_, x) => x !== i))
+                    }
+                  >
+                    <X size={11} />
+                  </button>
+                </span>
+              ),
+            )}
           </div>
           <button
             className="rebuild"
@@ -891,6 +940,15 @@ export function Planner({
                     See all {plans.length} in Saved schedules
                   </button>
                 </small>
+              ) : null}
+              {relaxed.length ? (
+                <p className="caution" role="status">
+                  <AlertTriangle size={14} />
+                  <span>
+                    {relaxed.join("; ")} — these schedules are the closest fit
+                    without it.
+                  </span>
+                </p>
               ) : null}
               {tied ? (
                 <small className="tied-note">

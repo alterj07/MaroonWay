@@ -1446,3 +1446,60 @@ a,
     opacity: 0.8;
   }
 }
+
+/* ---- a preference the timetable could not meet ---- */
+
+.caution {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 8px 0 0;
+  padding: 9px 12px;
+  border-radius: 9px;
+  border: 1px solid #e0a35c40;
+  background: #c47e2820;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: #f1cb9a;
+  max-width: 72ch;
+}
+.caution svg {
+  flex: none;
+  margin-top: 1px;
+}
+
+/* ---- priority chips: the body edits, the × deletes ---- */
+
+.chip {
+  display: inline-flex;
+  align-items: stretch;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.chip-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 4px 6px 10px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.75rem;
+  text-align: left;
+  cursor: text;
+}
+.chip-drop {
+  display: grid;
+  place-items: center;
+  padding: 0 9px 0 4px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.6;
+}
+.chip-drop:hover {
+  opacity: 1;
+  background: #ffffff1a;
+}

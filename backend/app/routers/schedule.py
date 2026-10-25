@@ -341,6 +341,37 @@ async def generate_schedules(
         )
         availability = wanted
 
+        # A long gap the timetable cannot give. Asking for two hours between
+        # classes is easy to say and often impossible, and an empty result does
+        # not distinguish "no such schedule" from "your gap was too long" --
+        # so fall back to the floor and say which it was.
+        # Only a gap inferred from the student's words is relaxed. One they
+        # set on the control is a constraint they chose, and quietly ignoring
+        # it would be worse than returning nothing -- the doc's 20 minutes is a
+        # floor the student may raise, not a suggestion.
+        if (
+            not schedules
+            and request.min_gap_minutes is None
+            and min_gap > scheduling.DEFAULT_MIN_GAP_MINUTES
+        ):
+            loosened = scheduling.generate(
+                candidates,
+                min_gap=scheduling.DEFAULT_MIN_GAP_MINUTES,
+                availability=wanted,
+                limit=pool_size,
+            )
+            if loosened:
+                hours = min_gap / 60
+                asked = (
+                    f"{hours:.0f} hours" if hours >= 1 and hours == int(hours)
+                    else f"{min_gap} minutes"
+                )
+                relaxed.append(
+                    f"{asked} between classes was impossible for these courses"
+                )
+                schedules = loosened
+                min_gap = scheduling.DEFAULT_MIN_GAP_MINUTES
+
         # Nothing fits with everything asked for: drop the constraints one at a
         # time, most recently added first, and say which could not be met.
         while not schedules and constraints:

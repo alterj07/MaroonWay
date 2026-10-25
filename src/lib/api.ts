@@ -361,6 +361,8 @@ export type ScheduleResponse = {
   preferences: Preferences;
   /** Set when nothing could be built — says which constraint bit. */
   detail: string | null;
+  /** Preferences the timetable could not honour, stated plainly. */
+  relaxed?: string[];
 };
 
 export type PreferenceResponse = {

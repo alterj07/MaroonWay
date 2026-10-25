@@ -49,11 +49,17 @@ export async function buildPlans(
   courses: string[],
   wants: string,
   term?: string | null
-): Promise<Plan[]> {
+  // `relaxed` travels with the plans: a preference the timetable could not
+  // honour is part of the answer, and dropping it leaves a student reading a
+  // schedule that quietly disobeys them.
+): Promise<{ plans: Plan[]; relaxed: string[] }> {
   const terms = await getTerms().catch(() => []);
   const chosen = term ?? terms.find((t) => t.with_times > 0)?.term ?? terms[0]?.term;
   if (!chosen) {
-    return emptyPlan('No term loaded', 'Load a term with section times first');
+    return {
+      plans: emptyPlan('No term loaded', 'Load a term with section times first'),
+      relaxed: [],
+    };
   }
 
   const codes = courses
@@ -70,9 +76,13 @@ export async function buildPlans(
   }
 
   try {
-    return (await plansFor(chosen, codes, wants)).plans;
+    const result = await plansFor(chosen, codes, wants);
+    return { plans: result.plans, relaxed: result.relaxed ?? [] };
   } catch (error) {
-    return emptyPlan('Could not reach the backend', String(error));
+    return {
+      plans: emptyPlan('Could not reach the backend', String(error)),
+      relaxed: [],
+    };
   }
 }
 

@@ -83,7 +83,11 @@ PREFERENCE_QUESTIONS: dict[str, Question] = {
             "tight": "Does not mind rushing between classes; 20 minutes is fine",
             "comfortable": "Wants a comfortable walk; around 30 minutes",
             "relaxed": "Wants plenty of room; around 45 minutes",
-            "long": "Wants a long break between classes; an hour or more",
+            "long": "Wants a long break between classes; about an hour",
+            # The scale stopped at an hour, so "two hours between classes"
+            # landed on "long" and came back as sixty minutes -- the decision
+            # was right and the vocabulary could not express it.
+            "very_long": "Wants two hours or more between classes",
         },
     ),
     "wants_honors": noul("Does this student want honors sections?"),
@@ -101,7 +105,13 @@ PREFERENCE_QUESTIONS: dict[str, Question] = {
 }
 
 #: gap_tolerance -> minutes. Never below the doc's 20-minute floor.
-GAP_MINUTES = {"tight": 20, "comfortable": 30, "relaxed": 45, "long": 60}
+GAP_MINUTES = {
+    "tight": 20,
+    "comfortable": 30,
+    "relaxed": 45,
+    "long": 60,
+    "very_long": 120,
+}
 
 
 #: Above this, a yes/no answer counts as a stated wish rather than a shrug.

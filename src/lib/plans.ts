@@ -125,7 +125,7 @@ export async function plansFor(
   term: string,
   courses: string[],
   wants?: string | null
-): Promise<{ plans: Plan[]; detail: string | null }> {
+): Promise<{ plans: Plan[]; detail: string | null; relaxed?: string[] }> {
   if (!courses.length) {
     return { plans: emptyPlan('No classes chosen', 'Add the classes you need'), detail: null };
   }
@@ -143,7 +143,7 @@ export async function plansFor(
     const detail = result.detail ?? 'No conflict-free combination exists';
     return { plans: emptyPlan('No schedule fits', detail), detail };
   }
-  return { plans: result.schedules.map(toPlan), detail: null };
+  return { plans: result.schedules.map(toPlan), detail: null, relaxed: result.relaxed };
 }
 
 /**
