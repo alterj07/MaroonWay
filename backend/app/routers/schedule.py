@@ -259,7 +259,7 @@ async def generate_schedules(
         for row in rows:
             candidates.setdefault(row["code"], []).append(to_section(row))
 
-        availability = scheduling.Availability(
+        request_availability = scheduling.Availability(
             earliest=scheduling.parse_time(request.earliest),
             latest=scheduling.parse_time(request.latest),
             excluded_days=frozenset(
@@ -271,64 +271,54 @@ async def generate_schedules(
         # small pool is already biased toward high ratings -- and a student who
         # asked for no Friday classes would never see the Friday-free options,
         # because they rank lower on rating before preferences are applied.
+        availability = request_availability
         pool_size = max(request.limit * 4, SCHEDULE_POOL)
-        schedules = scheduling.generate(
-            candidates,
-            min_gap=min_gap,
-            availability=availability,
-            limit=pool_size,
-        )
 
-        # A clear "no Friday classes" has to shape the search, not just the
-        # ranking of what the search already chose. With a real term loaded a
-        # popular course has over a hundred sections, so the pool fills with
-        # the highest-rated combinations long before a Friday-free one appears,
-        # and the preference silently does nothing -- which is exactly what it
-        # used to do. Ask for the constrained schedules first and fall back to
-        # the unconstrained pool when the timetable cannot give them, so the
-        # answer is still honest about being impossible rather than empty.
         # Preferences stated clearly enough to be worth obeying rather than
-        # merely scoring. Each is applied on top of the last and kept only if
-        # schedules survive it, so a student gets as much of what they asked
-        # for as the timetable allows and is told about whatever it could not
-        # give. Scoring alone was not enough: with a hundred sections to a
-        # course the pool fills with the highest-rated combinations long before
-        # a Friday-free or late-starting one appears, so the preference was
-        # understood and then silently did nothing.
-        wanted: list[tuple[str, scheduling.Availability]] = []
-        tightened = availability
+        # merely scoring. Scoring alone was not enough: with a hundred sections
+        # to a course the pool fills with the highest-rated combinations long
+        # before a Friday-free or late-starting one appears, so the preference
+        # was understood and then silently did nothing.
+        #
+        # They are applied together, in one search. Applying them one at a time
+        # meant a search per constraint plus an unconstrained one that was
+        # always discarded -- three passes over a combination space that takes
+        # seconds to walk, which is why a four-course build took the better
+        # part of a minute. Relaxing only happens when the constrained search
+        # comes back empty, which is rare and is the case that can afford it.
+        constraints: list[tuple[str, scheduling.Availability]] = []
+        wanted = availability
         if (
             preferences.avoid_fridays > prefs_service.CLEAR_SIGNAL
             and "FRI" not in availability.excluded_days
         ):
-            tightened = replace(
-                tightened,
-                excluded_days=tightened.excluded_days | frozenset({"FRI"}),
+            wanted = replace(
+                wanted, excluded_days=wanted.excluded_days | frozenset({"FRI"})
             )
-            wanted.append(("no Friday classes", tightened))
+            constraints.append(("no Friday classes", wanted))
         if (
             preferences.avoid_early_mornings > prefs_service.CLEAR_SIGNAL
             and availability.earliest is None
         ):
-            tightened = replace(tightened, earliest=EARLY_MORNING_ENDS)
-            wanted.append(("no early mornings", tightened))
+            wanted = replace(wanted, earliest=EARLY_MORNING_ENDS)
+            constraints.append(("no early mornings", wanted))
 
         relaxed: list[str] = []
-        for label, attempt_with in wanted:
-            attempt = scheduling.generate(
-                candidates,
-                min_gap=min_gap,
-                availability=attempt_with,
-                limit=pool_size,
+        schedules = scheduling.generate(
+            candidates, min_gap=min_gap, availability=wanted, limit=pool_size
+        )
+        availability = wanted
+
+        # Nothing fits with everything asked for: drop the constraints one at a
+        # time, most recently added first, and say which could not be met.
+        while not schedules and constraints:
+            label, _ = constraints.pop()
+            relaxed.append(f"{label} was impossible for these courses")
+            fallback = constraints[-1][1] if constraints else request_availability
+            schedules = scheduling.generate(
+                candidates, min_gap=min_gap, availability=fallback, limit=pool_size
             )
-            if attempt:
-                schedules = attempt
-                availability = attempt_with
-            else:
-                relaxed.append(f"{label} was impossible for these courses")
-                # Stop tightening: a later constraint builds on this one, and
-                # applying it would re-impose the one that just failed.
-                break
+            availability = fallback
 
         # 3. What did Jev read about these professors?
         instructor_ids = sorted(

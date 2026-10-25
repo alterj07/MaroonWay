@@ -1206,3 +1206,11 @@ a,
     animation: none;
   }
 }
+
+/* The calendar grew to fourteen hours; it stays full height and the page
+   scrolls, rather than becoming a small window you scroll inside. */
+.cal-scroll,
+.detail {
+  max-height: none;
+  overflow-y: visible;
+}

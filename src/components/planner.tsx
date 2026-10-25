@@ -103,7 +103,9 @@ export type Plan = {
   courses: Course[];
 };
 const days = ["MON", "TUE", "WED", "THU", "FRI"],
-  hours = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
+  // Through 9pm: A&M runs evening labs and exam sections that finish well
+  // after five, and a class drawn below the last row sits outside the grid.
+  hours = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
 const time = (n: number) => {
   const h = Math.floor(n),
     m = Math.round((n - h) * 60);
