@@ -1,6 +1,6 @@
 """Apply a .sql file to the configured database.
 
-    python -m app.ingest.apply_sql sql/001_schema.sql sql/002_indexes.sql
+    python -m app.ingest.apply_sql sql/0*.sql
 
 Equivalent to pasting the file into the Supabase SQL editor, which is the other
 (and, for a first run, more visible) option. There is no psql on this machine.

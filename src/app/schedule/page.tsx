@@ -149,7 +149,7 @@ function Week({ schedule }: { schedule: Schedule }) {
                   const height = ((minutes(meeting.end) - minutes(meeting.start)) / span) * 100;
                   return (
                     <div
-                      key={`${section.section_id}-${meeting.day}`}
+                      key={`${section.section_id}-${meeting.day}-${meeting.start}`}
                       className={`absolute inset-x-1 overflow-hidden rounded px-1 py-0.5 text-xs leading-tight text-white ${COLORS[index % COLORS.length]}`}
                       style={{ top: `${top}%`, height: `${Math.max(height, 7)}%` }}
                       title={`${section.code} · ${section.instructor_name ?? 'staff'} · ${meeting.start}–${meeting.end}`}>
@@ -168,13 +168,23 @@ function Week({ schedule }: { schedule: Schedule }) {
 }
 
 function SectionRow({ section }: { section: ScheduleSection }) {
-  const days = [...new Set(section.meetings.map((m) => m.day[0]))].join('');
+  // Every meeting at its own time and place. Collapsing to the first one
+  // claimed a class met at one time all week, which is the whole of issue #5.
   const when = section.meetings.length
-    ? `${days} ${section.meetings[0].start}–${section.meetings[0].end}`
-    : 'online';
-  const where = section.meetings[0]
-    ? [section.meetings[0].building, section.meetings[0].room].filter(Boolean).join(' ')
-    : '';
+    ? section.meetings
+        .map((m) => `${m.day.slice(0, 1)} ${m.start}–${m.end}`)
+        .join(' · ')
+    : section.delivery === 'WEB'
+      ? 'online'
+      : 'meeting times unknown';
+  const where =
+    [
+      ...new Set(
+        section.meetings
+          .map((m) => [m.building, m.room].filter(Boolean).join(' '))
+          .filter(Boolean),
+      ),
+    ].join(' · ');
   return (
     <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-t border-line py-2 first:border-t-0">
       <div>
