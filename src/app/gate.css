@@ -1513,38 +1513,70 @@ a,
 
 /* ---- priority chips: the body edits, the × deletes ---- */
 
+/*
+ * Splitting the chip into two buttons made the base `.chips button` rule paint
+ * each half as its own pill, so every priority read as a chip followed by a
+ * loose x. The pill belongs to the wrapper; the two buttons inside are bare,
+ * and they sit centred in the column rather than hanging off its left edge.
+ */
+.chips {
+  justify-content: center;
+}
 .chip {
   display: inline-flex;
   align-items: stretch;
+  max-width: 100%;
+  border: 1px solid #9b6660;
   border-radius: 999px;
+  background: #f4e3dd;
+  color: #6b1720;
   overflow: hidden;
 }
-.chip-edit {
+.site-dark .chip {
+  border-color: #704846;
+  background: #3b292c;
+  color: #efb0a5;
+}
+.chips .chip-edit,
+.chips .chip-drop {
+  border: 0 !important;
+  border-radius: 0;
+  background: transparent !important;
+  color: inherit !important;
+}
+.chips .chip-edit {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 4px 6px 10px;
-  border: 0;
-  background: transparent;
-  color: inherit;
+  min-width: 0;
+  padding: 6px 3px 6px 11px;
   font: inherit;
   font-size: 0.75rem;
+  line-height: 1.4;
   text-align: left;
+  /* Wraps inside the pill instead of widening it past the column. */
+  white-space: normal;
+  overflow-wrap: anywhere;
   cursor: text;
 }
-.chip-drop {
+.chips .chip-edit svg {
+  flex: none;
+}
+.chips .chip-drop {
   display: grid;
   place-items: center;
-  padding: 0 9px 0 4px;
-  border: 0;
-  background: transparent;
-  color: inherit;
+  padding: 0 10px 0 5px;
   cursor: pointer;
-  opacity: 0.6;
+  opacity: 0.55;
 }
-.chip-drop:hover {
+.chips .chip-drop:hover {
   opacity: 1;
-  background: #ffffff1a;
+  background: #ffffff1f !important;
+}
+
+/* The editor that replaces a chip keeps to the column too. */
+.chips .side-add {
+  width: 100%;
 }
 
 /* The legend in the hover card, matching the marks on the block. */
