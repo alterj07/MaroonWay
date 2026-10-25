@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 
-import { getTerms, saveStudentPreferences } from '@/lib/api';
+import { getTerms, saveSchedule, saveStudentPreferences } from '@/lib/api';
 import type { Plan } from '@/components/planner';
 import { emptyPlan, plansFor } from '@/lib/plans';
 import { currentStudent, studentHeaders } from '@/lib/session';
@@ -74,4 +74,26 @@ export async function buildPlans(
   } catch (error) {
     return emptyPlan('Could not reach the backend', String(error));
   }
+}
+
+/**
+ * Keep a built schedule against the student's account.
+ *
+ * What the "Use this schedule" button does: the backend already stores saved
+ * schedules, and nothing was calling it, so the button looked like it worked
+ * and lost the schedule the moment the page reloaded.
+ */
+export async function useSchedule(term: string, label: string, payload: Plan) {
+  const student = await currentStudent();
+  if (!student) return { saved: false, reason: 'not signed in' as const };
+
+  await saveSchedule(studentHeaders(student), {
+    term,
+    label,
+    // The plan as the UI holds it, so a saved schedule can be shown again
+    // without rebuilding it against data that may have moved on.
+    payload: payload as unknown as Record<string, unknown>,
+  });
+  revalidatePath('/');
+  return { saved: true as const };
 }

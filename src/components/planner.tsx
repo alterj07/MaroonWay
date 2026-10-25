@@ -37,6 +37,16 @@ export type Course = {
   end: number;
   room: string;
   color: string;
+  /** Everything the hover card shows. Null where there is no data to show. */
+  section?: string;
+  rating?: number | null;
+  difficulty?: number | null;
+  pctA?: number | null;
+  gpa?: number | null;
+  campus?: string | null;
+  delivery?: string | null;
+  honors?: boolean;
+  seatsOpen?: number | null;
 };
 export type Student = { email: string; name: string | null };
 
@@ -164,6 +174,67 @@ function hourLabel(h: number) {
   return `${hour} ${h >= 12 ? "PM" : "AM"}`;
 }
 
+/**
+ * What is behind a block, on hover or keyboard focus.
+ *
+ * A block is a choice of instructor as much as a time, so the numbers that
+ * justify the choice -- the rating, how hard it marks, how many A's it gives --
+ * belong where the choice is rather than a page away.
+ */
+function CourseHover({ course }: { course: Course }) {
+  const stat = (v: number | null | undefined, digits = 2) =>
+    v === null || v === undefined ? "—" : Number(v).toFixed(digits);
+  const share = (v: number | null | undefined) =>
+    v === null || v === undefined ? "—" : `${Math.round(Number(v) * 100)}%`;
+
+  return (
+    <div className="hover-card" role="tooltip">
+      <b>
+        {course.code}
+        {course.section ? <em>sec {course.section}</em> : null}
+      </b>
+      <span className="hover-prof">{course.prof}</span>
+      <dl>
+        <div>
+          <dt>RMP rating</dt>
+          <dd className={band(course.rating ?? null)}>
+            {stat(course.rating)} / 5
+          </dd>
+        </div>
+        <div>
+          <dt>Difficulty</dt>
+          <dd>{stat(course.difficulty)} / 5</dd>
+        </div>
+        <div>
+          <dt>A rate</dt>
+          <dd>{share(course.pctA)}</dd>
+        </div>
+        <div>
+          <dt>Avg GPA</dt>
+          <dd>{stat(course.gpa)}</dd>
+        </div>
+      </dl>
+      <footer>
+        <span>
+          <Clock3 size={11} />
+          {time(course.start)}–{time(course.end)}
+        </span>
+        <span>
+          <MapPin size={11} />
+          {course.room}
+        </span>
+        {course.campus ? (
+          <span>{CAMPUS_NAMES[course.campus] ?? course.campus}</span>
+        ) : null}
+        {course.honors ? <span className="hover-flag">Honors</span> : null}
+        {course.delivery && course.delivery !== "F2F" ? (
+          <span className="hover-flag">{course.delivery}</span>
+        ) : null}
+      </footer>
+    </div>
+  );
+}
+
 function Calendar({ plan }: { plan: Plan }) {
   return (
     <div className="cal-scroll">
@@ -192,27 +263,43 @@ function Calendar({ plan }: { plan: Plan }) {
           />
         ))}
         {plan.courses.flatMap((c) =>
-          c.days.map((d) => (
-            <article
-              key={`${c.code}-${d}`}
-              className={c.color}
-              style={{
-                left: `calc(48px + ((100% - 48px) / 5) * ${d})`,
-                width: "calc((100% - 48px) / 5)",
-                top: `${44 + (c.start - 8) * 25}px`,
-                height: `${Math.max((c.end - c.start) * 25, 35)}px`,
-              }}
-            >
-              <strong>{c.code}</strong>
-              <span>
-                {time(c.start)}–{time(c.end)}
-              </span>
-              <small>
-                <MapPin size={10} />
-                {c.room}
-              </small>
-            </article>
-          )),
+          c.days.map((d) => {
+            const hours = c.end - c.start;
+            return (
+              <article
+                key={`${c.code}-${d}`}
+                className={`${c.color} block`}
+                tabIndex={0}
+                style={{
+                  // Measured off the same custom properties the grid uses, so
+                  // changing either cannot leave the blocks beside their
+                  // column again -- the offset used to hardcode a gutter width
+                  // that the grid had since outgrown.
+                  left: `calc(var(--cal-gutter) + ((100% - var(--cal-gutter)) / 5) * ${d})`,
+                  width: "calc((100% - var(--cal-gutter)) / 5)",
+                  top: `calc(var(--cal-head) + ${c.start - 8} * var(--cal-row))`,
+                  height: `calc(${hours} * var(--cal-row))`,
+                }}
+              >
+                <strong>{c.code}</strong>
+                {/* A 50-minute class is one row tall; three lines do not fit in
+                    it, and clipped text reads as a rendering fault. The hover
+                    card carries the rest. */}
+                {hours >= 1 ? (
+                  <span>
+                    {time(c.start)}–{time(c.end)}
+                  </span>
+                ) : null}
+                {hours >= 1.5 ? (
+                  <small>
+                    <MapPin size={10} />
+                    {c.room}
+                  </small>
+                ) : null}
+                <CourseHover course={c} />
+              </article>
+            );
+          }),
         )}
       </div>
     </div>
@@ -226,6 +313,8 @@ export function Planner({
   savedWants,
   onSaveCourses,
   onBuildPlans,
+  terms,
+  onUseSchedule,
 }: {
   plans: Plan[];
   courses: ExploreCourse[];
@@ -237,6 +326,14 @@ export function Planner({
     term?: string | null,
   ) => Promise<{ saved: boolean }>;
   onBuildPlans: (codes: string[], wants: string) => Promise<Plan[]>;
+  /** Terms with sections loaded, for the semester picker. */
+  terms: string[];
+  /** Persists a built schedule; what "Use this schedule" means. */
+  onUseSchedule: (
+    term: string,
+    label: string,
+    plan: Plan,
+  ) => Promise<{ saved: boolean }>;
 }) {
   const [plans, setPlans] = useState<Plan[]>(initialPlans);
   // A failure arrives as one marked plan, not as a list of schedules.
@@ -275,7 +372,55 @@ export function Planner({
     [priorities, setPriorities] = useState([
       "No classes before 9 AM",
       "Avoid Friday classes",
-    ]);
+    ]),
+    // Each of these backs a control that previously did nothing.
+    [term, setTerm] = useState(terms[0] ?? ""),
+    [addingCourse, setAddingCourse] = useState(false),
+    [courseDraft, setCourseDraft] = useState(""),
+    [addingPriority, setAddingPriority] = useState(false),
+    [priorityDraft, setPriorityDraft] = useState(""),
+    [comparing, setComparing] = useState(false),
+    [analysing, setAnalysing] = useState(false),
+    [scoring, setScoring] = useState(false),
+    [busy, setBusy] = useState(false),
+    [kept, setKept] = useState(false);
+
+  /** Everything the student has asked for, as one sentence for the decider. */
+  const wants = [savedWants, ...priorities].filter(Boolean).join(", ");
+
+  async function rebuild(codes = chosen, text = wants) {
+    if (!codes.length || busy) return;
+    setBusy(true);
+    setKept(false);
+    try {
+      await build(codes, text);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function addCourse() {
+    const code = courseDraft.trim().toUpperCase().replace(/\s+/g, "");
+    setCourseDraft("");
+    setAddingCourse(false);
+    if (!code || chosen.includes(code)) return;
+    const next = [...chosen, code];
+    await onSaveCourses(next, term || null);
+    await rebuild(next);
+  }
+
+  function addPriority() {
+    const text = priorityDraft.trim();
+    setPriorityDraft("");
+    setAddingPriority(false);
+    if (text) setPriorities((v) => [...v, text]);
+  }
+
+  async function dropCourse(code: string) {
+    const next = chosen.filter((c) => c !== code);
+    await onSaveCourses(next, term || null);
+    if (next.length) await rebuild(next);
+  }
   const plan = useMemo(
     () => plans.find((p) => p.id === active) ?? plans[0],
     [active, plans],
@@ -355,24 +500,64 @@ export function Planner({
             <b>
               <SlidersHorizontal size={17} /> Your preferences
             </b>
-            <button>Reset</button>
+            <button
+              onClick={() => {
+                setPriorities([]);
+                void rebuild(chosen, savedWants);
+              }}
+            >
+              Reset
+            </button>
           </div>
-          <button className="term">
+          <label className="term">
             <span>
               <CalendarDays size={17} />
               <i>
                 <small>SEMESTER</small>
-                <b>Spring 2027</b>
+                <b>{term || "No term loaded"}</b>
               </i>
             </span>
             <ChevronDown size={16} />
-          </button>
+            {/* A real select over the terms that have sections. This was a
+                fixed string, so it could name a term the database had never
+                heard of. */}
+            <select
+              aria-label="Semester"
+              value={term}
+              disabled={!terms.length}
+              onChange={(e) => {
+                setTerm(e.target.value);
+                void onSaveCourses(chosen, e.target.value);
+                void rebuild();
+              }}
+            >
+              {terms.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
+          </label>
           <div className="label">
             <b>COURSES · {sidebarCredits} CREDITS</b>
-            <button>
+            <button onClick={() => setAddingCourse((v) => !v)}>
               <Plus size={13} /> Add
             </button>
           </div>
+          {addingCourse ? (
+            <input
+              className="side-add"
+              autoFocus
+              value={courseDraft}
+              placeholder="Course code, e.g. ENGL203"
+              onChange={(e) => setCourseDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") void addCourse();
+                if (e.key === "Escape") setAddingCourse(false);
+              }}
+              onBlur={() => void addCourse()}
+            />
+          ) : null}
           {sidebar.map((c, i) => (
             <div className="course" key={c.code}>
               <i className={SHOWCASE_COLORS[i % SHOWCASE_COLORS.length]} />
@@ -380,15 +565,35 @@ export function Planner({
                 <b>{c.label}</b>
                 <small>{c.title ?? "Untitled"}</small>
               </span>
-              <X size={13} />
+              <button
+                className="course-drop"
+                aria-label={`Remove ${c.label}`}
+                onClick={() => void dropCourse(c.code)}
+              >
+                <X size={13} />
+              </button>
             </div>
           ))}
           <div className="label priority-label">
             <b>PRIORITIES</b>
-            <button>
+            <button onClick={() => setAddingPriority((v) => !v)}>
               <Plus size={13} /> Add
             </button>
           </div>
+          {addingPriority ? (
+            <input
+              className="side-add"
+              autoFocus
+              value={priorityDraft}
+              placeholder="e.g. nothing before 10am"
+              onChange={(e) => setPriorityDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") addPriority();
+                if (e.key === "Escape") setAddingPriority(false);
+              }}
+              onBlur={addPriority}
+            />
+          ) : null}
           <div className="chips">
             {priorities.map((p, i) => (
               <button
@@ -415,8 +620,13 @@ export function Planner({
             sub="Up to 12 minutes"
             width="45%"
           />
-          <button className="rebuild">
-            <Sparkles size={15} /> Rebuild my schedule
+          <button
+            className="rebuild"
+            disabled={busy || !chosen.length}
+            onClick={() => void rebuild()}
+          >
+            <Sparkles size={15} />{" "}
+            {busy ? "Rebuilding…" : "Rebuild my schedule"}
           </button>
         </aside>
         <section className="results">
@@ -430,8 +640,9 @@ export function Planner({
               </h2>
             </span>
             {failed ? null : (
-              <button>
-                <SlidersHorizontal size={14} /> Compare
+              <button onClick={() => setComparing((v) => !v)}>
+                <SlidersHorizontal size={14} />{" "}
+                {comparing ? "Hide comparison" : "Compare"}
               </button>
             )}
           </div>
@@ -468,6 +679,36 @@ export function Planner({
               </button>
             ))}
           </div>
+          {comparing && !failed ? (
+            <table className="compare">
+              <thead>
+                <tr>
+                  <th>Option</th>
+                  <th>Match</th>
+                  <th>Professor avg.</th>
+                  <th>A rate</th>
+                  <th>Tightest gap</th>
+                  <th>Earliest</th>
+                </tr>
+              </thead>
+              <tbody>
+                {plans.map((p) => (
+                  <tr
+                    key={p.id}
+                    className={p.id === active ? "is-active" : ""}
+                    onClick={() => setActive(p.id)}
+                  >
+                    <td>{p.name}</td>
+                    <td>{p.score}%</td>
+                    <td>{p.rating}</td>
+                    <td>{p.aRate}</td>
+                    <td>{p.gap}</td>
+                    <td>{p.earliest}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : null}
           <div className="detail">
             {plan.failed ? (
               <ScheduleProblem reason={plan.failed} />
@@ -485,8 +726,22 @@ export function Planner({
                 <button className="save" onClick={() => setSaved(!saved)}>
                   <Heart size={17} fill={saved ? "currentColor" : "none"} />
                 </button>
-                <button className="use">
-                  Use this schedule <ArrowRight size={15} />
+                <button
+                  className="use"
+                  disabled={busy || kept || !term}
+                  onClick={async () => {
+                    setBusy(true);
+                    try {
+                      const result = await onUseSchedule(term, plan.name, plan);
+                      setKept(result.saved);
+                      if (result.saved) setPage("saved");
+                    } finally {
+                      setBusy(false);
+                    }
+                  }}
+                >
+                  {kept ? "Saved" : "Use this schedule"}{" "}
+                  <ArrowRight size={15} />
                 </button>
               </div>
             </div>
@@ -520,10 +775,63 @@ export function Planner({
                   workload with enough time between demanding courses.
                 </p>
               </div>
-              <button>
-                View full analysis <ArrowRight size={13} />
+              <button onClick={() => setAnalysing((v) => !v)}>
+                {analysing ? "Hide analysis" : "View full analysis"}{" "}
+                <ArrowRight size={13} />
               </button>
             </div>
+            {analysing ? (
+              <div className="analysis">
+                <h3>Every class in this schedule</h3>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Class</th>
+                      <th>Professor</th>
+                      <th>Rating</th>
+                      <th>Difficulty</th>
+                      <th>A rate</th>
+                      <th>When</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {plan.courses.map((c) => (
+                      <tr key={c.code}>
+                        <td>
+                          <b>{c.code}</b>
+                          {c.section ? <em> sec {c.section}</em> : null}
+                        </td>
+                        <td>{c.prof}</td>
+                        <td className={band(c.rating ?? null)}>
+                          {c.rating === null || c.rating === undefined
+                            ? "—"
+                            : Number(c.rating).toFixed(2)}
+                        </td>
+                        <td>
+                          {c.difficulty === null || c.difficulty === undefined
+                            ? "—"
+                            : Number(c.difficulty).toFixed(2)}
+                        </td>
+                        <td>
+                          {c.pctA === null || c.pctA === undefined
+                            ? "—"
+                            : `${Math.round(Number(c.pctA) * 100)}%`}
+                        </td>
+                        <td>
+                          {c.days.map((d) => DAY_LETTERS[d]).join("")}{" "}
+                          {time(c.start)}–{time(c.end)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <p className="analysis-note">
+                  Ratings are shrunk toward the average by how few reviews a
+                  professor has, so one glowing review does not outrank eighty
+                  steady ones. Ties break on difficulty, lowest first.
+                </p>
+              </div>
+            ) : null}
               </>
             )}
           </div>
@@ -540,9 +848,22 @@ export function Planner({
         <span>
           <BookOpen /> Course syllabi
         </span>
-        <button>
+        <button onClick={() => setScoring((v) => !v)}>
           <Info /> How scoring works
         </button>
+        {scoring ? (
+          <div className="scoring-note">
+            <b>How a schedule is scored</b>
+            <p>
+              Professors are ranked by their RateMyProfessors rating pulled
+              toward the average by how few reviews they have, then by
+              difficulty, lowest first. Grade data from A&amp;M&apos;s own
+              reports sets the A rate. What you type is read into preferences,
+              and schedules are ranked by how well they match, never by one
+              number alone.
+            </p>
+          </div>
+        ) : null}
       </footer>
     </main>
   );
@@ -689,6 +1010,9 @@ function showcaseCreditTotal(showcase: { credits: number }[]) {
  *  whatever courses the catalogue supplies. */
 const SHOWCASE_COLORS = ["berry", "blue", "gold", "green"];
 const SHOWCASE_TIMES = ["9:35", "9:35", "11:30", "12:45", "14:20"];
+
+/** Monday-first, matching the calendar's own day order. */
+const DAY_LETTERS = ["M", "T", "W", "R", "F"];
 
 const CAMPUS_NAMES: Record<string, string> = {
   CSTAT: "College Station",

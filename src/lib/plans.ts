@@ -45,6 +45,17 @@ export function toCourse(section: ScheduleSection, index: number): Course {
     end: first ? decimalHours(first.end) : 0,
     room: [first?.building, first?.room].filter(Boolean).join(' ') || 'Online',
     color: COLORS[index % COLORS.length],
+    // Carried through for the hover card: a block is a choice of instructor as
+    // much as a time, so the numbers behind that choice belong on it.
+    section: section.section_code,
+    rating: section.adj_rating,
+    difficulty: section.adj_difficulty,
+    pctA: section.pct_a,
+    gpa: section.adj_gpa,
+    campus: section.campus,
+    delivery: section.delivery,
+    honors: section.honors,
+    seatsOpen: section.seats_open,
   };
 }
 

@@ -1,4 +1,4 @@
-import { buildPlans, saveCourses } from '@/app/actions';
+import { buildPlans, saveCourses, useSchedule } from '@/app/actions';
 import { Planner, type Plan } from '@/components/planner';
 import { Welcome } from '@/components/welcome';
 import {
@@ -55,6 +55,8 @@ export default async function Home({
         savedWants=""
         onSaveCourses={saveCourses}
         onBuildPlans={buildPlans}
+        terms={[]}
+        onUseSchedule={useSchedule}
       />
     );
   }
@@ -94,6 +96,8 @@ export default async function Home({
       savedWants={saved?.wants ?? ''}
       onSaveCourses={saveCourses}
       onBuildPlans={buildPlans}
+      terms={terms.map((t) => t.term)}
+      onUseSchedule={useSchedule}
     />
   );
 }

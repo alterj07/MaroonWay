@@ -262,6 +262,8 @@ export type ScheduleSection = {
   adj_rating: number | null;
   adj_difficulty: number | null;
   adj_gpa: number | null;
+  /** Share of students who earned an A in this course with this instructor. */
+  pct_a: number | null;
 };
 
 export type Schedule = {
