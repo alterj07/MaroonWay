@@ -87,7 +87,7 @@ export async function useSchedule(term: string, label: string, payload: Plan) {
   const student = await currentStudent();
   if (!student) return { saved: false, reason: 'not signed in' as const };
 
-  await saveSchedule(studentHeaders(student), {
+  const schedule = await saveSchedule(studentHeaders(student), {
     term,
     label,
     // The plan as the UI holds it, so a saved schedule can be shown again
@@ -95,5 +95,5 @@ export async function useSchedule(term: string, label: string, payload: Plan) {
     payload: payload as unknown as Record<string, unknown>,
   });
   revalidatePath('/');
-  return { saved: true as const };
+  return { saved: true as const, schedule };
 }

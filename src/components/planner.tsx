@@ -3,7 +3,8 @@
 // fetches real schedules and maps them into Plan/Course.
 import { useMemo, useState } from "react";
 
-import { DEFAULT_PRIORITIES, emptyPlan } from "@/lib/plans";
+import { DEFAULT_PRIORITIES, emptyPlan, readSavedPlan } from "@/lib/plans";
+import type { SavedSchedule } from "@/lib/api";
 import { PlusIcon, SearchIcon } from "@animateicons/react/lucide";
 import {
   AlertTriangle,
@@ -355,6 +356,8 @@ export function Planner({
   onBuildPlans,
   terms,
   initialTerm,
+  savedSchedules: initialSavedSchedules = [],
+  savedSchedulesError = null,
   onUseSchedule,
 }: {
   plans: Plan[];
@@ -371,23 +374,30 @@ export function Planner({
   terms: string[];
   /** The semester used to generate initialPlans on the server. */
   initialTerm?: string | null;
+  savedSchedules?: SavedSchedule[];
+  savedSchedulesError?: string | null;
   /** Persists a built schedule; what "Use this schedule" means. */
   onUseSchedule: (
     term: string,
     label: string,
     plan: Plan,
-  ) => Promise<{ saved: boolean }>;
+  ) => Promise<{ saved: boolean; schedule?: SavedSchedule }>;
 }) {
   const [plans, setPlans] = useState<Plan[]>(initialPlans);
+  const [savedSchedules, setSavedSchedules] = useState(initialSavedSchedules);
+  const savedError = savedSchedulesError;
+  const [saveError, setSaveError] = useState<string | null>(null);
   // A failure arrives as one marked plan, not as a list of schedules.
   const failed = plans.length === 1 && Boolean(plans[0].failed);
   // What the student actually asked for, so the builder's sidebar lists their
   // courses rather than the ones in the landing illustration.
   const [chosen, setChosen] = useState<string[]>(savedCourses);
   const build = async (codes: string[], wants: string, selectedTerm = term) => {
+    if (busy) return;
     setChosen(codes);
     setBusy(true);
     setKept(false);
+    setSaveError(null);
     try {
       setPlans(await onBuildPlans(codes, wants, selectedTerm || null));
       setActive(1);
@@ -418,7 +428,6 @@ export function Planner({
     ),
     [dark, setDark] = useState(true),
     [active, setActive] = useState(1),
-    [saved, setSaved] = useState(false),
     [chat, setChat] = useState(true),
     [step, setStep] = useState(0),
     // Seeded from what was actually saved, falling back to the shared
@@ -483,6 +492,36 @@ export function Planner({
     () => plans.find((p) => p.id === active) ?? plans[0],
     [active, plans],
   );
+
+  function selectPlan(id: number) {
+    if (busy || id === active) return;
+    setActive(id);
+    setKept(false);
+    setSaveError(null);
+  }
+
+  async function keepSchedule() {
+    if (busy || kept || !term || plan.failed) return;
+    setBusy(true);
+    setSaveError(null);
+    try {
+      const result = await onUseSchedule(term, plan.name, plan);
+      if (!result.saved) {
+        setSaveError("Sign in again to save your schedule.");
+        return;
+      }
+      if (result.schedule) {
+        const record = result.schedule;
+        setSavedSchedules((previous) => [record, ...previous.filter((s) => s.id !== record.id)]);
+      }
+      setKept(true);
+      setPage("saved");
+    } catch {
+      setSaveError("Could not save your schedule. Please try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
   const prompts = [
       {
         q: "When do you prefer your first class?",
@@ -533,9 +572,17 @@ export function Planner({
     return (
       <SavedSchedules
         onNav={setPage}
-        plans={plans}
-        onOpen={(id) => {
-          setActive(id);
+        schedules={savedSchedules}
+        error={savedError}
+        busy={busy}
+        onOpen={(record, snapshot) => {
+          if (busy) return;
+          setPlans([snapshot]);
+          setActive(snapshot.id);
+          setTerm(record.term);
+          setChosen(snapshot.courses.map((c) => c.code.replace(/\s+/g, "").toUpperCase()));
+          setKept(true);
+          setSaveError(null);
           setPage("planner");
         }}
         dark={dark}
@@ -589,7 +636,7 @@ export function Planner({
                 void rebuild(chosen, wants, nextTerm);
               }}
             >
-              {terms.map((t) => (
+              {[...new Set([term, ...terms])].filter(Boolean).map((t) => (
                 <option key={t} value={t}>
                   {t}
                 </option>
@@ -714,7 +761,8 @@ export function Planner({
             {(failed ? [] : plans).map((p, i) => (
               <button
                 key={p.id}
-                onClick={() => setActive(p.id)}
+                disabled={busy}
+                onClick={() => selectPlan(p.id)}
                 className={active === p.id ? "selected" : ""}
               >
                 <div>
@@ -764,7 +812,7 @@ export function Planner({
                   <tr
                     key={p.id}
                     className={p.id === active ? "is-active" : ""}
-                    onClick={() => setActive(p.id)}
+                    onClick={() => selectPlan(p.id)}
                   >
                     <td>{p.name}</td>
                     <td>{p.score}%</td>
@@ -791,28 +839,21 @@ export function Planner({
                 <p>{plan.tags.join(" · ")}</p>
               </span>
               <div>
-                <button className="save" onClick={() => setSaved(!saved)}>
-                  <Heart size={17} fill={saved ? "currentColor" : "none"} />
+                <button className="save" aria-label={kept ? "Schedule saved" : "Save schedule"}
+                  disabled={busy || kept || !term} onClick={() => void keepSchedule()}>
+                  <Heart size={17} fill={kept ? "currentColor" : "none"} />
                 </button>
                 <button
                   className="use"
                   disabled={busy || kept || !term}
-                  onClick={async () => {
-                    setBusy(true);
-                    try {
-                      const result = await onUseSchedule(term, plan.name, plan);
-                      setKept(result.saved);
-                      if (result.saved) setPage("saved");
-                    } finally {
-                      setBusy(false);
-                    }
-                  }}
+                  onClick={() => void keepSchedule()}
                 >
                   {kept ? "Saved" : "Use this schedule"}{" "}
                   <ArrowRight size={15} />
                 </button>
               </div>
             </div>
+            {saveError && <p role="alert">{saveError}</p>}
             <div className="metrics">
               <Metric
                 icon={<Star />}
@@ -1388,30 +1429,20 @@ function Explorer({
 }
 
 function SavedSchedules({
-  onNav,
-  plans,
-  onOpen,
-  student,
-  dark,
-  setDark,
+  onNav, schedules, error, busy, onOpen, student, dark, setDark,
 }: {
   onNav: (p: "home" | "planner" | "explore" | "saved") => void;
-  plans: Plan[];
-  onOpen: (id: number) => void;
+  schedules: SavedSchedule[];
+  error: string | null;
+  busy: boolean;
+  onOpen: (record: SavedSchedule, snapshot: Plan) => void;
   student: Student | null;
   dark: boolean;
   setDark: (value: boolean) => void;
 }) {
-  const [favorites, setFavorites] = useState([1, 2]);
   return (
     <main className={`inner-page ${dark ? "site-dark" : "site-light"}`}>
-      <AppHeader
-        page="saved"
-        onNav={onNav}
-        dark={dark}
-        setDark={setDark}
-        student={student}
-      />
+      <AppHeader page="saved" onNav={onNav} dark={dark} setDark={setDark} student={student} />
       <section className="page-wrap">
         <div className="page-intro saved-intro">
           <h1>Your schedules</h1>
@@ -1419,61 +1450,42 @@ function SavedSchedules({
             <Plus size={16} /> Build a new schedule
           </button>
         </div>
+        {error && <p role="alert">{error}</p>}
+        {!schedules.length && !error && <p>No saved schedules yet</p>}
         <div className="saved-grid">
-          {plans.map((p, i) => (
-            <article
-              key={p.id}
-              role="button"
-              tabIndex={0}
-              aria-label={`Open ${p.name}`}
-              onClick={() => onOpen(p.id)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") onOpen(p.id);
-              }}
-              className={favorites.includes(p.id) ? "favorite" : ""}
-            >
-              <header>
-                <span>{`OPTION ${i + 1}`}</span>
-                <button
-                  aria-label={
-                    favorites.includes(p.id)
-                      ? "Remove favorite"
-                      : "Save favorite"
+          {schedules.map((record) => {
+            const snapshot = readSavedPlan(record.payload);
+            const label = record.label || snapshot?.name || "Saved schedule";
+            if (!snapshot) return (
+              <article key={record.id}>
+                <h2>{label}</h2>
+                <p>{record.term}</p>
+                <p>This saved schedule cannot be displayed.</p>
+              </article>
+            );
+            return (
+              <article key={record.id} role="button" tabIndex={busy ? -1 : 0}
+                aria-disabled={busy}
+                aria-label={`Open ${label}`}
+                onClick={() => { if (!busy) onOpen(record, snapshot); }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    if (!busy) onOpen(record, snapshot);
                   }
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setFavorites((v) =>
-                      v.includes(p.id)
-                        ? v.filter((x) => x !== p.id)
-                        : [...v, p.id],
-                    );
-                  }}
-                >
-                  <Heart
-                    size={17}
-                    fill={favorites.includes(p.id) ? "currentColor" : "none"}
-                  />
-                </button>
-              </header>
-              <h2>{p.name}</h2>
-              <p>{p.tags.join(" · ")}</p>
-              <Mini courses={p.courses} />
-              <div className="saved-stats">
-                <span>
-                  <Star size={14} />
-                  <b>{p.rating}</b> rating
-                </span>
-                <span>
-                  <GraduationCap size={14} />
-                  <b>{p.aRate}</b> A rate
-                </span>
-                <span>
-                  <Clock3 size={14} />
-                  <b>{p.gap}</b> gap
-                </span>
-              </div>
-            </article>
-          ))}
+                }}>
+                <header><span>{record.term}</span><Heart size={17} fill="currentColor" /></header>
+                <h2>{label}</h2>
+                <p>{snapshot.tags.join(" · ")}</p>
+                <Mini courses={snapshot.courses} />
+                <div className="saved-stats">
+                  <span><Star size={14} /><b>{snapshot.rating}</b> rating</span>
+                  <span><GraduationCap size={14} /><b>{snapshot.aRate}</b> A rate</span>
+                  <span><Clock3 size={14} /><b>{snapshot.gap}</b> gap</span>
+                </div>
+              </article>
+            );
+          })}
         </div>
       </section>
     </main>

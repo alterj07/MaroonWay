@@ -23,6 +23,30 @@ import {
  */
 export const DEFAULT_PRIORITIES = ['No classes before 9 AM', 'Avoid Friday classes'];
 
+/** Old or incompatible stored snapshots must not crash the saved-list page. */
+export function readSavedPlan(value: unknown): Plan | null {
+  const object = (v: unknown): v is Record<string, unknown> =>
+    v !== null && typeof v === 'object' && !Array.isArray(v);
+  const number = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
+  const strings = (v: unknown): v is string[] => Array.isArray(v) && v.every((s) => typeof s === 'string');
+  const day = (v: unknown) => number(v) && Number.isInteger(v) && v >= 0 && v <= 6;
+  const interval = (start: unknown, end: unknown) =>
+    number(start) && number(end) && start >= 0 && start < end && end <= 24;
+  if (!object(value) || value.failed || !number(value.id) || !number(value.score) ||
+      !['name', 'subtitle', 'rating', 'aRate', 'gap', 'earliest'].every((k) => typeof value[k] === 'string') ||
+      !strings(value.tags) || (value.reasons !== undefined && !strings(value.reasons)) ||
+      !Array.isArray(value.courses)) return null;
+  for (const course of value.courses) {
+    if (!object(course) || !['code', 'prof', 'room', 'color'].every((k) => typeof course[k] === 'string') ||
+        !number(course.start) || !number(course.end) || !Array.isArray(course.days) || !course.days.every(day) ||
+        !['section', 'campus', 'delivery'].every((k) => course[k] == null || typeof course[k] === 'string')) return null;
+    if (course.days.length && !interval(course.start, course.end)) return null;
+    if (course.meetings !== undefined && (!Array.isArray(course.meetings) ||
+        !course.meetings.every((m) => object(m) && day(m.day) && interval(m.start, m.end) && typeof m.room === 'string'))) return null;
+  }
+  return value as unknown as Plan;
+}
+
 /** The planner's day numbering: 0 = Monday. */
 const DAY_INDEX: Record<string, number> = { MON: 0, TUE: 1, WED: 2, THU: 3, FRI: 4, SAT: 5, SUN: 6 };
 /** One per class, in the order courses are chosen. Five, because a student

@@ -5,6 +5,7 @@ import {
   backendStatus,
   exploreCourses,
   getCourseOptions,
+  getSavedSchedules,
   getStudentPreferences,
   getTerms,
 } from '@/lib/api';
@@ -57,15 +58,19 @@ export default async function Home({
         onBuildPlans={buildPlans}
         terms={[]}
         onUseSchedule={useSchedule}
+        savedSchedulesError="Could not load your saved schedules while the backend is unavailable."
       />
     );
   }
 
-  const headers = student ? studentHeaders(student) : null;
-  const [courses, terms, saved] = await Promise.all([
+  const headers = studentHeaders(student);
+  const [courses, terms, saved, savedList] = await Promise.all([
     exploreCourses('', 200).catch(() => []),
     getTerms().catch(() => []),
-    headers ? getStudentPreferences(headers).catch(() => null) : Promise.resolve(null),
+    getStudentPreferences(headers).catch(() => null),
+    getSavedSchedules(headers).then((schedules) => ({ schedules, error: null })).catch(() => ({
+      schedules: [], error: 'Could not load your saved schedules. Try refreshing the page.',
+    })),
   ]);
 
   const term = saved?.term ?? terms.find((t) => t.with_times > 0)?.term ?? terms[0]?.term;
@@ -104,6 +109,8 @@ export default async function Home({
       onBuildPlans={buildPlans}
       terms={terms.map((t) => t.term)}
       initialTerm={term}
+      savedSchedules={savedList.schedules}
+      savedSchedulesError={savedList.error}
       onUseSchedule={useSchedule}
     />
   );
