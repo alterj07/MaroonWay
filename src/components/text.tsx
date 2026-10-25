@@ -1,57 +1,47 @@
-import { StyleSheet, Text as RNText, type TextProps } from 'react-native';
+import type { ComponentPropsWithoutRef, ElementType } from 'react';
 
-import { Fonts } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
+import { cn } from '@/lib/cn';
 
 type Variant = 'title' | 'heading' | 'subheading' | 'body' | 'caption' | 'eyebrow';
 
-export type AppTextProps = TextProps & {
-  variant?: Variant;
-  muted?: boolean;
+/** The type scale, in one place. */
+const VARIANT_CLASS: Record<Variant, string> = {
+  title: 'text-4xl/tight font-extrabold tracking-tight sm:text-5xl/tight',
+  heading: 'text-2xl/snug font-bold tracking-tight',
+  subheading: 'text-lg/relaxed font-semibold',
+  body: 'text-base/relaxed',
+  caption: 'text-[0.8125rem]/5',
+  eyebrow: 'text-xs/4 font-bold tracking-[0.1em] uppercase',
 };
 
+/** Each variant also picks a sensible element, so the markup stays semantic. */
+const VARIANT_TAG: Record<Variant, ElementType> = {
+  title: 'h1',
+  heading: 'h2',
+  subheading: 'h3',
+  body: 'p',
+  caption: 'p',
+  eyebrow: 'p',
+};
+
+export type TextProps<T extends ElementType> = {
+  /** Override the element the variant would pick, e.g. `as="span"`. */
+  as?: T;
+  variant?: Variant;
+  muted?: boolean;
+} & Omit<ComponentPropsWithoutRef<T>, 'as'>;
+
 /** Text that already knows about the theme and the type scale. */
-export function Text({ variant = 'body', muted, style, ...rest }: AppTextProps) {
-  const theme = useTheme();
-  const color = muted ? theme.textMuted : theme.text;
+export function Text<T extends ElementType = 'p'>({
+  as,
+  variant = 'body',
+  muted,
+  className,
+  ...rest
+}: TextProps<T>) {
+  const Tag = (as ?? VARIANT_TAG[variant]) as ElementType;
 
-  return <RNText {...rest} style={[styles.base, { color }, styles[variant], style]} />;
+  return (
+    <Tag className={cn(VARIANT_CLASS[variant], muted && 'text-muted', className)} {...rest} />
+  );
 }
-
-const styles = StyleSheet.create({
-  base: {
-    fontFamily: Fonts.sans,
-  },
-  title: {
-    fontSize: 40,
-    lineHeight: 46,
-    fontWeight: '800',
-    letterSpacing: -0.5,
-  },
-  heading: {
-    fontSize: 26,
-    lineHeight: 32,
-    fontWeight: '700',
-    letterSpacing: -0.3,
-  },
-  subheading: {
-    fontSize: 18,
-    lineHeight: 26,
-    fontWeight: '600',
-  },
-  body: {
-    fontSize: 16,
-    lineHeight: 25,
-  },
-  caption: {
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  eyebrow: {
-    fontSize: 12,
-    lineHeight: 16,
-    fontWeight: '700',
-    letterSpacing: 1.2,
-    textTransform: 'uppercase',
-  },
-});

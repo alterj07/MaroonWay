@@ -1,0 +1,36 @@
+[project]
+name = "maroonway-backend"
+version = "0.1.0"
+description = "MaroonWay backend: professor data, hot cache, and AI comment summaries."
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi>=0.118",
+  "uvicorn[standard]>=0.37",
+  "sqlalchemy[asyncio]>=2.0.43",
+  "asyncpg>=0.30",
+  "pydantic>=2.11",
+  "pydantic-settings>=2.10",
+  "httpx>=0.28",
+  "python-dateutil>=2.9",
+  "rapidfuzz>=3.14",
+  "google-genai>=1.0",
+  "RateMyProfessor-Database-APIs==1.1.1",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.4",
+  "pytest-asyncio>=1.2",
+]
+
+[build-system]
+requires = ["setuptools>=80"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+filterwarnings = ["error::RuntimeWarning"]

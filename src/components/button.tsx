@@ -1,80 +1,57 @@
-import { type Href, useRouter } from 'expo-router';
-import { useState } from 'react';
-import { Pressable, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
+import Link from 'next/link';
+import type { ComponentPropsWithoutRef, ReactNode } from 'react';
 
-import { Text } from '@/components/text';
-import { Radius, Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
+import { cn } from '@/lib/cn';
 
 type Variant = 'primary' | 'secondary' | 'ghost';
 
-export type ButtonProps = {
-  label: string;
-  /** Navigate to this route when pressed. */
-  href?: Href;
-  onPress?: () => void;
-  variant?: Variant;
-  style?: StyleProp<ViewStyle>;
+const BASE =
+  'inline-flex cursor-pointer items-center justify-center rounded-full border px-6 py-3 text-base font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:opacity-80';
+
+const VARIANT_CLASS: Record<Variant, string> = {
+  primary: 'border-transparent bg-primary text-on-primary hover:bg-primary-hover',
+  secondary: 'border-line bg-surface text-foreground hover:bg-surface-alt',
+  ghost: 'border-transparent text-primary hover:bg-surface',
 };
 
-export function Button({ label, href, onPress, variant = 'primary', style }: ButtonProps) {
-  const theme = useTheme();
-  const router = useRouter();
-  const [hovered, setHovered] = useState(false);
+type Common = {
+  children: ReactNode;
+  variant?: Variant;
+  className?: string;
+};
 
-  const palette = {
-    primary: {
-      background: hovered ? theme.primaryHover : theme.primary,
-      border: 'transparent',
-      label: theme.onPrimary,
-    },
-    secondary: {
-      background: hovered ? theme.surfaceAlt : theme.surface,
-      border: theme.border,
-      label: theme.text,
-    },
-    ghost: {
-      background: hovered ? theme.surface : 'transparent',
-      border: 'transparent',
-      label: theme.primary,
-    },
-  }[variant];
+type AsLink = Common & { href: string } & Omit<
+    ComponentPropsWithoutRef<typeof Link>,
+    'href' | 'className' | 'children'
+  >;
 
+type AsButton = Common & { href?: undefined } & Omit<
+    ComponentPropsWithoutRef<'button'>,
+    'className' | 'children'
+  >;
+
+export type ButtonProps = AsLink | AsButton;
+
+/**
+ * Renders a `<Link>` when given an `href` and a `<button>` otherwise, so
+ * navigation stays a real link (middle-click, open in new tab, crawlable).
+ */
+export function Button({ children, variant = 'primary', className, ...rest }: ButtonProps) {
+  const classes = cn(BASE, VARIANT_CLASS[variant], className);
+
+  if (rest.href !== undefined) {
+    const { href, ...linkProps } = rest as AsLink;
+    return (
+      <Link href={href} className={classes} {...linkProps}>
+        {children}
+      </Link>
+    );
+  }
+
+  const { href: _href, type, ...buttonProps } = rest as AsButton;
   return (
-    <Pressable
-      accessibilityRole="button"
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
-      onPress={() => {
-        onPress?.();
-        if (href) router.navigate(href);
-      }}
-      style={({ pressed }) => [
-        styles.button,
-        {
-          backgroundColor: palette.background,
-          borderColor: palette.border,
-          opacity: pressed ? 0.8 : 1,
-        },
-        style,
-      ]}>
-      <Text variant="subheading" style={[styles.label, { color: palette.label }]}>
-        {label}
-      </Text>
-    </Pressable>
+    <button type={type ?? 'button'} className={classes} {...buttonProps}>
+      {children}
+    </button>
   );
 }
-
-const styles = StyleSheet.create({
-  button: {
-    paddingVertical: Spacing.sm + 4,
-    paddingHorizontal: Spacing.lg,
-    borderRadius: Radius.pill,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  label: {
-    fontSize: 16,
-  },
-});

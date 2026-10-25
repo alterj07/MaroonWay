@@ -2,36 +2,31 @@
   "name": "maroonway",
   "version": "1.0.0",
   "private": true,
-  "main": "expo-router/entry",
   "scripts": {
-    "start": "expo start",
-    "web": "expo start --web",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "build:web": "expo export --platform web",
-    "typecheck": "tsc --noEmit",
-    "lint": "expo lint"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "expo": "~58.0.19",
-    "expo-constants": "~58.0.13",
-    "expo-linking": "~58.0.14",
-    "expo-router": "~58.0.26",
-    "expo-splash-screen": "~58.0.11",
-    "expo-status-bar": "~58.0.4",
-    "expo-system-ui": "~58.0.6",
-    "react": "19.3.0",
-    "react-dom": "19.3.0",
-    "react-native": "0.88.0",
-    "react-native-safe-area-context": "~5.10.1",
-    "react-native-screens": "~4.30.0",
-    "react-native-web": "~0.21.4"
+    "@animateicons/react": "^0.13.0",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.31.0",
+    "next": "16.4.3",
+    "next-auth": "^4.24.15",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "tailwind-merge": "^3.7.0"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "^26.6.5",
     "@types/react": "~19.3.0",
-    "eslint": "^9.39.5",
-    "eslint-config-expo": "~58.0.4",
-    "eslint-import-resolver-typescript": "^3.10.1",
+    "@types/react-dom": "~19.3.0",
+    "eslint": "^10.13.0",
+    "eslint-config-next": "16.4.3",
+    "tailwindcss": "^4.3.3",
     "typescript": "~6.0.3"
   }
 }

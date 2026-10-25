@@ -1,0 +1,118 @@
+/* The course explorer's instructor lists.
+ *
+ * The planner's own stylesheets predate these elements, so the rules live
+ * here. Sizes are deliberately >= 12px: the rest of the app was shipped with
+ * 4-9px type, which is why nobody could read it. */
+
+.prof-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.prof-chips li {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 12px;
+  line-height: 1.5;
+  border: 1px solid currentColor;
+  opacity: 0.92;
+}
+
+.prof-chips li b { font-weight: 600; }
+.prof-chips li em { font-style: normal; opacity: 0.75; font-variant-numeric: tabular-nums; }
+
+/* Rating bands, so good and bad instructors are distinguishable without
+ * reading the numbers. Colour is backed up by the number itself, never the
+ * only signal. */
+.prof-great { color: #1b6b3a; background: #e8f5ec; }
+.prof-good  { color: #3f6212; background: #f1f7e6; }
+.prof-mixed { color: #8a5a00; background: #fdf4e3; }
+.prof-poor  { color: #94231f; background: #fdeceb; }
+.prof-unrated, .prof-none { color: #6b6b6b; background: transparent; }
+
+.prof-none { font-size: 12px; display: block; margin-top: 6px; }
+.prof-more { color: #6b6b6b; background: transparent; border-style: dashed; }
+
+.prof-table { margin-top: 18px; }
+.prof-table h3 { font-size: 15px; margin: 0 0 8px; }
+.prof-table table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.prof-table th {
+  text-align: left;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.6;
+  padding: 0 8px 6px 0;
+}
+.prof-table td { padding: 6px 8px 6px 0; border-top: 1px solid rgba(0, 0, 0, 0.08); }
+.prof-table tbody tr td:first-child { font-weight: 600; }
+.prof-table tbody tr.prof-great td:nth-child(2) { color: #1b6b3a; font-weight: 700; }
+.prof-table tbody tr.prof-poor td:nth-child(2) { color: #94231f; font-weight: 700; }
+
+.explore-count { font-size: 12px; opacity: 0.65; white-space: nowrap; }
+
+.explore-empty {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  margin: 12px 0;
+  border: 1px solid #e6e1db;
+  border-radius: 12px;
+  font-size: 13px;
+}
+.explore-empty b { font-size: 14px; }
+
+/* The account corner: previously a hardcoded avatar with no handler. */
+.account-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid currentColor;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  color: inherit;
+  white-space: nowrap;
+}
+.account-link:hover { opacity: 0.8; }
+
+.site-dark .prof-great { color: #8ee0ab; background: rgba(27, 107, 58, 0.22); }
+.site-dark .prof-good  { color: #cfe8a3; background: rgba(63, 98, 18, 0.22); }
+.site-dark .prof-mixed { color: #f2cf8a; background: rgba(138, 90, 0, 0.22); }
+.site-dark .prof-poor  { color: #f4a9a5; background: rgba(148, 35, 31, 0.24); }
+.site-dark .prof-table td { border-top-color: rgba(255, 255, 255, 0.12); }
+.site-dark .explore-empty { border-color: rgba(255, 255, 255, 0.16); }
+
+/* The account block in the landing nav, which is a tighter row than the
+ * app header's. */
+.minimal-nav .account-link { padding: 5px 9px; font-size: 12px; }
+.minimal-nav > div { align-items: center; }
+.minimal-nav > div > span:not(.account-link) { white-space: nowrap; }
+
+/* Signed-in initials + name, shared by both headers. */
+.account > span,
+.minimal-nav > div > span[title] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--m, #500000);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  flex: none;
+}
+.account > div > b, .minimal-nav > div > div > b { font-size: 13px; display: block; }
+.account > div > small, .minimal-nav > div > div > small { font-size: 11px; opacity: 0.7; }

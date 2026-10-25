@@ -1,48 +1,29 @@
 import type { ReactNode } from 'react';
-import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { Text } from '@/components/text';
-import { Radius, Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
+import { cn } from '@/lib/cn';
 
 export type CardProps = {
   title?: string;
   description?: string;
   children?: ReactNode;
-  style?: StyleProp<ViewStyle>;
+  className?: string;
 };
 
-export function Card({ title, description, children, style }: CardProps) {
-  const theme = useTheme();
-
+export function Card({ title, description, children, className }: CardProps) {
   return (
-    <View
-      style={[
-        styles.card,
-        { backgroundColor: theme.surface, borderColor: theme.border },
-        style,
-      ]}>
+    <div
+      className={cn(
+        'flex flex-col gap-2 rounded-card border border-line bg-surface p-6',
+        className
+      )}>
       {title ? <Text variant="subheading">{title}</Text> : null}
       {description ? (
-        <Text muted style={styles.description}>
+        <Text muted className="text-[0.9375rem]/relaxed">
           {description}
         </Text>
       ) : null}
       {children}
-    </View>
+    </div>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    flexGrow: 1,
-    flexBasis: 260,
-    gap: Spacing.sm,
-    padding: Spacing.lg,
-    borderWidth: 1,
-    borderRadius: Radius.lg,
-  },
-  description: {
-    fontSize: 15,
-  },
-});
