@@ -154,6 +154,14 @@ class Section:
     adj_gpa: float | None = None
     #: Share of students who earned an A, 0-1.
     pct_a: float | None = None
+    #: Reviews behind the rating: for this course, and for the instructor
+    #: overall. A rating with few reviews has been shrunk toward the average,
+    #: and that shrinkage is invisible in the number that comes out.
+    class_reviews: int = 0
+    professor_reviews: int = 0
+    #: Other sections of this course at exactly these times, taught by someone
+    #: else. A choice the student has that the timetable does not show.
+    same_time_alternatives: int = 0
 
     @property
     def is_online(self) -> bool:

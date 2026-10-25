@@ -11,7 +11,7 @@ const section: ScheduleSection = {
   section_id: 1, course_id: 1, code: 'CSCE120', section_code: '501',
   instructor_id: 1, instructor_name: 'Professor', campus: 'CSTAT', delivery: 'F2F',
   honors: false, seats_open: 10, adj_rating: 4, adj_difficulty: 3, adj_gpa: 3,
-  pct_a: 0.6,
+  pct_a: 0.6, class_reviews: 25, professor_reviews: 25, same_time_alternatives: 0,
   meetings: [
     { day: 'MON', start: '09:00', end: '09:50', building: 'HRBB', room: '101' },
     { day: 'TUE', start: '14:00', end: '15:50', building: 'ZACH', room: '202' },
@@ -30,7 +30,7 @@ async function showCalendar(input = section, course?: Course) {
   const { container } = render(<Planner
     plans={[plan]} courses={[]} student={null} savedCourses={['CSCE120']} savedWants=""
     terms={['FALL 2026']} onSaveCourses={async () => ({ saved: true })}
-    onBuildPlans={async () => [plan]} onUseSchedule={async () => ({ saved: true })}
+    onBuildPlans={async () => ({ plans: [plan], relaxed: [] })} onUseSchedule={async () => ({ saved: true })}
   />);
   fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
   await screen.findByRole('combobox', { name: 'Semester' });
@@ -43,7 +43,7 @@ it('renders every meeting with its own time and room, including two meetings on 
   expect(blocks).toHaveLength(5);
   expect(within(blocks[1] as HTMLElement).getAllByText('2:00 PM–3:50 PM').length).toBeGreaterThan(0);
   expect(within(blocks[1] as HTMLElement).getAllByText('ZACH 202').length).toBeGreaterThan(0);
-  expect(within(blocks[2] as HTMLElement).getByText('ZACH 303')).toBeTruthy();
+  expect(within(blocks[2] as HTMLElement).getAllByText('ZACH 303').length).toBeGreaterThan(0);
   const mini = container.querySelector('.mini');
   expect(mini?.querySelectorAll('span')).toHaveLength(5);
   const miniBlocks = mini!.querySelectorAll('span');
@@ -61,7 +61,7 @@ it('shows weekend columns and expands the clock range for early and evening clas
   const blocks = calendar.querySelectorAll('article');
   expect((blocks[3] as HTMLElement).style.top).toContain('+ 0 *');
   expect((blocks[4] as HTMLElement).style.top).toContain('+ 12 *');
-  expect(within(blocks[4] as HTMLElement).getByText('Location TBA')).toBeTruthy();
+  expect(within(blocks[4] as HTMLElement).getAllByText('Location TBA').length).toBeGreaterThan(0);
 });
 
 it('does not invent calendar meetings for an asynchronous online class', async () => {
@@ -77,7 +77,7 @@ it('continues to render older saved courses that have no per-meeting data', asyn
   });
   const blocks = container.querySelectorAll('.cal article');
   expect(blocks).toHaveLength(2);
-  expect(within(blocks[1] as HTMLElement).getByText('HRBB 101')).toBeTruthy();
+  expect(within(blocks[1] as HTMLElement).getAllByText('HRBB 101').length).toBeGreaterThan(0);
 });
 
 it('shows each meeting in the schedule analysis instead of repeating the first time', async () => {

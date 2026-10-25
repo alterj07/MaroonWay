@@ -186,16 +186,22 @@ function url(path: string, query?: Query) {
   return target.toString();
 }
 
-async function get<T>(path: string, query?: Query): Promise<T> {
+async function get<T>(path: string, query?: Query, signal?: AbortSignal): Promise<T> {
   const target = url(path, query);
   const response = await fetch(target, {
     cache: 'no-store',
     headers: { accept: 'application/json' },
+    signal,
   });
 
   if (!response.ok) {
-    const detail = await response.text().catch(() => '');
-    throw new ApiError(response.status, path, `${response.status} from ${path}: ${detail}`);
+    const body = await response.text().catch(() => '');
+    // A gateway error arrives as a full HTML page, which is useless in a
+    // message and drowns the one part that matters -- the status.
+    const detail = /^\s*<(!doctype|html)/i.test(body)
+      ? ''
+      : `: ${body.slice(0, 200)}`;
+    throw new ApiError(response.status, path, `${response.status} from ${path}${detail}`);
   }
   return (await response.json()) as T;
 }
@@ -245,8 +251,8 @@ export function getCourseInstructors(
   );
 }
 
-export function getHealth(): Promise<Health> {
-  return get<Health>('/healthz');
+export function getHealth(signal?: AbortSignal): Promise<Health> {
+  return get<Health>('/healthz', undefined, signal);
 }
 
 // --- scheduling --------------------------------------------------------------
@@ -276,6 +282,11 @@ export type ScheduleSection = {
   adj_gpa: number | null;
   /** Share of students who earned an A in this course with this instructor. */
   pct_a: number | null;
+  /** Reviews behind the rating: for this course, and for the instructor. */
+  class_reviews: number;
+  professor_reviews: number;
+  /** Other sections at exactly these times taught by someone else. */
+  same_time_alternatives: number;
 };
 
 export type Schedule = {
@@ -293,6 +304,8 @@ export type Schedule = {
   mean_pct_a: number | null;
   earliest_start: string | null;
   days_on_campus: number;
+  /** An earlier option has this exact timetable; only the staff differ. */
+  same_shape?: boolean;
   /** Minutes waiting between classes, summed over the week. */
   idle_minutes: number;
 };
@@ -342,13 +355,14 @@ export type ScheduleRequest = {
 };
 
 export type ScheduleResponse = {
-  relaxed?: string[];
   request: ScheduleRequest;
   count: number;
   schedules: Schedule[];
   preferences: Preferences;
   /** Set when nothing could be built — says which constraint bit. */
   detail: string | null;
+  /** Preferences the timetable could not honour, stated plainly. */
+  relaxed?: string[];
 };
 
 export type PreferenceResponse = {
@@ -550,10 +564,35 @@ export async function backendStatus(): Promise<{ ok: boolean; detail: string | n
         'deployed backend (for example https://maroonway-api.onrender.com).',
     };
   }
-  try {
-    const health = await getHealth();
-    return { ok: health.database === 'ok', detail: health.detail };
-  } catch (error) {
-    return { ok: false, detail: error instanceof Error ? error.message : String(error) };
+
+  // A free instance sleeps after fifteen minutes idle, and while it wakes the
+  // host answers 502 *immediately* and keeps doing so for several seconds --
+  // measured at three in a row, then healthy at about eight. So a single retry
+  // after a short pause still lands on a 502 and reports the backend as down.
+  // Keep trying until a deadline instead, which is the difference between a
+  // slow first visit and an app that looks broken.
+  const deadline = Date.now() + 45000;
+  let lastDetail: string | null = null;
+  let attempt = 0;
+
+  while (Date.now() < deadline) {
+    attempt += 1;
+    try {
+      const health = await getHealth(AbortSignal.timeout(attempt === 1 ? 6000 : 20000));
+      return { ok: health.database === 'ok', detail: health.detail };
+    } catch (error) {
+      const status = error instanceof ApiError ? error.status : 0;
+      const waking = [502, 503, 504].includes(status);
+      lastDetail = waking
+        ? `the API is starting up (it answered ${status} for ${Math.round((45000 - (deadline - Date.now())) / 1000)}s). Reload in a moment.`
+        : error instanceof Error
+          ? error.message
+          : String(error);
+      // Only a gateway error is worth waiting out; anything else will not fix
+      // itself by being asked again.
+      if (!waking) break;
+      await new Promise((resume) => setTimeout(resume, 3000));
+    }
   }
+  return { ok: false, detail: lastDetail };
 }

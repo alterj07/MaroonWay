@@ -79,7 +79,7 @@
   font-family: inherit;
   cursor: pointer;
   box-shadow: 0 16px 40px #17000255, 0 0 0 1px #ffffff22;
-  transition: transform 0.14s ease, box-shadow 0.14s ease;
+  transition: transform 0.44s ease, box-shadow 0.44s ease;
 }
 .gate-google:hover {
   transform: translateY(-1px);
@@ -355,7 +355,7 @@
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transition: opacity 0.12s ease, transform 0.12s ease;
+  transition: opacity 0.42s ease, transform 0.42s ease;
   z-index: 50;
 }
 .cal article.block:hover .hover-card,
@@ -455,22 +455,78 @@
 
 /* ---- controls that used to do nothing ---- */
 
-/* The semester picker: a real <select> laid over the existing button face. */
-.term {
+/* ---- the semester picker ---- */
+
+/*
+ * Built rather than borrowed: a native <select> hands its option list to the
+ * operating system, which draws it white with a blue highlight and ignores
+ * every colour the rest of the app uses.
+ */
+.term-picker {
   position: relative;
-  cursor: pointer;
 }
-.term select {
-  position: absolute;
-  inset: 0;
+.term {
   width: 100%;
-  height: 100%;
-  opacity: 0;
   cursor: pointer;
-  font: inherit;
 }
-.term select:disabled {
+.term:disabled {
   cursor: not-allowed;
+  opacity: 0.6;
+}
+.term svg.flip {
+  transform: rotate(180deg);
+}
+
+/* Sits between the list and everything else, so a click anywhere closes it. */
+.term-shade {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+}
+
+.term-list {
+  position: absolute;
+  z-index: 31;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 5px;
+  list-style: none;
+  border-radius: 10px;
+  background: #2a1114;
+  border: 1px solid #ffffff1f;
+  box-shadow: 0 18px 44px #0c000277;
+  max-height: 260px;
+  overflow-y: auto;
+}
+.term-list button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #f4e4df;
+  font: inherit;
+  font-size: 0.8125rem;
+  text-align: left;
+  cursor: pointer;
+}
+.term-list button:hover {
+  background: #ffffff14;
+}
+.term-list button.chosen {
+  background: #8c1f2b;
+  color: #fff;
+  font-weight: 650;
+}
+.term-list button:focus-visible {
+  outline: 2px solid #efb9ae;
+  outline-offset: -2px;
 }
 
 /* The field revealed by either "+ Add". */
@@ -566,28 +622,6 @@
   line-height: 1.55;
   opacity: 0.6;
   max-width: 72ch;
-}
-
-/* The footer explainer behind "How scoring works". */
-.scoring-note {
-  flex-basis: 100%;
-  margin-top: 12px;
-  padding: 13px 15px;
-  border-radius: 10px;
-  background: #ffffff0d;
-  border: 1px solid #ffffff14;
-}
-.scoring-note b {
-  display: block;
-  margin-bottom: 5px;
-  font-size: 0.8125rem;
-}
-.scoring-note p {
-  margin: 0;
-  max-width: 86ch;
-  font-size: 0.75rem;
-  line-height: 1.6;
-  opacity: 0.72;
 }
 
 .rebuild:disabled,
@@ -730,5 +764,962 @@
   }
   .detail-head .use {
     font-size: 12px !important;
+  }
+}
+
+
+/* ---- confirming a removal ---- */
+
+.confirm-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: #0c000366;
+  backdrop-filter: blur(3px);
+}
+.confirm {
+  width: min(100%, 380px);
+  padding: 22px 22px 18px;
+  border-radius: 14px;
+  background: linear-gradient(145deg, #fffaf5, #f3e3dc);
+  border: 1px solid #f3cabe;
+  box-shadow: 0 30px 70px #16000370;
+  color: #2c1715;
+}
+.confirm > b {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 1.0625rem;
+  letter-spacing: -0.01em;
+}
+.confirm > p {
+  margin: 0 0 18px;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  opacity: 0.72;
+}
+.confirm > div {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+}
+.confirm button {
+  padding: 9px 15px;
+  border-radius: 9px;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+/* Keeping it is the safe default, so it reads first and takes focus. */
+.confirm-cancel {
+  border: 1px solid #d9bdb2;
+  background: transparent;
+  color: #2c1715;
+}
+.confirm-cancel:hover {
+  background: #50000010;
+}
+.confirm-go {
+  border: 1px solid transparent;
+  background: #8c1f2b;
+  color: #fff;
+}
+.confirm-go:hover {
+  background: #a3262f;
+}
+
+/* ---- navigation: a rail down the left that opens on hover ---- */
+
+/*
+ * One rail for every view, the landing page included. The top header it
+ * replaced existed in two unrelated forms -- `.top` on the inner pages,
+ * `.minimal-nav` on the landing one -- so the same three destinations looked
+ * and sat differently depending on where you were.
+ */
+:root {
+  --rail-closed: 58px;
+  --rail-open: 216px;
+}
+
+.rail {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 60;
+  width: var(--rail-closed);
+  display: flex;
+  flex-direction: column;
+  padding: 14px 10px 16px;
+  gap: 6px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: #1a0206ee;
+  border-right: 1px solid #ffffff14;
+  backdrop-filter: blur(14px);
+  color: #f6e8e3;
+  transition: width 0.46s ease;
+}
+/* focus-within as well as hover: a rail only a mouse can open is a rail a
+   keyboard cannot navigate. */
+.rail:hover,
+.rail:focus-within {
+  width: var(--rail-open);
+  box-shadow: 0 0 60px #0c000266;
+}
+
+/* Everything in the rail is an icon with a label that appears on expand. */
+.rail button,
+.rail a,
+.rail .rail-me {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 9px 8px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.8125rem;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.rail button > b,
+.rail a > b,
+.rail .rail-me > b {
+  font-weight: 600;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 0.44s ease, transform 0.44s ease;
+}
+.rail:hover button > b,
+.rail:hover a > b,
+.rail:hover .rail-me > b,
+.rail:focus-within button > b,
+.rail:focus-within a > b,
+.rail:focus-within .rail-me > b {
+  opacity: 1;
+  transform: translateX(0);
+}
+.rail button:hover,
+.rail a:hover {
+  background: #ffffff14;
+}
+.rail button:focus-visible,
+.rail a:focus-visible {
+  outline: 2px solid #efb9ae;
+  outline-offset: -2px;
+}
+
+.rail-brand {
+  margin-bottom: 10px;
+  font-weight: 750 !important;
+  letter-spacing: -0.4px;
+}
+
+/*
+ * Every leading element occupies the same 26px square, so the brand mark, the
+ * three nav icons and the avatar share one vertical axis while collapsed.
+ * Before this the brand was a 34px tile against 18px icons, which put its
+ * centre 8px to the right of theirs -- visible as soon as the labels were
+ * hidden and the icons were all you could see.
+ */
+.rail-brand > span,
+.rail-me > i,
+.rail ul svg,
+.rail-foot > button > svg,
+.rail-foot > a > svg {
+  width: 26px;
+  height: 26px;
+  flex: none;
+}
+.rail-brand > span {
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: #fff5ef;
+  color: #500000;
+}
+/* The glyphs themselves stay their own size inside that square. */
+.rail ul svg,
+.rail-foot > button > svg,
+.rail-foot > a > svg {
+  padding: 4px;
+}
+.rail-brand > b {
+  font-size: 1rem;
+}
+
+.rail ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 3px;
+}
+.rail ul button.active {
+  background: #ffffff1c;
+  box-shadow: inset 2px 0 0 #efb9ae;
+}
+.rail svg {
+  flex: none;
+}
+
+.rail-foot {
+  margin-top: auto;
+  padding-top: 10px;
+  /* The rail hides its overflow so labels do not spill while collapsed, which
+     also clipped the last item against the bottom edge. */
+  padding-bottom: 4px;
+  border-top: 1px solid #ffffff14;
+  display: grid;
+  gap: 3px;
+}
+.rail-me {
+  cursor: default;
+}
+.rail-me > i {
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #8c1f2b;
+  color: #fff;
+  font-style: normal;
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
+/* Every page sits beside the closed rail; expanding it overlays rather than
+   reflows, so hovering does not shuffle the content underneath. */
+.app-page,
+.inner-page,
+.minimal-home {
+  padding-left: var(--rail-closed);
+}
+
+@media (max-width: 720px) {
+  :root {
+    --rail-closed: 48px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rail,
+  .rail button > b,
+  .rail a > b,
+  .rail .rail-me > b {
+    transition: none;
+  }
+}
+
+/* ---- the course explorer's detail panel ---- */
+
+/*
+ * The header laid four items out with space-between and no gap, so the code
+ * badge and the three facts ran into one another and wrapped mid-phrase
+ * ("COLLEGE / STATION"). They are pills on one wrapping row now.
+ */
+.course-detail .detail-code {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 10px;
+}
+.course-detail .detail-code em {
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid #ffffff1f;
+  background: #ffffff0f;
+  font-size: 0.625rem;
+  font-weight: 650;
+  letter-spacing: 0.07em;
+  white-space: nowrap;
+  color: inherit;
+  opacity: 0.74;
+}
+
+.detail-dept {
+  margin: 2px 0 0;
+  font-size: 0.6875rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  opacity: 0.5;
+}
+
+/*
+ * Fixed layout, so a long professor name takes an ellipsis instead of pushing
+ * the last column past the edge of the card it lives in.
+ */
+.prof-table table {
+  table-layout: fixed;
+  font-size: 0.75rem;
+}
+.prof-table th,
+.prof-table td {
+  padding: 7px 6px 7px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.prof-table th {
+  font-size: 0.5625rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.55;
+  text-align: left;
+}
+/* Professor takes the slack; the four numbers need only what they show. */
+.prof-table th:nth-child(1),
+.prof-table td:nth-child(1) {
+  width: auto;
+}
+.prof-table th:nth-child(2),
+.prof-table td:nth-child(2),
+.prof-table th:nth-child(3),
+.prof-table td:nth-child(3),
+.prof-table th:nth-child(4),
+.prof-table td:nth-child(4) {
+  width: 3.6rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.prof-table th:nth-child(5),
+.prof-table td:nth-child(5) {
+  width: 4.6rem;
+  text-align: right;
+}
+
+/* ---- the course explorer's result list ---- */
+
+/*
+ * The card was a fixed 76px tall, from before it carried a row of professor
+ * chips, so the chips and the "+4 more" spilled over its own border. It sizes
+ * to its content now, with the chips wrapping inside it.
+ */
+.course-list > button {
+  height: auto;
+  min-height: 76px;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 13px 16px;
+}
+.course-list > button > span {
+  min-width: 0;
+  flex: 1;
+  gap: 7px;
+}
+.course-list > button > span > b,
+.course-list > button > span > small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* The rating and the count sit together rather than colliding mid-card. */
+.course-list > button > div {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+  padding-top: 2px;
+}
+
+.prof-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  min-width: 0;
+}
+.prof-chips li {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  max-width: 100%;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+}
+.prof-chips li b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.prof-chips li em {
+  font-style: normal;
+  font-weight: 700;
+  opacity: 0.85;
+}
+
+/*
+ * "AVG. PROFESSOR" wrapped onto two lines; forbidding the wrap then pushed it
+ * into the next column instead. The cells need room before they need a rule,
+ * so the grid gets gaps and the labels a size that fits three across.
+ */
+.insight-grid {
+  gap: 10px;
+  padding: 12px 14px;
+}
+.insight-grid > div {
+  min-width: 0;
+  padding-right: 10px;
+}
+.insight-grid > div:last-child {
+  padding-right: 0;
+  border-right: 0;
+}
+.insight-grid span,
+.insight-grid small {
+  font-size: 0.5625rem;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---- motion: hovers and page changes ---- */
+
+/*
+ * One timing for the whole app, so nothing feels quicker or slower than its
+ * neighbour. Deliberately unhurried: a hover is an invitation to look, not a
+ * result to deliver, so it can take its time where a click cannot. The press
+ * below keeps its own short duration for exactly that reason -- a button that
+ * took two thirds of a second to acknowledge a click would feel broken.
+ */
+:root {
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --t-hover: 650ms;
+  --t-page: 920ms;
+  /* The page change gets its own curve: almost all of the movement happens
+     early and then eases out for a long tail, which is what reads as smooth
+     over nearly a second. The hover curve over that distance would feel slack
+     in the middle. */
+  --ease-page: cubic-bezier(0.16, 0.84, 0.3, 1);
+}
+
+button,
+a,
+.course-list > button,
+.cards > button,
+.saved-grid > article {
+  transition:
+    background-color var(--t-hover) var(--ease),
+    border-color var(--t-hover) var(--ease),
+    box-shadow var(--t-hover) var(--ease),
+    transform var(--t-hover) var(--ease),
+    opacity var(--t-hover) var(--ease);
+}
+
+/* The gloss: a sheen across the face, brought in on hover rather than always
+   on, so a resting button stays flat and only the one under the cursor lifts. */
+.use,
+.rebuild,
+.add-plan,
+.gate-google,
+.confirm-go,
+.preference-input > button {
+  position: relative;
+  overflow: hidden;
+}
+.use::after,
+.rebuild::after,
+.add-plan::after,
+.gate-google::after,
+.confirm-go::after,
+.preference-input > button::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    120deg,
+    transparent 20%,
+    #ffffff26 48%,
+    #ffffff10 56%,
+    transparent 78%
+  );
+  opacity: 0;
+  transform: translateX(-24%);
+  transition:
+    opacity var(--t-hover) var(--ease),
+    transform 920ms var(--ease);
+  pointer-events: none;
+}
+.use:hover::after,
+.rebuild:hover::after,
+.add-plan:hover::after,
+.gate-google:hover::after,
+.confirm-go:hover::after,
+.preference-input > button:hover::after {
+  opacity: 1;
+  transform: translateX(24%);
+}
+.use:hover,
+.rebuild:hover,
+.add-plan:hover,
+.gate-google:hover,
+.confirm-go:hover {
+  transform: translateY(-1px);
+}
+.use:active,
+.rebuild:active,
+.add-plan:active,
+.gate-google:active,
+.confirm-go:active {
+  transform: translateY(0);
+  transition-duration: 90ms;
+}
+
+/* Changing page swaps one <main> for another, so each arrival animates once.
+   Short, and downward-settling rather than sliding in from a side, which would
+   imply a direction the navigation does not have. */
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  /* Readable well before the movement finishes: a near-second fade would
+     otherwise leave the page dim for most of it. */
+  60% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.app-page,
+.inner-page,
+.minimal-home {
+  animation: page-in var(--t-page) var(--ease-page) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button,
+  a,
+  .course-list > button,
+  .cards > button,
+  .saved-grid > article,
+  .use::after,
+  .rebuild::after,
+  .add-plan::after,
+  .gate-google::after,
+  .confirm-go::after {
+    transition: none;
+  }
+  .app-page,
+  .inner-page,
+  .minimal-home {
+    animation: none;
+  }
+}
+
+/*
+ * The calendar grew to fourteen hours; it stays full height and the page
+ * scrolls, rather than becoming a small window you scroll inside.
+ *
+ * Both axes, and that is the whole point: the base sheet sets `overflow:
+ * hidden` on .detail, and overriding only `overflow-y` leaves the pair
+ * `hidden`/`visible`, which CSS does not allow. The browser resolves it by
+ * computing the visible axis as `auto` -- so asking for no clipping produced a
+ * scrollbar down the side of the schedule. Naming both axes avoids the pair
+ * entirely, and the hover card simply spills past the panel, which is what it
+ * should do.
+ */
+.cal-scroll,
+.detail {
+  max-height: none;
+  overflow: visible;
+}
+
+/* ---- a class block: what, when, and where ---- */
+
+.cal article.block {
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 7px;
+}
+.block-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.block-main > strong,
+.block-main > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/*
+ * The room was a third line, which only fitted on blocks of 90 minutes or
+ * more -- so the shorter the class, the less likely it told you where to go.
+ * On the right it costs no height at all.
+ */
+.block-where {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex: none;
+  max-width: 48%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.85;
+  font-size: 0.5625rem;
+  letter-spacing: 0.01em;
+}
+.block-where svg {
+  flex: none;
+  opacity: 0.8;
+}
+
+/* ---- marks on a class block ---- */
+
+/*
+ * Two different cautions, so two different marks: * is thin evidence behind a
+ * rating, † is another instructor teaching the same slot. One symbol for both
+ * would make them indistinguishable at a glance, which is the only moment
+ * either is read.
+ */
+/*
+ * Both marks sat at the block's own 9px text size, which is fine for a label
+ * you are already reading and useless for one you are meant to notice. They
+ * are their own size now, with a target big enough to hover without aiming.
+ */
+.mark-thin,
+.mark-alt {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  margin-left: 4px;
+  padding: 0 2px;
+  border-radius: 5px;
+  font-style: normal;
+  vertical-align: middle;
+  cursor: help;
+}
+
+/* A thin rating: a full-size asterisk, raised so it reads as a mark on the
+   code rather than punctuation in it. */
+.mark-thin {
+  font-size: 1.05rem;
+  font-weight: 800;
+  line-height: 1;
+  padding-top: 5px;
+  color: #ffce6b;
+  background: #ffce6b26;
+  text-shadow: 0 1px 2px #00000055;
+}
+
+/* Several instructors in one slot: an information icon, since it is a note
+   about the choice rather than a warning about the data. */
+.mark-alt {
+  color: #cfe4ff;
+  background: #9ec7ff26;
+}
+.mark-thin:hover,
+.mark-alt:hover {
+  background: #ffffff38;
+}
+.mark-alt svg {
+  display: block;
+}
+
+.hover-warn {
+  display: block;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid #ffffff14;
+  font-size: 0.625rem;
+  line-height: 1.45;
+  opacity: 0.78;
+}
+
+/* ---- while a schedule is being built ---- */
+
+/*
+ * A rebuild walks a large combination space and calls the decider, so seconds
+ * pass with nothing to show. A button reading "Rebuilding..." is the same
+ * picture as a button that has hung, so this says what is happening and keeps
+ * the page from being clicked while it happens.
+ */
+.working {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: #0c000388;
+  backdrop-filter: blur(4px);
+  animation: page-in 180ms var(--ease) both;
+}
+.working-card {
+  width: min(100%, 380px);
+  padding: 26px 26px 22px;
+  border-radius: 14px;
+  text-align: center;
+  background: linear-gradient(145deg, #2a0d12, #3a141a);
+  border: 1px solid #ffffff1f;
+  box-shadow: 0 30px 70px #10000288;
+  color: #f7e9e4;
+}
+.working-card b {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+}
+.working-card p {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  opacity: 0.72;
+}
+
+/* Three dots, because a spinner implies a measurable fraction and this has
+   none to report. */
+.working-spin {
+  display: flex;
+  justify-content: center;
+  gap: 7px;
+  margin-bottom: 16px;
+}
+.working-spin i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #e8a79c;
+  animation: working-pulse 1.05s ease-in-out infinite;
+}
+.working-spin i:nth-child(2) {
+  animation-delay: 0.14s;
+}
+.working-spin i:nth-child(3) {
+  animation-delay: 0.28s;
+}
+@keyframes working-pulse {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-4px);
+  }
+}
+
+/* The "see all" link in the results heading. */
+.link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  opacity: 0.85;
+}
+.link:hover {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .working {
+    animation: none;
+  }
+  .working-spin i {
+    animation: none;
+    opacity: 0.8;
+  }
+}
+
+/* ---- a preference the timetable could not meet ---- */
+
+.caution {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 8px 0 0;
+  padding: 9px 12px;
+  border-radius: 9px;
+  border: 1px solid #e0a35c40;
+  background: #c47e2820;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: #f1cb9a;
+  max-width: 72ch;
+}
+.caution svg {
+  flex: none;
+  margin-top: 1px;
+}
+
+/* ---- priority chips: the body edits, the × deletes ---- */
+
+/*
+ * Splitting the chip into two buttons made the base `.chips button` rule paint
+ * each half as its own pill, so every priority read as a chip followed by a
+ * loose x. The pill belongs to the wrapper; the two buttons inside are bare,
+ * and they sit centred in the column rather than hanging off its left edge.
+ */
+.chips {
+  justify-content: center;
+}
+.chip {
+  display: inline-flex;
+  align-items: stretch;
+  max-width: 100%;
+  border: 1px solid #9b6660;
+  border-radius: 999px;
+  background: #f4e3dd;
+  color: #6b1720;
+  overflow: hidden;
+}
+.site-dark .chip {
+  border-color: #704846;
+  background: #3b292c;
+  color: #efb0a5;
+}
+.chips .chip-edit,
+.chips .chip-drop {
+  border: 0 !important;
+  border-radius: 0;
+  background: transparent !important;
+  color: inherit !important;
+}
+.chips .chip-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 6px 3px 6px 11px;
+  font: inherit;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  text-align: left;
+  /* Wraps inside the pill instead of widening it past the column. */
+  white-space: normal;
+  overflow-wrap: anywhere;
+  cursor: text;
+}
+.chips .chip-edit svg {
+  flex: none;
+}
+.chips .chip-drop {
+  display: grid;
+  place-items: center;
+  padding: 0 10px 0 5px;
+  cursor: pointer;
+  opacity: 0.55;
+}
+.chips .chip-drop:hover {
+  opacity: 1;
+  background: #ffffff1f !important;
+}
+
+/* The editor that replaces a chip keeps to the column too. */
+.chips .side-add {
+  width: 100%;
+}
+
+/* The legend in the hover card, matching the marks on the block. */
+.hover-warn {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+}
+.hover-warn svg {
+  flex: none;
+  margin-top: 1px;
+  color: #cfe4ff;
+}
+.warn-star {
+  flex: none;
+  color: #ffce6b;
+  font-size: 0.875rem;
+  line-height: 0.8;
+}
+
+/* ---- who teaches it, on the block ---- */
+
+/*
+ * The professor was only in the hover card, which meant comparing two
+ * schedules took a hover per class. The rows are tall enough for it now.
+ */
+.block-who {
+  display: block;
+  margin-top: 2px;
+  font-size: 10px;
+  line-height: 1.3;
+  letter-spacing: 0.01em;
+  opacity: 0.82;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---- the calendar grid itself ---- */
+
+/*
+ * The lane was written when the grid had ten hours in it and still spanned
+ * `2 / 12`, so the ruled lines stopped at 6 PM and the evening sat on blank
+ * background. Fourteen rows of hours start at row 2, so they end at row 16.
+ *
+ * Its stripes were hardcoded at 24px too, from a row that is now 62px, which
+ * is why the lines no longer landed on the hours they were drawn for. Reading
+ * the row height means they cannot drift again.
+ */
+.lane {
+  grid-row: 2 / 16;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent calc(var(--cal-row) - 1px),
+    #ffffff14 calc(var(--cal-row))
+  );
+}
+.site-light .lane {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent calc(var(--cal-row) - 1px),
+    #e9e3dd calc(var(--cal-row))
+  );
+}
+
+/*
+ * The hour label straddled its line, which put 8 AM -- the first one -- over
+ * the dates in the header. It sits just under its line now, so it still reads
+ * as marking that hour without reaching into the row above it.
+ */
+.cal > label {
+  align-self: start;
+  padding-top: 4px;
+  transform: none;
+}
+
+/* Keep the narrow calendar scrollable after the desktop overflow rules above. */
+@media (max-width: 860px) {
+  .cal-scroll {
+    overflow-x: auto;
+    overflow-y: hidden;
   }
 }

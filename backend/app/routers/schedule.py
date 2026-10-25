@@ -70,6 +70,8 @@ def to_section(row: dict[str, Any]) -> scheduling.Section:
         ),
         adj_gpa=None if row.get("adj_gpa") is None else float(row["adj_gpa"]),
         pct_a=None if row.get("pct_a") is None else float(row["pct_a"]),
+        class_reviews=int(row.get("class_rating_count") or 0),
+        professor_reviews=int(row.get("instructor_rating_count") or 0),
     )
 
 
@@ -91,6 +93,7 @@ def preferences_payload(preferences: Preferences) -> dict[str, Any]:
         "attendance": preferences.attendance,
         "avoid_early_mornings": preferences.avoid_early_mornings,
         "avoid_fridays": preferences.avoid_fridays,
+        "day_shape": preferences.day_shape,
         "delivery": preferences.delivery,
         "campus": preferences.campus,
         "honors": preferences.honors,
@@ -101,10 +104,15 @@ def preferences_payload(preferences: Preferences) -> dict[str, Any]:
     }
 
 
-def to_payload(ranked: prefs_service.RankedSchedule) -> dict[str, Any]:
+def to_payload(
+    ranked: prefs_service.RankedSchedule, *, same_shape: bool = False
+) -> dict[str, Any]:
     schedule = ranked.schedule
     return {
         "preference_score": round(ranked.preference_score, 4),
+        #: True when an earlier option has exactly this timetable and only the
+        #: instructors differ.
+        "same_shape": same_shape,
         "reasons": list(ranked.reasons),
         "contributions": [
             {
@@ -141,6 +149,9 @@ def to_payload(ranked: prefs_service.RankedSchedule) -> dict[str, Any]:
                 "adj_difficulty": s.adj_difficulty,
                 "adj_gpa": s.adj_gpa,
                 "pct_a": s.pct_a,
+                "class_reviews": s.class_reviews,
+                "professor_reviews": s.professor_reviews,
+                "same_time_alternatives": s.same_time_alternatives,
             }
             for s in schedule.sections
         ],
@@ -259,7 +270,28 @@ async def generate_schedules(
         for row in rows:
             candidates.setdefault(row["code"], []).append(to_section(row))
 
-        availability = scheduling.Availability(
+        # Sections of the same course at exactly the same times, taught by
+        # someone else. Three "options" that differ only in who teaches them
+        # look identical on a timetable, so the count travels with the section
+        # and the UI can say so rather than leaving a student to wonder.
+        for pool in candidates.values():
+            by_slot: dict[tuple[tuple[str, int, int], ...], set[int | None]] = {}
+            for section in pool:
+                slot = tuple(
+                    sorted((m.day, m.start, m.end) for m in section.meetings)
+                )
+                if slot:
+                    by_slot.setdefault(slot, set()).add(section.instructor_id)
+            for index, section in enumerate(pool):
+                slot = tuple(
+                    sorted((m.day, m.start, m.end) for m in section.meetings)
+                )
+                others = len(by_slot.get(slot, set())) - 1 if slot else 0
+                pool[index] = replace(
+                    section, same_time_alternatives=max(others, 0)
+                )
+
+        request_availability = scheduling.Availability(
             earliest=scheduling.parse_time(request.earliest),
             latest=scheduling.parse_time(request.latest),
             excluded_days=frozenset(
@@ -271,64 +303,85 @@ async def generate_schedules(
         # small pool is already biased toward high ratings -- and a student who
         # asked for no Friday classes would never see the Friday-free options,
         # because they rank lower on rating before preferences are applied.
+        availability = request_availability
         pool_size = max(request.limit * 4, SCHEDULE_POOL)
-        schedules = scheduling.generate(
-            candidates,
-            min_gap=min_gap,
-            availability=availability,
-            limit=pool_size,
-        )
 
-        # A clear "no Friday classes" has to shape the search, not just the
-        # ranking of what the search already chose. With a real term loaded a
-        # popular course has over a hundred sections, so the pool fills with
-        # the highest-rated combinations long before a Friday-free one appears,
-        # and the preference silently does nothing -- which is exactly what it
-        # used to do. Ask for the constrained schedules first and fall back to
-        # the unconstrained pool when the timetable cannot give them, so the
-        # answer is still honest about being impossible rather than empty.
         # Preferences stated clearly enough to be worth obeying rather than
-        # merely scoring. Each is applied on top of the last and kept only if
-        # schedules survive it, so a student gets as much of what they asked
-        # for as the timetable allows and is told about whatever it could not
-        # give. Scoring alone was not enough: with a hundred sections to a
-        # course the pool fills with the highest-rated combinations long before
-        # a Friday-free or late-starting one appears, so the preference was
-        # understood and then silently did nothing.
-        wanted: list[tuple[str, scheduling.Availability]] = []
-        tightened = availability
+        # merely scoring. Scoring alone was not enough: with a hundred sections
+        # to a course the pool fills with the highest-rated combinations long
+        # before a Friday-free or late-starting one appears, so the preference
+        # was understood and then silently did nothing.
+        #
+        # They are applied together, in one search. Applying them one at a time
+        # meant a search per constraint plus an unconstrained one that was
+        # always discarded -- three passes over a combination space that takes
+        # seconds to walk, which is why a four-course build took the better
+        # part of a minute. Relaxing only happens when the constrained search
+        # comes back empty, which is rare and is the case that can afford it.
+        constraints: list[tuple[str, scheduling.Availability]] = []
+        wanted = availability
         if (
             preferences.avoid_fridays > prefs_service.CLEAR_SIGNAL
             and "FRI" not in availability.excluded_days
         ):
-            tightened = replace(
-                tightened,
-                excluded_days=tightened.excluded_days | frozenset({"FRI"}),
+            wanted = replace(
+                wanted, excluded_days=wanted.excluded_days | frozenset({"FRI"})
             )
-            wanted.append(("no Friday classes", tightened))
+            constraints.append(("no Friday classes", wanted))
         if (
             preferences.avoid_early_mornings > prefs_service.CLEAR_SIGNAL
             and availability.earliest is None
         ):
-            tightened = replace(tightened, earliest=EARLY_MORNING_ENDS)
-            wanted.append(("no early mornings", tightened))
+            wanted = replace(wanted, earliest=EARLY_MORNING_ENDS)
+            constraints.append(("no early mornings", wanted))
 
         relaxed: list[str] = []
-        for label, attempt_with in wanted:
-            attempt = scheduling.generate(
+        schedules = scheduling.generate(
+            candidates, min_gap=min_gap, availability=wanted, limit=pool_size
+        )
+        availability = wanted
+
+        # A long gap the timetable cannot give. Asking for two hours between
+        # classes is easy to say and often impossible, and an empty result does
+        # not distinguish "no such schedule" from "your gap was too long" --
+        # so fall back to the floor and say which it was.
+        # Only a gap inferred from the student's words is relaxed. One they
+        # set on the control is a constraint they chose, and quietly ignoring
+        # it would be worse than returning nothing -- the doc's 20 minutes is a
+        # floor the student may raise, not a suggestion.
+        if (
+            not schedules
+            and request.min_gap_minutes is None
+            and min_gap > scheduling.DEFAULT_MIN_GAP_MINUTES
+        ):
+            loosened = scheduling.generate(
                 candidates,
-                min_gap=min_gap,
-                availability=attempt_with,
+                min_gap=scheduling.DEFAULT_MIN_GAP_MINUTES,
+                availability=wanted,
                 limit=pool_size,
             )
-            if attempt:
-                schedules = attempt
-                availability = attempt_with
-            else:
-                relaxed.append(f"{label} was impossible for these courses")
-                # Stop tightening: a later constraint builds on this one, and
-                # applying it would re-impose the one that just failed.
-                break
+            if loosened:
+                hours = min_gap / 60
+                asked = (
+                    f"{hours:.0f} hours" if hours >= 1 and hours == int(hours)
+                    else f"{min_gap} minutes"
+                )
+                relaxed.append(
+                    f"{asked} between classes was impossible for these courses"
+                )
+                schedules = loosened
+                min_gap = scheduling.DEFAULT_MIN_GAP_MINUTES
+
+        # Nothing fits with everything asked for: drop the constraints one at a
+        # time, most recently added first, and say which could not be met.
+        while not schedules and constraints:
+            label, _ = constraints.pop()
+            relaxed.append(f"{label} was impossible for these courses")
+            fallback = constraints[-1][1] if constraints else request_availability
+            schedules = scheduling.generate(
+                candidates, min_gap=min_gap, availability=fallback, limit=pool_size
+            )
+            availability = fallback
 
         # 3. What did Jev read about these professors?
         instructor_ids = sorted(
@@ -355,7 +408,43 @@ async def generate_schedules(
             )
 
         # 4. Rank.
-        ranked = prefs_service.rank(schedules, preferences, traits)[: request.limit]
+        # Options the student can tell apart. Several schedules can share the
+        # same shape -- the same courses at the same hours, differing only in
+        # which section number teaches them -- and offering three of those as
+        # "Option 1, 2, 3" is offering one option three times. Take the best of
+        # each distinct timetable, and fall back to the plain order if that
+        # leaves fewer than asked for.
+        ordered = prefs_service.rank(schedules, preferences, traits)
+        ranked: list[prefs_service.RankedSchedule] = []
+        seen: set[tuple[tuple[str, str, int, int], ...]] = set()
+        for candidate in ordered:
+            shape = tuple(
+                sorted(
+                    (section.code, meeting.day, meeting.start, meeting.end)
+                    for section in candidate.schedule.sections
+                    for meeting in section.meetings
+                )
+            )
+            if shape in seen:
+                continue
+            seen.add(shape)
+            ranked.append(candidate)
+            if len(ranked) == request.limit:
+                break
+        # Fewer distinct shapes than asked for means the remaining choices
+        # differ only in who teaches them. Those are still real options, so
+        # they are offered -- flagged, so the student is told that is the only
+        # difference rather than shown the same timetable three times with no
+        # explanation.
+        same_shape: set[int] = set()
+        if len(ranked) < request.limit:
+            for candidate in ordered:
+                if candidate in ranked:
+                    continue
+                same_shape.add(id(candidate))
+                ranked.append(candidate)
+                if len(ranked) == request.limit:
+                    break
         detail = (
             None
             if ranked
@@ -367,7 +456,9 @@ async def generate_schedules(
         return {
             "request": request.model_dump(),
             "count": len(ranked),
-            "schedules": [to_payload(r) for r in ranked],
+            "schedules": [
+                to_payload(r, same_shape=id(r) in same_shape) for r in ranked
+            ],
             "preferences": preferences_payload(resolved),
             "detail": detail,
             "relaxed": relaxed,

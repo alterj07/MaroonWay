@@ -11,13 +11,13 @@ const plan: Plan = {
   tags: ['Conflict-free'], courses: [],
 };
 
-function setup(initialTerm = 'FALL 2026', catalog: ExploreCourse[] = []) {
+function setup(initialTerm = 'FALL 2026', catalog: ExploreCourse[] = [], initialPlans = [plan]) {
   const props = {
-    plans: [plan], courses: catalog, student: { email: 'demo@tamu.edu', name: 'Demo' },
+    plans: initialPlans, courses: catalog, student: { email: 'demo@tamu.edu', name: 'Demo' },
     savedCourses: ['CSCE120'], savedWants: '',
     initialTerm, terms: ['FALL 2026', 'SPRING 2027'],
     onSaveCourses: vi.fn(async () => ({ saved: true })),
-    onBuildPlans: vi.fn(async (_codes: string[], _wants: string, _term?: string | null) => [plan]),
+    onBuildPlans: vi.fn(async (_codes: string[], _wants: string, _term?: string | null) => ({ plans: [plan], relaxed: [] as string[] })),
     onUseSchedule: vi.fn(async () => ({ saved: true })),
   };
   render(<Planner {...props} />);
@@ -49,6 +49,7 @@ describe('planner semester selection', () => {
     setup();
     await openBuilder();
     fireEvent.click(screen.getByRole('button', { name: 'Remove CSCE 120' }));
+    fireEvent.click(screen.getByRole('button', { name: /^Remove$/ }));
     await waitFor(() => expect(screen.queryByRole('button', { name: 'Remove CSCE 120' })).toBeNull());
     expect(screen.getByText('Add the classes you need')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Use this schedule' })).toBeNull();
@@ -63,17 +64,16 @@ describe('planner semester selection', () => {
   it('builds the saved semester even when it is not the first available semester', async () => {
     const props = setup('SPRING 2027');
     await openBuilder();
-    expect((screen.getByRole('combobox', { name: 'Semester' }) as HTMLSelectElement).value)
-      .toBe('SPRING 2027');
+    expect(screen.getByRole('combobox', { name: 'Semester' }).textContent)
+      .toContain('SPRING 2027');
     expect(props.onBuildPlans).toHaveBeenLastCalledWith(['CSCE120'], '', 'SPRING 2027');
   });
 
   it('rebuilds and saves using the newly selected semester', async () => {
     const props = setup();
     await openBuilder();
-    fireEvent.change(screen.getByRole('combobox', { name: 'Semester' }), {
-      target: { value: 'SPRING 2027' },
-    });
+    fireEvent.click(screen.getByRole('combobox', { name: 'Semester' }));
+    fireEvent.click(screen.getByRole('option', { name: 'SPRING 2027' }));
     await waitFor(() => expect(props.onBuildPlans).toHaveBeenLastCalledWith(
       ['CSCE120'], expect.any(String), 'SPRING 2027',
     ));
@@ -85,14 +85,13 @@ describe('planner semester selection', () => {
   it('prevents a second semester change and saving while a rebuild is pending', async () => {
     const props = setup();
     await openBuilder();
-    let finish!: (plans: Plan[]) => void;
+    let finish!: (result: { plans: Plan[]; relaxed: string[] }) => void;
     props.onBuildPlans.mockImplementationOnce(() => new Promise((resolve) => { finish = resolve; }));
-    fireEvent.change(screen.getByRole('combobox', { name: 'Semester' }), {
-      target: { value: 'SPRING 2027' },
-    });
+    fireEvent.click(screen.getByRole('combobox', { name: 'Semester' }));
+    fireEvent.click(screen.getByRole('option', { name: 'SPRING 2027' }));
     expect((screen.getByRole('combobox', { name: 'Semester' }) as HTMLSelectElement).disabled).toBe(true);
     expect((screen.getByRole('button', { name: 'Use this schedule' }) as HTMLButtonElement).disabled).toBe(true);
-    finish([plan]);
+    finish({ plans: [plan], relaxed: [] as string[] });
     await waitFor(() => expect((screen.getByRole('combobox', { name: 'Semester' }) as HTMLSelectElement).disabled).toBe(false));
   });
 
@@ -100,9 +99,8 @@ describe('planner semester selection', () => {
     const props = setup();
     await openBuilder();
     props.onBuildPlans.mockRejectedValueOnce(new Error('Network unavailable'));
-    fireEvent.change(screen.getByRole('combobox', { name: 'Semester' }), {
-      target: { value: 'SPRING 2027' },
-    });
+    fireEvent.click(screen.getByRole('combobox', { name: 'Semester' }));
+    fireEvent.click(screen.getByRole('option', { name: 'SPRING 2027' }));
     await screen.findByRole('heading', { name: 'No schedule could be built' });
     expect(screen.queryByRole('button', { name: 'Use this schedule' })).toBeNull();
     expect(props.onUseSchedule).not.toHaveBeenCalled();
@@ -126,4 +124,16 @@ it('links explorer professor names to their review pages without inventing links
   fireEvent.click(screen.getByRole('button', { name: 'Course explorer' }));
   expect(screen.getByRole('link', { name: 'TYAGI A' }).getAttribute('href')).toBe('/professors/1');
   expect(screen.queryByRole('link', { name: 'Unknown professor' })).toBeNull();
+});
+
+
+it('keeps additional generated options accessible without presenting them as saved schedules', () => {
+  setup('FALL 2026', [], Array.from({ length: 4 }, (_, i) => ({ ...plan, id: i + 1, name: `Candidate ${i + 1}` })));
+  fireEvent.click(screen.getByRole('button', { name: 'Schedule builder' }));
+  expect(screen.queryByRole('heading', { name: 'Candidate 4' })).toBeNull();
+  fireEvent.click(screen.getByRole('button', { name: 'Show all 4 options' }));
+  expect(screen.getByRole('heading', { name: 'Candidate 4' })).toBeTruthy();
+  fireEvent.click(screen.getByRole('button', { name: 'Saved schedules' }));
+  expect(screen.getByText('No saved schedules yet')).toBeTruthy();
+  expect(screen.queryByRole('heading', { name: 'Candidate 4' })).toBeNull();
 });

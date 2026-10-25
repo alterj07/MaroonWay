@@ -21,7 +21,7 @@ function setup(schedules: SavedSchedule[] = [], candidates = [current]) {
     savedCourses: ['CSCE120'], savedWants: '', terms: ['FALL 2026'], initialTerm: 'FALL 2026',
     savedSchedules: schedules,
     onSaveCourses: vi.fn(async () => ({ saved: true })),
-    onBuildPlans: vi.fn(async () => candidates),
+    onBuildPlans: vi.fn(async () => ({ plans: candidates, relaxed: [] as string[] })),
     onUseSchedule: vi.fn(async (): Promise<{ saved: boolean; schedule?: SavedSchedule }> => ({
       saved: true, schedule: { ...stored, term: 'FALL 2026', payload: current },
     })),
@@ -32,23 +32,23 @@ function setup(schedules: SavedSchedule[] = [], candidates = [current]) {
 
 it('shows persisted schedules instead of unsaved generation candidates', () => {
   setup([stored]);
-  fireEvent.click(screen.getByRole('button', { name: 'My schedules' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Saved schedules' }));
   expect(screen.getByRole('heading', { name: 'My saved spring schedule' })).toBeTruthy();
   expect(screen.queryByRole('heading', { name: 'Current unsaved candidate' })).toBeNull();
 });
 
 it('opens the saved snapshot and its original semester without rebuilding it', async () => {
   const { props } = setup([stored]);
-  fireEvent.click(screen.getByRole('button', { name: 'My schedules' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Saved schedules' }));
   fireEvent.click(screen.getByRole('button', { name: 'Open My saved spring schedule' }));
   expect(screen.getAllByRole('heading', { name: 'Historical plan' }).length).toBeGreaterThan(0);
-  expect((screen.getByRole('combobox', { name: 'Semester' }) as HTMLSelectElement).value).toBe('SPRING 2025');
+  expect(screen.getByRole('combobox', { name: 'Semester' }).textContent).toContain('SPRING 2025');
   expect(props.onBuildPlans).not.toHaveBeenCalled();
 });
 
 it('shows an empty state when there are no saved schedules', () => {
   setup();
-  fireEvent.click(screen.getByRole('button', { name: 'My schedules' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Saved schedules' }));
   expect(screen.getByText('No saved schedules yet')).toBeTruthy();
   expect(screen.queryByRole('button', { name: 'Open Current unsaved candidate' })).toBeNull();
 });
@@ -65,7 +65,7 @@ it('adds the record returned by a successful save to the saved list immediately'
 
 it('does not crash when a stored snapshot has an unsupported payload', () => {
   setup([{ ...stored, payload: { arbitrary: 'old data' } }]);
-  fireEvent.click(screen.getByRole('button', { name: 'My schedules' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Saved schedules' }));
   expect(screen.getByText('This saved schedule cannot be displayed.')).toBeTruthy();
   expect(screen.queryByRole('button', { name: 'Open My saved spring schedule' })).toBeNull();
 });
@@ -114,7 +114,7 @@ it('rejects corrupt meeting times before rendering or opening a stored snapshot'
   setup([{ ...stored, payload: { ...current, courses: [{ ...current.courses[0], meetings: [
     { day: 0, start: 9, end: 1e12, room: 'HRBB' },
   ] }] } }]);
-  fireEvent.click(screen.getByRole('button', { name: 'My schedules' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Saved schedules' }));
   expect(screen.getByText('This saved schedule cannot be displayed.')).toBeTruthy();
 });
 
@@ -122,13 +122,22 @@ it('does not open a different-semester saved snapshot while a rebuild is pending
   const { props } = setup([stored]);
   fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
   await screen.findByRole('combobox', { name: 'Semester' });
-  let finish!: (plans: Plan[]) => void;
+  let finish!: (result: { plans: Plan[]; relaxed: string[] }) => void;
   props.onBuildPlans.mockImplementationOnce(() => new Promise((resolve) => { finish = resolve; }));
   fireEvent.click(screen.getByRole('button', { name: 'Rebuild my schedule' }));
   fireEvent.click(screen.getByRole('button', { name: 'Saved schedules' }));
   fireEvent.click(screen.getByRole('button', { name: 'Open My saved spring schedule' }));
-  finish([current]);
+  finish({ plans: [current], relaxed: [] as string[] });
   await waitFor(() => expect(screen.getByRole('button', { name: 'Open My saved spring schedule' }).getAttribute('aria-disabled')).toBe('false'));
   fireEvent.click(screen.getByRole('button', { name: 'Schedule builder' }));
-  expect((screen.getByRole('combobox', { name: 'Semester' }) as HTMLSelectElement).value).toBe('FALL 2026');
+  expect(screen.getByRole('combobox', { name: 'Semester' }).textContent).toContain('FALL 2026');
+});
+
+it('does not carry a generated schedule warning into an unrelated saved snapshot', () => {
+  setup([stored], [{ ...current, warnings: ['No Friday classes was impossible'] }]);
+  fireEvent.click(screen.getByRole('button', { name: 'Schedule builder' }));
+  expect(screen.getAllByText(/No Friday classes was impossible/).length).toBeGreaterThan(0);
+  fireEvent.click(screen.getByRole('button', { name: 'Saved schedules' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Open My saved spring schedule' }));
+  expect(screen.queryByText(/No Friday classes was impossible/)).toBeNull();
 });

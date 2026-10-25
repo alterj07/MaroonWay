@@ -83,14 +83,67 @@ PREFERENCE_QUESTIONS: dict[str, Question] = {
             "tight": "Does not mind rushing between classes; 20 minutes is fine",
             "comfortable": "Wants a comfortable walk; around 30 minutes",
             "relaxed": "Wants plenty of room; around 45 minutes",
-            "long": "Wants a long break between classes; an hour or more",
+            "long": "Wants a long break between classes; about an hour",
+            # The scale stopped at an hour, so "two hours between classes"
+            # landed on "long" and came back as sixty minutes -- the decision
+            # was right and the vocabulary could not express it.
+            "very_long": "Wants two hours or more between classes",
         },
     ),
     "wants_honors": noul("Does this student want honors sections?"),
+    # Students say this constantly -- "don't stack my classes", "spread them
+    # out", "give me two long days" -- and nothing was asking about it, so the
+    # words went in and no preference came out.
+    "day_shape": choice(
+        "How does this student want their classes spread over the week?",
+        {
+            "either": "No view either way about how classes sit across the week",
+            "spread": "Wants classes spread out, not stacked or packed together",
+            "compact": "Wants classes packed into as few days as possible",
+        },
+    ),
 }
 
 #: gap_tolerance -> minutes. Never below the doc's 20-minute floor.
-GAP_MINUTES = {"tight": 20, "comfortable": 30, "relaxed": 45, "long": 60}
+#: Reviews at which a rating stops being mostly guesswork. The same number the
+#: frontend marks against: below it, a block carries an asterisk.
+SOLID_EVIDENCE = 20
+
+#: How much a schedule's evidence counts next to what the student asked for.
+#: Deliberately light. It should separate two schedules that are otherwise
+#: alike, not talk a student out of something they asked for outright.
+EVIDENCE_WEIGHT = 0.35
+
+#: Placeholders A&M uses where an instructor has not been assigned yet. A
+#: section taught by one of these is a section nobody can tell you anything
+#: about.
+UNNAMED_INSTRUCTOR = frozenset(
+    {"STAFF", "TBA", "TBD", "TO BE ANNOUNCED", "INSTRUCTOR", "NOT ASSIGNED"}
+)
+
+
+def section_evidence(section: Section) -> float:
+    """How much is actually known about who teaches this, 0-1.
+
+    Nothing is known about a section with no named instructor, whatever its
+    ratings claim, so it scores zero regardless. Otherwise it is the reviews
+    behind the rating, capped at the point where more reviews stop telling you
+    anything new.
+    """
+    name = (section.instructor_name or "").strip().upper()
+    if not name or name in UNNAMED_INSTRUCTOR:
+        return 0.0
+    reviews = max(section.class_reviews, section.professor_reviews)
+    return min(1.0, reviews / SOLID_EVIDENCE)
+
+
+GAP_MINUTES = {
+    "tight": 20,
+    "comfortable": 30,
+    "relaxed": 45,
+    "long": 60,
+    "very_long": 120,
+}
 
 
 #: Above this, a yes/no answer counts as a stated wish rather than a shrug.
@@ -113,6 +166,9 @@ class Preferences:
     attendance: float = 0.0
     avoid_early_mornings: float = 0.0
     avoid_fridays: float = 0.0
+    #: "spread" | "compact" | None. Spread prefers more days and fewer hours
+    #: waiting between classes; compact prefers the opposite.
+    day_shape: str | None = None
     delivery: str | None = None  # F2F | WEB | None
     campus: str | None = None  # CSTAT | BLINN | None
     honors: bool | None = None
@@ -151,6 +207,11 @@ class Preferences:
             # asked for.
             avoid_early_mornings=_clear(decisions.unit("avoid_early_mornings", 0.0)),
             avoid_fridays=_clear(decisions.unit("avoid_fridays", 0.0)),
+            day_shape=(
+                None
+                if (shape := decisions.chose("day_shape", "either")) == "either"
+                else shape
+            ),
             delivery=delivery,
             campus=campus,
             honors=True if decisions.yes("wants_honors", 0.6) else None,
@@ -281,6 +342,14 @@ def score_schedule(
 
     Traits are keyed by (instructor_id, course_id). An exact course row wins;
     only a missing course row falls back to (instructor_id, None).
+
+    Evidence is the exception, and deliberately so. Not knowing a professor's
+    rating is no reason to mark that professor down -- but a schedule a student
+    would be committing to blind is genuinely worse for them than one built on
+    professors people have written about, and that is a fact about the
+    schedule, not about the professor. So it is scored as its own dimension,
+    where it is visible in the reasons, rather than folded into the rating,
+    where it would be indistinguishable from a bad review.
     """
     traits = traits or {}
     per_section = [
@@ -301,6 +370,10 @@ def score_schedule(
         components.append(
             Contribution("grade distribution", preferences.grades, schedule.mean_gpa / 5.0)
         )
+
+    evidence = _mean([section_evidence(s) for s in schedule.sections])
+    if evidence is not None:
+        components.append(Contribution("known professors", EVIDENCE_WEIGHT, evidence))
 
     lecture = _mean([t.lecture_quality for t in per_section])
     if lecture is not None:
@@ -360,6 +433,28 @@ def score_schedule(
         )
         components.append(
             Contribution("no early mornings", preferences.avoid_early_mornings, late_enough)
+        )
+
+    if preferences.day_shape is not None:
+        # Spread: more days, less waiting between the classes on each. Compact:
+        # the reverse. Both are read off the same two measures, so the score
+        # moves on the thing the student actually described rather than on a
+        # proxy for it.
+        days = schedule.days_on_campus
+        spread_days = min(max(days - 1, 0) / 4.0, 1.0)  # 1 day -> 0, 5 -> 1
+        # Three hours of waiting in a week is a thoroughly packed-out week.
+        waiting = min(schedule.idle_minutes / 180.0, 1.0)
+        value = (
+            (spread_days * 0.6 + (1.0 - waiting) * 0.4)
+            if preferences.day_shape == "spread"
+            else ((1.0 - spread_days) * 0.6 + waiting * 0.4)
+        )
+        components.append(
+            Contribution(
+                "spread out" if preferences.day_shape == "spread" else "compact days",
+                1.0,
+                value,
+            )
         )
 
     if preferences.avoid_fridays > 0:

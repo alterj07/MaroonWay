@@ -1,7 +1,7 @@
 "use client";
 // The planner UI. Data comes from the backend via src/app/page.tsx, which
 // fetches real schedules and maps them into Plan/Course.
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 
 import { emptyPlan, normalizeCourseCodes, readSavedPlan } from "@/lib/plans";
 import type { SavedSchedule } from "@/lib/api";
@@ -11,7 +11,6 @@ import {
   ArrowRight,
   BookOpen,
   Bot,
-  Building2,
   CalendarDays,
   Check,
   ChevronDown,
@@ -52,6 +51,10 @@ export type Course = {
   delivery?: string | null;
   honors?: boolean;
   seatsOpen?: number | null;
+  /** Reviews behind the rating; under 20 is thin evidence. */
+  reviews?: number;
+  /** Sections at these exact times taught by someone else. */
+  sameTimeAlternatives?: number;
 };
 export type Student = { email: string; name: string | null };
 
@@ -96,6 +99,8 @@ export type Plan = {
    *  two schedules that share every professor and so score the same. */
   days?: number;
   idle?: number;
+  /** An earlier option has this exact timetable; only the staff differ. */
+  sameShape?: boolean;
   id: number;
   name: string;
   subtitle: string;
@@ -125,7 +130,7 @@ function Mini({ courses }: { courses: Course[] }) {
   const meetings = courses.flatMap(courseMeetings);
   const visibleDays = weekDays.slice(0, Math.max(5, ...meetings.map((m) => m.day + 1)));
   const startHour = Math.min(8, ...meetings.map((m) => Math.floor(m.start)));
-  const endHour = Math.max(18, ...meetings.map((m) => Math.ceil(m.end)));
+  const endHour = Math.max(22, ...meetings.map((m) => Math.ceil(m.end)));
   return (
     <div className="mini" style={{
       gridTemplateColumns: `18px repeat(${visibleDays.length}, 1fr)`,
@@ -168,7 +173,9 @@ function Mini({ courses }: { courses: Course[] }) {
  * the reason, was a line of small grey text.
  */
 function ScheduleProblem({ reason }: { reason: string }) {
-  const missing = reason.match(/no sections on record for ([A-Z]+ ?\d+[A-Z]?)/i);
+  const missing = reason.match(
+    /no sections on record for ([A-Z]+ ?\d+[A-Z]?)/i,
+  );
   return (
     <div className="problem">
       <span className="problem-mark">
@@ -229,6 +236,22 @@ function CourseHover({ course, meeting }: {
         {course.section ? <em>sec {course.section}</em> : null}
       </b>
       <span className="hover-prof">{course.prof}</span>
+      {(course.reviews ?? 0) < THIN_EVIDENCE ? (
+        <span className="hover-warn">
+          <b className="warn-star">*</b>{" "}
+          {(course.reviews ?? 0) === 0
+            ? "No ratings for this one — nothing to go on, so treat the numbers above as unknown rather than average."
+            : `Only ${course.reviews} review${course.reviews === 1 ? "" : "s"} — a weak signal, and the rating has been pulled toward the average because of it.`}
+        </span>
+      ) : null}
+      {(course.sameTimeAlternatives ?? 0) > 0 ? (
+        <span className="hover-warn">
+          <Info size={12} /> {course.sameTimeAlternatives} other instructor
+          {(course.sameTimeAlternatives ?? 0) === 1 ? "" : "s"} teach
+          {(course.sameTimeAlternatives ?? 0) === 1 ? "es" : ""} this course at
+          these exact times.
+        </span>
+      ) : null}
       <dl>
         <div>
           <dt>RMP rating</dt>
@@ -270,11 +293,125 @@ function CourseHover({ course, meeting }: {
   );
 }
 
+/**
+ * The course picker, shared by the landing page and the builder's sidebar.
+ *
+ * It existed only on the landing page, so adding a course once inside the
+ * builder meant typing a code into a bare text field -- a different and worse
+ * way to do the same thing, in the same app, a few pixels apart.
+ */
+function CoursePicker({
+  open,
+  catalog,
+  already,
+  onClose,
+  onAdd,
+}: {
+  open: boolean;
+  catalog: ExploreCourse[];
+  /** Courses already chosen: shown as "Added", not selectable again. */
+  already: string[];
+  onClose: () => void;
+  onAdd: (codes: string[]) => void;
+}) {
+  const [query, setQuery] = useState("");
+  const [picked, setPicked] = useState<string[]>([]);
+
+  if (!open) return null;
+
+  const close = () => {
+    setPicked([]);
+    setQuery("");
+    onClose();
+  };
+
+  return (
+    <div className="picker-backdrop" onClick={close}>
+      <section className="course-picker" onClick={(e) => e.stopPropagation()}>
+        <header>
+          <div>
+            <span>ADD COURSES</span>
+            <h2>What are you taking?</h2>
+          </div>
+          <button onClick={close}>
+            <X size={18} />
+          </button>
+        </header>
+        <div className="picker-search">
+          <SearchIcon size={17} duration={1.15} color="currentColor" />
+          <input
+            autoFocus
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search course code or name…"
+          />
+        </div>
+        <div className="picker-results">
+          {catalog
+            .filter((c) =>
+              (c.code + " " + (c.title ?? ""))
+                .toLowerCase()
+                .includes(query.toLowerCase()),
+            )
+            .slice(0, 80)
+            .map((c) => (
+              <button
+                key={c.code}
+                className={
+                  picked.includes(c.code) || already.includes(c.code)
+                    ? "picked"
+                    : ""
+                }
+                disabled={already.includes(c.code)}
+                onClick={() =>
+                  setPicked((v) =>
+                    v.includes(c.code)
+                      ? v.filter((x) => x !== c.code)
+                      : [...v, c.code],
+                  )
+                }
+              >
+                <span>
+                  <b>{c.code}</b>
+                  <small>
+                    {c.title ?? "Untitled"} · {c.professor_count} prof
+                    {c.professor_count === 1 ? "" : "s"}
+                  </small>
+                </span>
+                <i>
+                  {already.includes(c.code) ? (
+                    "Added"
+                  ) : picked.includes(c.code) ? (
+                    <Check size={15} />
+                  ) : (
+                    <Plus size={15} />
+                  )}
+                </i>
+              </button>
+            ))}
+        </div>
+        <footer>
+          <span>{picked.length} selected</span>
+          <button
+            disabled={!picked.length}
+            onClick={() => {
+              onAdd(picked);
+              close();
+            }}
+          >
+            Add {picked.length || ""} course{picked.length === 1 ? "" : "s"}
+          </button>
+        </footer>
+      </section>
+    </div>
+  );
+}
+
 function Calendar({ plan }: { plan: Plan }) {
   const meetings = plan.courses.flatMap(courseMeetings);
   const visibleDays = weekDays.slice(0, Math.max(5, ...meetings.map((m) => m.day + 1)));
   const startHour = Math.min(8, ...meetings.map((m) => Math.floor(m.start)));
-  const endHour = Math.max(18, ...meetings.map((m) => Math.ceil(m.end)));
+  const endHour = Math.max(22, ...meetings.map((m) => Math.ceil(m.end)));
   const hours = Array.from({ length: endHour - startHour }, (_, i) => startHour + i);
   return (
     <div className="cal-scroll">
@@ -324,17 +461,55 @@ function Calendar({ plan }: { plan: Plan }) {
                   height: `calc(${hours} * var(--cal-row))`,
                 }}
               >
-                <strong>{c.code}</strong>
-                {/* A 50-minute class is one row tall; three lines do not fit in
-                    it, and clipped text reads as a rendering fault. The hover
-                    card carries the rest. */}
-                {hours >= 1 ? (
-                  <span>
-                    {time(meeting.start)}–{time(meeting.end)}
-                  </span>
-                ) : null}
-                {hours >= 1.5 ? (
-                  <small>
+                <span className="block-main">
+                  <strong>
+                    {c.code}
+                    {/* Thin evidence: a 4.9 from three reviews and a 4.9 from
+                        ninety are not the same claim. */}
+                    {(c.reviews ?? 0) < THIN_EVIDENCE ? (
+                      <i
+                        className="mark-thin"
+                        title={
+                          (c.reviews ?? 0) === 0
+                            ? "No RateMyProfessors ratings behind this one — nothing to go on"
+                            : `Only ${c.reviews} RateMyProfessors review${c.reviews === 1 ? "" : "s"} behind this rating — treat it as a weak signal`
+                        }
+                      >
+                        *
+                      </i>
+                    ) : null}
+                    {/* Another instructor teaches this exact slot. */}
+                    {(c.sameTimeAlternatives ?? 0) > 0 ? (
+                      <span
+                        className="mark-alt"
+                        title={`${c.sameTimeAlternatives} other instructor${(c.sameTimeAlternatives ?? 0) === 1 ? "" : "s"} teach${(c.sameTimeAlternatives ?? 0) === 1 ? "es" : ""} this course at exactly these times — the timetable looks the same whichever you take`}
+                      >
+                        <Info size={13} />
+                      </span>
+                    ) : null}
+                  </strong>
+                  {/* The rows are tall enough for three lines at the shortest
+                      class A&M timetables, so the time and who teaches it are
+                      both on the card rather than only in the hover. Anything
+                      shorter still drops them rather than overflowing. */}
+                  {hours >= 0.7 ? (
+                    <>
+                      <span>
+                        {time(meeting.start)}–{time(meeting.end)}
+                      </span>
+                      {c.prof ? (
+                        <span className="block-who" title={c.prof}>
+                          {c.prof}
+                        </span>
+                      ) : null}
+                    </>
+                  ) : null}
+                </span>
+                {/* The room goes on the right rather than on a third line, so
+                    a short class can show it too instead of hiding where it
+                    actually is. */}
+                {meeting.room ? (
+                  <small className="block-where" title={meeting.room}>
                     <MapPin size={10} />
                     {meeting.room}
                   </small>
@@ -372,7 +547,7 @@ export function Planner({
     codes: string[],
     term?: string | null,
   ) => Promise<{ saved: boolean }>;
-  onBuildPlans: (codes: string[], wants: string, term?: string | null) => Promise<Plan[]>;
+  onBuildPlans: (codes: string[], wants: string, term?: string | null) => Promise<{ plans: Plan[]; relaxed: string[] }>;
   /** Terms with sections loaded, for the semester picker. */
   terms: string[];
   /** The semester used to generate initialPlans on the server. */
@@ -401,14 +576,18 @@ export function Planner({
     codes = normalizeCourseCodes(codes);
     setChosen(codes);
     setPriorities(wants.split(",").map((s) => s.trim()).filter(Boolean));
+    setBusyWhat("build");
     setBusy(true);
     setKept(false);
     setSaveError(null);
     try {
-      setPlans(await onBuildPlans(codes, wants, selectedTerm || null));
+      const result = await onBuildPlans(codes, wants, selectedTerm || null);
+      setPlans(result.plans);
+      setRelaxed(result.relaxed);
       setActive(1);
     } catch {
       setPlans(emptyPlan("Could not build schedules", "Try rebuilding this semester again"));
+      setRelaxed([]);
     } finally {
       setBusy(false);
     }
@@ -448,14 +627,23 @@ export function Planner({
     ),
     // Each of these backs a control that previously did nothing.
     [term, setTerm] = useState(initialTerm ?? terms[0] ?? ""),
+    [termOpen, setTermOpen] = useState(false),
     [addingCourse, setAddingCourse] = useState(false),
-    [courseDraft, setCourseDraft] = useState(""),
+    // The course a student has asked to remove, pending confirmation.
+    [confirmDrop, setConfirmDrop] = useState<string | null>(null),
     [addingPriority, setAddingPriority] = useState(false),
     [priorityDraft, setPriorityDraft] = useState(""),
     [comparing, setComparing] = useState(false),
+    [allOptions, setAllOptions] = useState(false),
     [analysing, setAnalysing] = useState(false),
-    [scoring, setScoring] = useState(false),
     [busy, setBusy] = useState(false),
+    // Preferences the timetable could not honour. Shown rather than swallowed:
+    // a schedule that quietly disobeys is worse than one that says it had to.
+    [relaxed, setRelaxed] = useState<string[]>(initialPlans[0]?.warnings ?? []),
+    [editing, setEditing] = useState<number | null>(null),
+    // What the overlay should say: one flag covers building and saving, and an
+    // overlay reporting the wrong one is worse than no overlay.
+    [busyWhat, setBusyWhat] = useState<"build" | "save">("build"),
     [kept, setKept] = useState(false);
 
   /** Everything the student has asked for, as one sentence for the decider. */
@@ -472,12 +660,11 @@ export function Planner({
     await build(codes, text, selectedTerm);
   }
 
-  async function addCourse() {
-    const code = courseDraft.trim().toUpperCase().replace(/\s+/g, "");
-    setCourseDraft("");
+  async function addCourses(codes: string[]) {
     setAddingCourse(false);
-    if (!code || chosen.includes(code)) return;
-    const next = [...chosen, code];
+    if (busy) return;
+    const next = normalizeCourseCodes([...chosen, ...codes]);
+    if (next.length === chosen.length) return;
     await changeCourses(next);
   }
 
@@ -489,6 +676,7 @@ export function Planner({
   }
 
   async function dropCourse(code: string) {
+    setConfirmDrop(null);
     const next = chosen.filter((c) => c !== code);
     await changeCourses(next);
   }
@@ -504,14 +692,18 @@ export function Planner({
       setKept(false);
       setActive(1);
       try {
-        setPlans(codes.length ? await onBuildPlans(codes, wants, term || null)
-          : emptyPlan("No classes chosen", "Add the classes you need"));
+        const result = codes.length ? await onBuildPlans(codes, wants, term || null)
+          : { plans: emptyPlan("No classes chosen", "Add the classes you need"), relaxed: [] };
+        setPlans(result.plans);
+        setRelaxed(result.relaxed);
       } catch {
         setPlans(emptyPlan("Classes saved, schedule unavailable", "Your classes were saved. Try rebuilding your schedule again."));
+        setRelaxed([]);
       }
       return result;
     } catch {
       setPlans(emptyPlan("Could not update classes", "Please try updating your classes again"));
+      setRelaxed([]);
       setSaveError("Could not update your classes. Please try again.");
       return { saved: false };
     } finally {
@@ -532,6 +724,7 @@ export function Planner({
 
   async function keepSchedule() {
     if (busy || kept || !term || plan.failed) return;
+    setBusyWhat("save");
     setBusy(true);
     setSaveError(null);
     try {
@@ -609,6 +802,7 @@ export function Planner({
         onOpen={(record, snapshot) => {
           if (busy) return;
           setPlans([snapshot]);
+          setRelaxed(snapshot.warnings ?? []);
           setActive(snapshot.id);
           setTerm(record.term);
           setChosen(snapshot.courses.map((c) => c.code.replace(/\s+/g, "").toUpperCase()));
@@ -623,12 +817,37 @@ export function Planner({
     );
   return (
     <main className={`app-page ${dark ? "site-dark" : "site-light"}`}>
-      <AppHeader
+      {/* A rebuild walks a large combination space and calls the decider, so
+          it can take seconds. Without this the only sign of life is a button
+          reading "Rebuilding...", which looks the same as a button that has
+          hung. */}
+      {busy ? (
+        <div className="working" role="status" aria-live="polite">
+          <div className="working-card">
+            <span className="working-spin" aria-hidden="true">
+              <i />
+              <i />
+              <i />
+            </span>
+            <b>
+              {busyWhat === "save"
+                ? "Saving this schedule…"
+                : "Building your schedule…"}
+            </b>
+            <p>
+              {busyWhat === "save"
+                ? "Keeping it against your account so it is here next time."
+                : "Comparing every conflict-free way to take these classes, then ranking them against what you asked for."}
+            </p>
+          </div>
+        </div>
+      ) : null}
+      <NavRail
         page="planner"
         onNav={setPage}
+        student={student}
         dark={dark}
         setDark={setDark}
-        student={student}
       />
       <div className="work builder-work">
         <aside className="filters">
@@ -645,55 +864,109 @@ export function Planner({
               Reset
             </button>
           </div>
-          <label className="term">
-            <span>
-              <CalendarDays size={17} />
-              <i>
-                <small>SEMESTER</small>
-                <b>{term || "No term loaded"}</b>
-              </i>
-            </span>
-            <ChevronDown size={16} />
-            {/* A real select over the terms that have sections. This was a
-                fixed string, so it could name a term the database had never
-                heard of. */}
-            <select
+          {/*
+            A dropdown of our own rather than a <select>: the option list of a
+            native select is drawn by the operating system, so its white
+            background and blue highlight cannot be styled to match anything.
+          */}
+          <div className="term-picker">
+            <button
+              className="term"
+              role="combobox"
               aria-label="Semester"
-              value={term}
+              aria-controls="semester-options"
+              aria-haspopup="listbox"
+              aria-expanded={termOpen}
               disabled={!terms.length || !chosen.length || busy}
-              onChange={(e) => {
-                const nextTerm = e.target.value;
-                setTerm(nextTerm);
-                void rebuild(chosen, wants, nextTerm);
-              }}
+              onClick={() => setTermOpen((v) => !v)}
             >
-              {[...new Set([term, ...terms])].filter(Boolean).map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
-          </label>
+              <span>
+                <CalendarDays size={17} />
+                <i>
+                  <small>SEMESTER</small>
+                  <b>{term || "No term loaded"}</b>
+                </i>
+              </span>
+              <ChevronDown size={16} className={termOpen ? "flip" : ""} />
+            </button>
+            {termOpen ? (
+              <>
+                {/* Catches the click that dismisses the list, so it closes
+                    like any other menu rather than only on a second click of
+                    the button. */}
+                <div className="term-shade" onClick={() => setTermOpen(false)} />
+                <ul id="semester-options" className="term-list" role="listbox" aria-label="Semester">
+                  {[...new Set([term, ...terms])].filter(Boolean).map((t) => (
+                    <li key={t}>
+                      <button
+                        role="option"
+                        aria-selected={t === term}
+                        className={t === term ? "chosen" : ""}
+                        onClick={() => {
+                          setTermOpen(false);
+                          if (t === term) return;
+                          setTerm(t);
+                          void rebuild(chosen, wants, t);
+                        }}
+                      >
+                        {t}
+                        {t === term ? <Check size={14} /> : null}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            ) : null}
+          </div>
           <div className="label">
             <b>COURSES · {sidebarCredits} CREDITS</b>
             <button onClick={() => setAddingCourse((v) => !v)}>
               <Plus size={13} /> Add
             </button>
           </div>
-          {addingCourse ? (
-            <input
-              className="side-add"
-              autoFocus
-              value={courseDraft}
-              placeholder="Course code, e.g. ENGL203"
-              onChange={(e) => setCourseDraft(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") void addCourse();
-                if (e.key === "Escape") setAddingCourse(false);
-              }}
-              onBlur={() => void addCourse()}
-            />
+          {confirmDrop ? (
+            <div
+              className="confirm-backdrop"
+              onClick={() => setConfirmDrop(null)}
+            >
+              <div
+                className="confirm"
+                role="alertdialog"
+                aria-modal="true"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <b>
+                  Remove {confirmDrop.replace(/^([A-Z]+)(\d.*)$/, "$1 $2")}?
+                </b>
+                <p>
+                  It comes out of this schedule and out of your saved courses.
+                  You can add it again from the picker.
+                </p>
+                <div>
+                  <button
+                    className="confirm-cancel"
+                    autoFocus
+                    onClick={() => setConfirmDrop(null)}
+                  >
+                    Keep it
+                  </button>
+                  <button
+                    className="confirm-go"
+                    onClick={() => void dropCourse(confirmDrop)}
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            </div>
           ) : null}
+          <CoursePicker
+            open={addingCourse}
+            catalog={courses}
+            already={chosen}
+            onClose={() => setAddingCourse(false)}
+            onAdd={(codes) => void addCourses(codes)}
+          />
           {sidebar.map((c, i) => (
             <div className="course" key={c.code}>
               <i className={SHOWCASE_COLORS[i % SHOWCASE_COLORS.length]} />
@@ -705,7 +978,7 @@ export function Planner({
                 className="course-drop"
                 disabled={busy}
                 aria-label={`Remove ${c.label}`}
-                onClick={() => void dropCourse(c.code)}
+                onClick={() => setConfirmDrop(c.code)}
               >
                 <X size={13} />
               </button>
@@ -732,18 +1005,58 @@ export function Planner({
             />
           ) : null}
           <div className="chips">
-            {priorities.map((p, i) => (
-              <button
-                onClick={() =>
-                  setPriorities((v) => v.filter((_, x) => x !== i))
-                }
-                key={p}
-              >
-                <Check size={12} />
-                {p}
-                <X size={11} />
-              </button>
-            ))}
+            {priorities.map((p, i) =>
+              editing === i ? (
+                <input
+                  key={p}
+                  className="side-add"
+                  autoFocus
+                  defaultValue={p}
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape") setEditing(null);
+                    if (e.key !== "Enter") return;
+                    const text = e.currentTarget.value.trim();
+                    setEditing(null);
+                    setPriorities((v) =>
+                      text
+                        ? v.map((old, x) => (x === i ? text : old))
+                        : v.filter((_, x) => x !== i),
+                    );
+                  }}
+                  onBlur={(e) => {
+                    const text = e.currentTarget.value.trim();
+                    setEditing(null);
+                    setPriorities((v) =>
+                      text
+                        ? v.map((old, x) => (x === i ? text : old))
+                        : v.filter((_, x) => x !== i),
+                    );
+                  }}
+                />
+              ) : (
+                /* The chip edits; the × deletes. Clicking the body used to
+                   delete it, so correcting a word meant retyping the lot. */
+                <span className="chip" key={p}>
+                  <button
+                    className="chip-edit"
+                    title="Edit this priority"
+                    onClick={() => setEditing(i)}
+                  >
+                    <Check size={12} />
+                    {p}
+                  </button>
+                  <button
+                    className="chip-drop"
+                    aria-label={`Remove "${p}"`}
+                    onClick={() =>
+                      setPriorities((v) => v.filter((_, x) => x !== i))
+                    }
+                  >
+                    <X size={11} />
+                  </button>
+                </span>
+              ),
+            )}
           </div>
           <p className="analysis-note">Describe your preferred week in the priorities above, then rebuild.</p>
           <button
@@ -764,6 +1077,23 @@ export function Planner({
                   ? "No schedules"
                   : `${plans.length} schedule${plans.length === 1 ? "" : "s"} built for you`}
               </h2>
+              {!failed && plans.length > 3 ? (
+                <small className="tied-note">
+                  {allOptions ? "Showing all options." : "Showing the best three."}{" "}
+                  <button className="link" onClick={() => setAllOptions((v) => !v)}>
+                    {allOptions ? "Show top three" : `Show all ${plans.length} options`}
+                  </button>
+                </small>
+              ) : null}
+              {relaxed.length ? (
+                <p className="caution" role="status">
+                  <AlertTriangle size={14} />
+                  <span>
+                    {relaxed.join("; ")} — these schedules are the closest fit
+                    without it.
+                  </span>
+                </p>
+              ) : null}
               {tied ? (
                 <small className="tied-note">
                   Same professors in each, so they score the same on what you
@@ -779,7 +1109,8 @@ export function Planner({
             )}
           </div>
           <div className="cards">
-            {(failed ? [] : plans).map((p, i) => (
+            {/* Built candidates stay separate from schedules saved to the account. */}
+            {(failed ? [] : allOptions ? plans : plans.slice(0, 3)).map((p, i) => (
               <button
                 key={p.id}
                 disabled={busy}
@@ -794,9 +1125,11 @@ export function Planner({
                 </div>
                 <h3>{p.name}</h3>
                 <p>
-                  {tied && p.idle !== undefined
-                    ? `${p.days ?? "?"} days on campus · ${Math.round((p.idle ?? 0) / 60)}h waiting`
-                    : p.subtitle}
+                  {p.sameShape
+                    ? "Same timetable as above · different instructors"
+                    : tied && p.idle !== undefined
+                      ? `${p.days ?? "?"} days on campus · ${Math.round((p.idle ?? 0) / 60)}h waiting`
+                      : p.subtitle}
                 </p>
                 <Mini courses={p.courses} />
                 <footer>
@@ -976,34 +1309,7 @@ export function Planner({
           </div>
         </section>
       </div>
-      <footer className="sources">
-        <b>DATA SOURCES</b>
-        <span>
-          <Star /> Rate My Professors
-        </span>
-        <span>
-          <Building2 /> Aggie Schedule Builder
-        </span>
-        <span>
-          <BookOpen /> Loaded section times
-        </span>
-        <button onClick={() => setScoring((v) => !v)}>
-          <Info /> How scoring works
-        </button>
-        {scoring ? (
-          <div className="scoring-note">
-            <b>How a schedule is scored</b>
-            <p>
-              Professors are ranked by their RateMyProfessors rating pulled
-              toward the average by how few reviews they have, then by
-              difficulty, lowest first. Grade data from A&amp;M&apos;s own
-              reports sets the A rate. What you type is read into preferences,
-              and schedules are ranked by how well they match, never by one
-              number alone.
-            </p>
-          </div>
-        ) : null}
-      </footer>
+
     </main>
   );
 }
@@ -1053,61 +1359,107 @@ function Account({ student }: { student?: Student | null }) {
 }
 /* eslint-enable @next/next/no-html-link-for-pages */
 
-function AppHeader({
+/**
+ * Navigation, as a rail down the left that opens on hover.
+ *
+ * One component for every view, including the landing page, which previously
+ * had a header of its own that shared nothing with the others -- so the same
+ * three destinations looked and sat differently depending on where you were.
+ *
+ * Collapsed it is icons only; hovering or tabbing into it reveals the labels.
+ * `focus-within` matters as much as `:hover` here: a rail that only answers to
+ * a mouse cannot be navigated by keyboard.
+ */
+function NavRail({
   page,
   onNav,
   student,
-  dark = true,
+  dark,
   setDark,
 }: {
-  page: string;
+  page: "home" | "planner" | "explore" | "saved";
   onNav: (p: "home" | "planner" | "explore" | "saved") => void;
-  dark?: boolean;
-  setDark?: (v: boolean) => void;
   student?: Student | null;
+  dark: boolean;
+  setDark: (v: boolean) => void;
 }) {
+  const items: {
+    key: "planner" | "explore" | "saved";
+    label: string;
+    icon: ReactNode;
+  }[] = [
+    {
+      key: "planner",
+      label: "Schedule builder",
+      icon: <CalendarDays size={18} />,
+    },
+    { key: "explore", label: "Course explorer", icon: <BookOpen size={18} /> },
+    { key: "saved", label: "Saved schedules", icon: <Heart size={18} /> },
+  ];
+
+  const label = (student?.name || student?.email || "").trim();
+  const initials = label
+    ? label
+        .split(/[\s@.]+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((w) => w[0]!.toUpperCase())
+        .join("")
+    : "";
+
   return (
-    <header className="top">
-      <button className="brand nav-brand" onClick={() => onNav("home")}>
+    <nav className="rail" aria-label="Main">
+      <button className="rail-brand" onClick={() => onNav("home")}>
         <span>
-          <CalendarDays size={20} />
+          <CalendarDays size={19} />
         </span>
         <b>MaroonWay</b>
       </button>
-      <nav>
+
+      <ul>
+        {items.map((item) => (
+          <li key={item.key}>
+            <button
+              className={page === item.key ? "active" : ""}
+              aria-current={page === item.key ? "page" : undefined}
+              onClick={() => onNav(item.key)}
+            >
+              {item.icon}
+              <b>{item.label}</b>
+            </button>
+          </li>
+        ))}
+      </ul>
+
+      <div className="rail-foot">
         <button
-          className={page === "planner" ? "active" : ""}
-          onClick={() => onNav("planner")}
-        >
-          Schedule builder
-        </button>
-        <button
-          className={page === "explore" ? "active" : ""}
-          onClick={() => onNav("explore")}
-        >
-          Course explorer
-        </button>
-        <button
-          className={page === "saved" ? "active" : ""}
-          onClick={() => onNav("saved")}
-        >
-          Saved schedules
-        </button>
-      </nav>
-      <div className="account">
-        <button
-          onClick={() => setDark?.(!dark)}
+          onClick={() => setDark(!dark)}
           aria-label={`Switch to ${dark ? "light" : "dark"} mode`}
         >
           {dark ? <Sun size={17} /> : <Moon size={17} />}
+          <b>{dark ? "Light mode" : "Dark mode"}</b>
         </button>
-        <Account student={student} />
+
+        {student ? (
+          <>
+            <span className="rail-me" title={student.email}>
+              <i>{initials}</i>
+              <b>{student.name || label.split("@")[0]}</b>
+            </span>
+            {/* A real <a>: NextAuth's routes return HTML pages, so a
+                client-side navigation would fetch an RSC payload and fail. */}
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+            <a href="/api/auth/signout?callbackUrl=/" title="Sign out">
+              <LogOut size={17} />
+              <b>Sign out</b>
+            </a>
+          </>
+        ) : null}
       </div>
-    </header>
+    </nav>
   );
 }
 
-/** Rating bands, so a card shows at a glance who is worth taking. */
 function band(rating: number | string | null) {
   const value = num(rating);
   if (value === null) return "prof-unrated";
@@ -1150,6 +1502,11 @@ function showcaseCreditTotal(showcase: { credits: number }[]) {
 const SHOWCASE_COLORS = ["berry", "blue", "green", "gold", "purple"];
 const SHOWCASE_TIMES = ["9:35", "9:35", "11:30", "12:45", "14:20"];
 
+/** Monday-first, matching the calendar's own day order. */
+const DAY_LETTERS = ["M", "T", "W", "R", "F", "S", "U"];
+
+/** Below this many reviews, a rating is marked as thin evidence. */
+const THIN_EVIDENCE = 20;
 const CAMPUS_NAMES: Record<string, string> = {
   CSTAT: "College Station",
   GALV: "Galveston",
@@ -1236,16 +1593,16 @@ function Explorer({
   courses: ExploreCourse[];
   student: Student | null;
   savedCourses: string[];
-  onSaveCourses: (
-    codes: string[],
-    term?: string | null,
-  ) => Promise<{ saved: boolean }>;
+  /** Saves through the builder so the current schedule stays in sync. */
+  onSaveCourses: (codes: string[]) => Promise<{ saved: boolean }>;
 }) {
   const [q, setQ] = useState("");
   const [selected, setSelected] = useState<ExploreCourse | null>(
     courses[0] ?? null,
   );
-  const [added, setAdded] = useState<string[]>(savedCourses);
+  // The builder's own list, not a copy taken when this page opened: adding
+  // here has to reach the schedule, and a copy would drift from it.
+  const added = savedCourses;
   const [saving, setSaving] = useState(false);
   const [courseError, setCourseError] = useState<string | null>(null);
 
@@ -1268,16 +1625,12 @@ function Explorer({
 
   async function toggle(code: string) {
     if (saving) return;
-    const next = added.includes(code)
-      ? added.filter((x) => x !== code)
-      : [...added, code];
-    if (!student) { setAdded(next); return; }
+    const next = added.includes(code) ? added.filter((x) => x !== code) : [...added, code];
     setSaving(true);
     setCourseError(null);
     try {
       const result = await onSaveCourses(next);
       if (!result.saved) throw new Error("not saved");
-      setAdded(next);
     } catch {
       setCourseError("Could not update your classes. Please try again.");
     } finally {
@@ -1286,13 +1639,13 @@ function Explorer({
   }
 
   return (
-    <main className="inner-page">
-      <AppHeader
+    <main className={`inner-page ${dark ? "site-dark" : "site-light"}`}>
+      <NavRail
         page="explore"
         onNav={onNav}
+        student={student}
         dark={dark}
         setDark={setDark}
-        student={student}
       />
       <section className="page-wrap">
         <div className="page-intro">
@@ -1361,10 +1714,13 @@ function Explorer({
                 ) : null}
               </div>
               <h2>{active.title ?? "Untitled"}</h2>
+              {active.professors[0]?.department ? (
+                <p className="detail-dept">{active.professors[0].department}</p>
+              ) : null}
               <div className="insight-grid">
                 <Metric
                   icon={<Star />}
-                  label="AVG. PROFESSOR"
+                  label="AVG. RATING"
                   value={`${score(active.avg_rating)} / 5`}
                 />
                 <Metric
@@ -1389,9 +1745,8 @@ function Explorer({
                     <thead>
                       <tr>
                         <th>Professor</th>
-                        <th>Department</th>
                         <th>Rating</th>
-                        <th>Difficulty</th>
+                        <th>Diff.</th>
                         <th>A rate</th>
                         <th>Reviews</th>
                       </tr>
@@ -1405,14 +1760,19 @@ function Explorer({
                           <td>{p.instructor_id != null ? (
                             <a href={`/professors/${p.instructor_id}`} className="underline underline-offset-2">{p.name ?? "View professor"}</a>
                           ) : p.name}</td>
-                          <td className="prof-dept">{p.department ?? "—"}</td>
                           <td>{score(p.adj_rating)}</td>
                           <td>{score(p.adj_difficulty)}</td>
                           <td>{pct(p.pct_a)}</td>
-                          <td>
+                          <td
+                            title={
+                              p.class_reviews > 0
+                                ? `${p.class_reviews} reviews for this class`
+                                : `${p.professor_reviews} reviews overall`
+                            }
+                          >
                             {p.class_reviews > 0
-                              ? `${p.class_reviews} for this class`
-                              : `${p.professor_reviews} overall`}
+                              ? `${p.class_reviews} here`
+                              : `${p.professor_reviews} all`}
                           </td>
                         </tr>
                       ))}
@@ -1473,7 +1833,13 @@ function SavedSchedules({
 }) {
   return (
     <main className={`inner-page ${dark ? "site-dark" : "site-light"}`}>
-      <AppHeader page="saved" onNav={onNav} dark={dark} setDark={setDark} student={student} />
+      <NavRail
+        page="saved"
+        onNav={onNav}
+        student={student}
+        dark={dark}
+        setDark={setDark}
+      />
       <section className="page-wrap">
         <div className="page-intro saved-intro">
           <h1>Your schedules</h1>
@@ -1571,9 +1937,7 @@ function Landing({
     [entry, setEntry] = useState(""),
     [pref, setPref] = useState(savedWants),
     [analyzing, setAnalyzing] = useState(false),
-    [picker, setPicker] = useState(false),
-    [pickQuery, setPickQuery] = useState(""),
-    [picked, setPicked] = useState<string[]>([]);
+    [picker, setPicker] = useState(false);
   const add = () => {
     const v = normalizeCourseCodes([entry])[0];
     if (v && !courses.includes(v)) setCourses([...courses, v]);
@@ -1589,34 +1953,17 @@ function Landing({
     }
     onStart();
   };
-  const addPicked = () => {
-    setCourses([...new Set([...courses, ...picked])]);
-    setPicked([]);
-    setPicker(false);
-  };
   return (
     <main className={`minimal-home ${dark ? "dark-mode" : "light-mode"}`}>
-      <header className="minimal-nav">
-        <a className="minimal-brand">
-          <span>
-            <CalendarDays size={18} />
-          </span>
-          <b>MaroonWay</b>
-        </a>
-        <div>
-          <span>Made for Aggies</span>
-          <button
-            className="theme-toggle"
-            onClick={() => setDark(!dark)}
-            aria-label={`Switch to ${dark ? "light" : "dark"} mode`}
-          >
-            {dark ? <Sun size={15} /> : <Moon size={15} />}
-            <i>{dark ? "Light" : "Dark"}</i>
-          </button>
-          <button onClick={onSaved}>My schedules</button>
-          <Account student={student} />
-        </div>
-      </header>
+      <NavRail
+        page="home"
+        onNav={(p) =>
+          p === "saved" ? onSaved() : p === "home" ? undefined : onStart()
+        }
+        student={student}
+        dark={dark}
+        setDark={setDark}
+      />
       {analyzing && (
         <div className="analysis-overlay">
           <div className="analysis-orbit">
@@ -1636,83 +1983,13 @@ function Landing({
           </div>
         </div>
       )}
-      {picker && (
-        <div className="picker-backdrop" onClick={() => setPicker(false)}>
-          <section
-            className="course-picker"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <header>
-              <div>
-                <span>ADD COURSES</span>
-                <h2>What are you taking?</h2>
-              </div>
-              <button onClick={() => setPicker(false)}>
-                <X size={18} />
-              </button>
-            </header>
-            <div className="picker-search">
-              <SearchIcon size={17} duration={1.15} color="currentColor" />
-              <input
-                autoFocus
-                value={pickQuery}
-                onChange={(e) => setPickQuery(e.target.value)}
-                placeholder="Search course code or name…"
-              />
-            </div>
-            <div className="picker-results">
-              {catalog
-                .filter((c) =>
-                  (c.code + " " + (c.title ?? ""))
-                    .toLowerCase()
-                    .includes(pickQuery.toLowerCase()),
-                )
-                .slice(0, 80)
-                .map((c) => (
-                  <button
-                    key={c.code}
-                    className={
-                      picked.includes(c.code) || courses.includes(c.code)
-                        ? "picked"
-                        : ""
-                    }
-                    disabled={courses.includes(c.code)}
-                    onClick={() =>
-                      setPicked((v) =>
-                        v.includes(c.code)
-                          ? v.filter((x) => x !== c.code)
-                          : [...v, c.code],
-                      )
-                    }
-                  >
-                    <span>
-                      <b>{c.code}</b>
-                      <small>
-                        {c.title ?? "Untitled"} · {c.professor_count} prof
-                        {c.professor_count === 1 ? "" : "s"}
-                      </small>
-                    </span>
-                    <i>
-                      {courses.includes(c.code) ? (
-                        "Added"
-                      ) : picked.includes(c.code) ? (
-                        <Check size={15} />
-                      ) : (
-                        <Plus size={15} />
-                      )}
-                    </i>
-                  </button>
-                ))}
-            </div>
-            <footer>
-              <span>{picked.length} selected</span>
-              <button disabled={!picked.length} onClick={addPicked}>
-                Add {picked.length || ""} course{picked.length === 1 ? "" : "s"}
-              </button>
-            </footer>
-          </section>
-        </div>
-      )}
+      <CoursePicker
+        open={picker}
+        catalog={catalog}
+        already={courses}
+        onClose={() => setPicker(false)}
+        onAdd={(codes) => setCourses([...new Set([...courses, ...codes])])}
+      />
       <section className="minimal-stage">
         <div
           className="composer"

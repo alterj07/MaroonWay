@@ -174,7 +174,12 @@ class ScheduleSectionOut(BaseModel):
     adj_difficulty: float | None = None
     adj_gpa: float | None = None
     #: Share of students who earned an A, 0-1.
-    pct_a: float | None = None
+    pct_a: float | None
+    #: Reviews behind the rating, and other sections at these exact times with
+    #: a different instructor.
+    class_reviews: int = 0
+    professor_reviews: int = 0
+    same_time_alternatives: int = 0
 
 
 class PreferencesOut(BaseModel):
@@ -188,6 +193,8 @@ class PreferencesOut(BaseModel):
     attendance: float
     avoid_early_mornings: float
     avoid_fridays: float
+    #: "spread" | "compact" | None.
+    day_shape: str | None = None
     delivery: str | None = None
     campus: str | None = None
     honors: bool | None = None
@@ -213,6 +220,8 @@ class ScheduleOut(BaseModel):
     preference_score: float = 0.0
     #: What earned this schedule its place, for the UI to show.
     reasons: list[str] = []
+    #: An earlier option has this exact timetable; only the staff differ.
+    same_shape: bool = False
     contributions: list[ContributionOut] = []
     #: Minutes between the two closest classes. Null when nothing shares a day.
     tightest_gap: int | None = None

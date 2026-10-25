@@ -43,6 +43,7 @@ def section(
     honors: bool = False,
     online: bool = False,
     instructor: str | None = "DOE J",
+    reviews: int = 0,
 ) -> Section:
     meets = (
         ()
@@ -61,6 +62,8 @@ def section(
         delivery="WEB" if online else delivery,
         honors=honors,
         meetings=meets,
+        class_reviews=reviews,
+        professor_reviews=reviews,
         adj_rating=rating,
         adj_difficulty=difficulty,
         adj_gpa=gpa,

@@ -44,16 +44,16 @@ it('loads the stored snapshot through the server page after saving and refreshin
   expect(result.saved).toBe(true);
   expect(result).toMatchObject({ schedule: { id: 42, term: 'SPRING 2025', payload: { name: 'Original saved plan' } } });
   render(await Home({ searchParams: Promise.resolve({}) }));
-  fireEvent.click(screen.getByRole('button', { name: 'My schedules' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Saved schedules' }));
   fireEvent.click(screen.getByRole('button', { name: 'Open Spring favorite' }));
   expect(screen.getAllByRole('heading', { name: 'Original saved plan' }).length).toBeGreaterThan(0);
-  expect((screen.getByRole('combobox', { name: 'Semester' }) as HTMLSelectElement).value).toBe('SPRING 2025');
+  expect(screen.getByRole('combobox', { name: 'Semester' }).textContent).toContain('SPRING 2025');
 });
 
 it('distinguishes a failed saved-list request from an empty account', async () => {
   backend(true);
   render(await Home({ searchParams: Promise.resolve({}) }));
-  fireEvent.click(screen.getByRole('button', { name: 'My schedules' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Saved schedules' }));
   expect(screen.getByRole('alert').textContent).toContain('Could not load your saved schedules');
   expect(screen.queryByText('No saved schedules yet')).toBeNull();
 });

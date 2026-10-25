@@ -21,6 +21,9 @@ import {
  * heard of, so the first schedule was built without them and arrived at 8am
  * under a chip reading "No classes before 9 AM".
  */
+/** How many ranked schedules to ask for. The builder shows the first few. */
+export const SCHEDULE_OPTIONS = 10;
+
 export const DEFAULT_PRIORITIES = ['No classes before 9 AM', 'Avoid Friday classes'];
 
 export function normalizeCourseCodes(codes: string[]): string[] {
@@ -100,6 +103,8 @@ export function toCourse(section: ScheduleSection, index: number): Course {
     // Carried through for the hover card: a block is a choice of instructor as
     // much as a time, so the numbers behind that choice belong on it.
     section: section.section_code,
+    reviews: Math.max(section.class_reviews, section.professor_reviews),
+    sameTimeAlternatives: section.same_time_alternatives,
     rating: section.adj_rating,
     difficulty: section.adj_difficulty,
     pctA: section.pct_a,
@@ -126,6 +131,7 @@ export function toPlan(schedule: Schedule, index: number): Plan {
     gap: schedule.tightest_gap === null ? 'no clash' : `${schedule.tightest_gap} min`,
     earliest: clockLabel(schedule.earliest_start),
     days: schedule.days_on_campus,
+    sameShape: schedule.same_shape ?? false,
     idle: schedule.idle_minutes,
     tags: reasons.length ? reasons : ['Conflict-free', 'At least 20 minutes between classes'],
     reasons,
@@ -159,18 +165,25 @@ export async function plansFor(
   term: string,
   courses: string[],
   wants?: string | null
-): Promise<{ plans: Plan[]; detail: string | null }> {
+): Promise<{ plans: Plan[]; detail: string | null; relaxed?: string[] }> {
   if (!courses.length) {
     return { plans: emptyPlan('No classes chosen', 'Add the classes you need'), detail: null };
   }
-  const result = await buildSchedules({ term, courses, wants: wants || null, limit: 3 });
+  // The builder starts with the top three and can expand to show all ten.
+  // Generated candidates remain separate from schedules saved to an account.
+  const result = await buildSchedules({
+    term,
+    courses,
+    wants: wants || null,
+    limit: SCHEDULE_OPTIONS,
+  });
   if (!result.schedules.length) {
     const detail = result.detail ?? 'No conflict-free combination exists';
     return { plans: emptyPlan('No schedule fits', detail), detail };
   }
   return { plans: result.schedules.map((schedule, index) => ({
     ...toPlan(schedule, index), warnings: result.relaxed ?? [],
-  })), detail: null };
+  })), detail: null, relaxed: result.relaxed ?? [] };
 }
 
 /**
