@@ -163,8 +163,10 @@ scratch database, **never at Supabase**.
   roughly 10-30 requests per minute, so summaries are a resumable batch job with
   a token bucket and backoff, never an in-request call. `GEMINI_MODEL` is an env
   var because those model names keep moving.
-- **`RMP_SCHOOL_ID` is 19496** (A&M College Station), per the pipeline's
-  `rmp_roster.csv`. Blinn College is a separate school id.
+- **`RMP_SCHOOL_ID` is 1003** (A&M College Station), confirmed from the
+  pipeline's RMP cache, where `school.legacyId` is 1003 and `school.id` decodes
+  to "School-1003". Galveston is 1006. The 19496 in `rmp_roster.csv` is not the
+  id the API takes. Blinn College is a separate school.
 - **Meeting times do not exist in any source yet.** Every CSV on the data
   branch was checked: no days, times, building or room columns anywhere. The
   20-minute-gap scheduler needs a term schedule-of-classes feed, which is a

@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     db_echo: bool = False
 
     # --- upstream data ----------------------------------------------------
-    rmp_school_id: str = "19496"  # A&M College Station; see .env.example
+    rmp_school_id: str = "1003"  # A&M College Station; Galveston is 1006
     rmp_refetch_days: int = 7
 
     # --- Gemini -----------------------------------------------------------
