@@ -30,14 +30,22 @@ create table if not exists instructors (
     created_at       timestamptz not null default now()
 );
 
+-- One row per catalog course. Where it is *offered* (campus) belongs to the
+-- offering, not the course, so that lives on course_grades and sections.
 create table if not exists courses (
-    id        bigserial primary key,
-    dept      text not null,
-    number    text not null,
-    title     text,
-    campus    text check (campus in ('CSTAT', 'BLINN')),
-    honors    boolean not null default false,
-    constraint courses_identity unique nulls not distinct (dept, number, campus, honors)
+    id              bigserial primary key,
+    dept            text not null,
+    number          text not null,
+    title           text,
+    honors          boolean not null default false,
+    level           text,
+    credits         text,
+    description     text,
+    -- The planning doc's "Prereqs" requirement, straight from the catalog.
+    prereq_text     text,
+    coreq_text      text,
+    is_honors_dept  boolean,
+    constraint courses_identity unique nulls not distinct (dept, number, honors)
 );
 
 -- One row per row of the grades CSV.
@@ -49,12 +57,21 @@ create table if not exists course_grades (
     term_year      smallint,
     term_season    text check (term_season in ('spring', 'summer', 'fall')),
     section        text,
+    campus         text,
+    level          text,
+    -- Which grade-report PDF this row was parsed out of.
+    source_file    text,
     grade_a        integer,
     grade_b        integer,
     grade_c        integer,
     grade_d        integer,
     grade_f        integer,
     grade_q        integer,
+    grade_i        integer,
+    grade_s        integer,
+    grade_u        integer,
+    grade_x        integer,
+    af_total       integer,
     enrolled       integer,
     gpa            numeric(4, 3),
     source_row     integer,
@@ -82,6 +99,9 @@ create table if not exists rmp_professors (
     ratings_distribution     jsonb,
     -- [{"courseName": "CSCE121", "courseCount": 14}] -- what they actually teach.
     course_codes             jsonb,
+    rmp_url                  text,
+    reviews_window_start     timestamptz,
+    reviews_window_end       timestamptz,
     fetched_at               timestamptz not null default now(),
     -- Set once comments have been pulled, not just the listing aggregates.
     details_fetched_at       timestamptz
@@ -90,6 +110,11 @@ create table if not exists rmp_professors (
 create table if not exists rmp_ratings (
     id          bigserial primary key,
     rmp_id      bigint not null references rmp_professors (rmp_id) on delete cascade,
+    -- RateMyProfessors' own id for the review. Present when the review came
+    -- from the data pipeline, which makes upserts exact instead of heuristic.
+    rmp_rating_id bigint,
+    -- Set when the review was collected as being about a specific course.
+    course_id   bigint references courses (id) on delete set null,
     class_code  text,
     comment     text,
     helpful     numeric(4, 2),
@@ -102,6 +127,15 @@ create table if not exists rmp_ratings (
     attendance_mandatory boolean,
     textbook_use         text,
     is_for_credit        boolean,
+    -- Three fields the pinned scraper package drops but the data pipeline kept:
+    -- the letter grade the student reported, their own would-take-again answer
+    -- (the package exposes only the professor-level percentage), and the tags.
+    grade                text,
+    would_take_again     boolean,
+    rating_tags          text,
+    thumbs_up            integer,
+    thumbs_down          integer,
+    course_match_status  text,
     -- The untouched scraper payload, so fields it starts returning later need
     -- no migration to be useful.
     raw         jsonb not null default '{}'::jsonb,

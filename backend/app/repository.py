@@ -69,7 +69,7 @@ _PROFESSOR_COURSES = text(
     """
     select
         ics.course_id,
-        c.dept, c.number, c.title, c.campus, c.honors,
+        c.dept, c.number, c.title, c.honors, ics.campus,
         upper(c.dept || c.number) as code,
         ics.class_rating_count, ics.section_count,
         ics.adj_rating, ics.adj_difficulty, ics.adj_would_take_again, ics.adj_gpa,

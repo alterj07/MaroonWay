@@ -12,12 +12,25 @@ create index if not exists course_grades_instructor_idx on course_grades (instru
 create index if not exists course_grades_course_idx on course_grades (course_id);
 create index if not exists rmp_ratings_recent_idx on rmp_ratings (rmp_id, rated_at desc);
 create index if not exists rmp_ratings_class_idx on rmp_ratings (class_code);
+create index if not exists rmp_ratings_course_idx on rmp_ratings (course_id);
+-- Exact upserts for reviews that carry RateMyProfessors' own id.
+create unique index if not exists rmp_ratings_rating_id_key
+    on rmp_ratings (rmp_rating_id) where rmp_rating_id is not null;
 create index if not exists summaries_lookup_idx
     on summaries (instructor_id, course_id, prompt_version);
 create index if not exists sections_term_idx on sections (term, course_id);
 -- Which professors still need their comments pulled.
 create index if not exists rmp_professors_details_idx
     on rmp_professors (details_fetched_at nulls first, num_ratings desc);
+
+-- Dropped first, in reverse dependency order: CREATE OR REPLACE VIEW cannot
+-- change a view's column list, so without these an applied change to the shape
+-- of a view fails silently against an existing database.
+drop view if exists instructor_course_scores;
+drop view if exists instructor_scores;
+drop view if exists instructor_gpa;
+drop view if exists scoring_means;
+drop view if exists scoring_params;
 
 -- How many ratings it takes before a professor's own average outweighs the
 -- global mean. One place to change it.
@@ -141,7 +154,11 @@ instructor_course_gpa as (
         course_id,
         sum(gpa * coalesce(enrolled, 1)) / nullif(sum(coalesce(enrolled, 1)), 0) as avg_gpa,
         sum(coalesce(enrolled, 1))                                              as student_count,
-        count(*)                                                                as section_count
+        count(*)                                                                as section_count,
+        -- Campus is a property of the offering, not the course, so it is
+        -- aggregated from the sections actually taught. Null until the section
+        -- data carries a campus column.
+        mode() within group (order by campus)                                   as campus
     from course_grades
     where instructor_id is not null and gpa is not null
     group by instructor_id, course_id
@@ -152,6 +169,7 @@ select
     coalesce(cr.class_rating_count, 0)              as class_rating_count,
     isc.rating_count                                as instructor_rating_count,
     coalesce(icg.section_count, 0)                  as section_count,
+    icg.campus,
     icg.avg_gpa                                     as raw_gpa,
     case
         when coalesce(cr.class_rating_count, 0) = 0 or cr.avg_rating is null then isc.adj_rating
