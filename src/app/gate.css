@@ -1264,12 +1264,22 @@ a,
   }
 }
 
-/* The calendar grew to fourteen hours; it stays full height and the page
-   scrolls, rather than becoming a small window you scroll inside. */
+/*
+ * The calendar grew to fourteen hours; it stays full height and the page
+ * scrolls, rather than becoming a small window you scroll inside.
+ *
+ * Both axes, and that is the whole point: the base sheet sets `overflow:
+ * hidden` on .detail, and overriding only `overflow-y` leaves the pair
+ * `hidden`/`visible`, which CSS does not allow. The browser resolves it by
+ * computing the visible axis as `auto` -- so asking for no clipping produced a
+ * scrollbar down the side of the schedule. Naming both axes avoids the pair
+ * entirely, and the hover card simply spills past the panel, which is what it
+ * should do.
+ */
 .cal-scroll,
 .detail {
   max-height: none;
-  overflow-y: visible;
+  overflow: visible;
 }
 
 /* ---- a class block: what, when, and where ---- */
