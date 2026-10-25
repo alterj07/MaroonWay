@@ -25,6 +25,7 @@ from pathlib import Path
 from sqlalchemy import text
 
 from app.ingest.common import configure_logging, session_scope
+from app.services.terms import parse_term
 
 log = logging.getLogger("ingest.demo")
 
@@ -33,20 +34,45 @@ MWF_SLOTS = ["08:00", "09:10", "10:20", "11:30", "12:40", "13:50", "15:00", "16:
 TR_SLOTS = ["08:00", "09:35", "11:10", "12:45", "14:20", "15:55"]
 BUILDINGS = ["ZACH", "HRBB", "BLOC", "HELD", "ARCB", "MPHY", "CHEN", "ETB"]
 
+#: Who is plausibly teaching a course next term.
+#:
+#: Ordered by whether they have taught it *in this season* before and how
+#: recently, because an instructor who has taught ENGR102 every fall since 2019
+#: is a far better guess for next fall than one who taught it once in a summer
+#: five years ago. That history is what instructor_course_terms records; before
+#: it existed this query ranked by all-time section count, which put long-retired
+#: instructors at the top.
 _CANDIDATES = text(
     """
     select
-        upper(c.dept)  as dept,
-        c.number       as number,
-        i.full_name    as instructor,
-        ics.adj_rating as rating,
-        ics.section_count
+        upper(c.dept)   as dept,
+        c.number        as number,
+        i.full_name     as instructor,
+        ics.adj_rating  as rating,
+        ics.section_count,
+        ics.campus      as campus,
+        max(t.term_year) filter (
+            where t.term_season = cast(:season as text)
+        )               as last_taught_in_season,
+        max(t.term_year) as last_taught,
+        count(t.term) filter (
+            where t.term_season = cast(:season as text)
+        )               as season_terms
     from instructor_course_scores ics
     join courses c     on c.id = ics.course_id
     join instructors i on i.id = ics.instructor_id
+    left join instructor_course_terms t
+           on t.instructor_id = ics.instructor_id
+          and t.course_id = ics.course_id
     where i.rmp_id is not null
       and ics.section_count > 0
-    order by ics.section_count desc, ics.adj_rating desc
+    group by c.dept, c.number, i.full_name, ics.adj_rating,
+             ics.section_count, ics.campus
+    having max(t.term_year) is not null
+    order by last_taught_in_season desc nulls last,
+             season_terms desc,
+             last_taught desc,
+             ics.adj_rating desc
     limit cast(:limit as integer)
     """
 )
@@ -59,10 +85,18 @@ def add_minutes(clock: str, minutes: int) -> str:
 
 
 async def build(*, term: str, out: Path, courses: int, per_course: int) -> int:
+    # The season the projected term falls in, so the candidate query can prefer
+    # instructors with a record of teaching that course at that time of year.
+    parsed = parse_term(term)
+    season = parsed.season if parsed else "fall"
+
     async with session_scope() as session:
         rows = (
-        await session.execute(_CANDIDATES, {"limit": courses * per_course * 40})
-    ).mappings().all()
+            await session.execute(
+                _CANDIDATES,
+                {"limit": courses * per_course * 40, "season": season},
+            )
+        ).mappings().all()
 
     # Group every candidate by course, then keep the courses that actually have
     # several instructors -- those are the ones where a student has a choice,
@@ -101,7 +135,8 @@ async def build(*, term: str, out: Path, courses: int, per_course: int) -> int:
                         pattern, start, end,
                         BUILDINGS[(index + offset) % len(BUILDINGS)],
                         f"{100 + (index * 7 + offset) % 300}",
-                        "College Station", "F2F", "false", 60, 12,
+                        teacher.get("campus") or "College Station",
+                        "F2F", "false", 60, 12,
                     ]
                 )
                 written += 1

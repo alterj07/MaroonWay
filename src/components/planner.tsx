@@ -42,6 +42,7 @@ export type Student = { email: string; name: string | null };
 export type Professor = {
   instructor_id: number | null;
   name: string | null;
+  department: string | null;
   adj_rating: number | null;
   adj_difficulty: number | null;
   adj_gpa: number | null;
@@ -58,6 +59,9 @@ export type ExploreCourse = {
   credits: string | null;
   honors: boolean;
   prereq_text: string | null;
+  level: string | null;
+  dept_code: string | null;
+  campus: string | null;
   professor_count: number;
   avg_rating: number | null;
   avg_pct_a: number | null;
@@ -181,6 +185,8 @@ export function Planner({
   const build = async (codes: string[], wants: string) => {
     setPlans(await onBuildPlans(codes, wants));
   };
+  const showcase = useMemo(() => showcaseCourses(courses), [courses]);
+  const showcaseCredits = showcaseCreditTotal(showcase);
   const [page, setPage] = useState<"home" | "planner" | "explore" | "saved">(
       "home",
     ),
@@ -285,22 +291,17 @@ export function Planner({
             <ChevronDown size={16} />
           </button>
           <div className="label">
-            <b>COURSES · 14 CREDITS</b>
+            <b>COURSES · {showcaseCredits} CREDITS</b>
             <button>
               <Plus size={13} /> Add
             </button>
           </div>
-          {[
-            ["MATH 152", "Engineering Math II", "berry"],
-            ["PHYS 206", "Newtonian Mechanics", "blue"],
-            ["ENGR 102", "Engineering Lab I", "gold"],
-            ["CHEM 107/117", "General Chemistry", "green"],
-          ].map((c) => (
-            <div className="course" key={c[0]}>
-              <i className={c[2]} />
+          {showcase.map((c, i) => (
+            <div className="course" key={c.code}>
+              <i className={SHOWCASE_COLORS[i % SHOWCASE_COLORS.length]} />
               <span>
-                <b>{c[0]}</b>
-                <small>{c[1]}</small>
+                <b>{c.label}</b>
+                <small>{c.title ?? "Untitled"}</small>
               </span>
               <X size={13} />
             </div>
@@ -566,6 +567,46 @@ function band(rating: number | null) {
   return "prof-poor";
 }
 
+/** CSTAT / GALV / QATAR as a student would say them. */
+/**
+ * A few real courses to illustrate with.
+ *
+ * The builder sidebar and the landing calendar both used to name four
+ * hardcoded codes. They now take the first few catalogue courses with enough
+ * instructors to be worth ranking, so the illustrations cannot drift from the
+ * data behind them.
+ */
+function showcaseCourses(catalog: ExploreCourse[], count = 4) {
+  return catalog
+    .filter((c) => c.professor_count >= 2 && c.title)
+    .slice(0, count)
+    .map((c) => ({
+      code: c.code,
+      label: c.code.replace(/^([A-Z]+)(\d.*)$/, "$1 $2"),
+      title: c.title,
+      credits: Number.parseInt(c.credits ?? "", 10),
+    }));
+}
+
+function showcaseCreditTotal(showcase: { credits: number }[]) {
+  return showcase.reduce(
+    (total, c) => total + (Number.isFinite(c.credits) ? c.credits : 3),
+    0,
+  );
+}
+
+/** Colour classes and clock labels for the landing illustration, cycled over
+ *  whatever courses the catalogue supplies. */
+const SHOWCASE_COLORS = ["berry", "blue", "gold", "green"];
+const SHOWCASE_TIMES = ["9:35", "9:35", "11:30", "12:45", "14:20"];
+
+const CAMPUS_NAMES: Record<string, string> = {
+  CSTAT: "College Station",
+  GALV: "Galveston",
+  QATAR: "Qatar",
+  BLINN: "Blinn",
+};
+
 const pct = (v: number | null) =>
   v === null ? "—" : `${Math.round(v * 100)}%`;
 const score = (v: number | null) => (v === null ? "—" : v.toFixed(2));
@@ -593,9 +634,14 @@ function Professors({
         <li
           key={p.instructor_id ?? p.name}
           className={band(p.adj_rating)}
-          title={`${p.name}: rating ${score(p.adj_rating)}, difficulty ${score(
-            p.adj_difficulty,
-          )}, ${pct(p.pct_a)} A's`}
+          title={[
+            `${p.name}: rating ${score(p.adj_rating)}`,
+            `difficulty ${score(p.adj_difficulty)}`,
+            `${pct(p.pct_a)} A's`,
+            p.department,
+          ]
+            .filter(Boolean)
+            .join(", ")}
         >
           <b>{p.name}</b>
           <em>{score(p.adj_rating)}</em>
@@ -732,6 +778,14 @@ function Explorer({
               <div className="detail-code">
                 <span>{active.code}</span>
                 <em>{active.credits ?? "—"} CREDITS</em>
+                {active.level ? <em>{active.level.toUpperCase()}</em> : null}
+                {active.campus ? (
+                  <em>
+                    {(
+                      CAMPUS_NAMES[active.campus] ?? active.campus
+                    ).toUpperCase()}
+                  </em>
+                ) : null}
               </div>
               <h2>{active.title ?? "Untitled"}</h2>
               <div className="insight-grid">
@@ -762,6 +816,7 @@ function Explorer({
                     <thead>
                       <tr>
                         <th>Professor</th>
+                        <th>Department</th>
                         <th>Rating</th>
                         <th>Difficulty</th>
                         <th>A rate</th>
@@ -775,6 +830,7 @@ function Explorer({
                           className={band(p.adj_rating)}
                         >
                           <td>{p.name}</td>
+                          <td className="prof-dept">{p.department ?? "—"}</td>
                           <td>{score(p.adj_rating)}</td>
                           <td>{score(p.adj_difficulty)}</td>
                           <td>{pct(p.pct_a)}</td>
@@ -986,6 +1042,9 @@ function Landing({
   savedWants: string;
   onBuild: (courses: string[], wants: string) => Promise<void>;
 }) {
+  const showcase = useMemo(() => showcaseCourses(catalog), [catalog]);
+  const showcaseCredits = showcaseCreditTotal(showcase);
+
   const [courses, setCourses] = useState<string[]>(savedCourses),
     [entry, setEntry] = useState(""),
     [pref, setPref] = useState(savedWants),
@@ -1181,26 +1240,12 @@ function Landing({
               <i />
               <i />
               <i />
-              <span className="block b1">
-                <b>MATH 152</b>
-                <small>9:35</small>
-              </span>
-              <span className="block b2">
-                <b>PHYS 206</b>
-                <small>9:35</small>
-              </span>
-              <span className="block b3">
-                <b>ENGR 102</b>
-                <small>11:30</small>
-              </span>
-              <span className="block b4">
-                <b>CHEM 107</b>
-                <small>12:45</small>
-              </span>
-              <span className="block b5">
-                <b>CHEM 117</b>
-                <small>2:15</small>
-              </span>
+              {showcase.map((c, i) => (
+                <span className={`block b${i + 1}`} key={c.code}>
+                  <b>{c.label}</b>
+                  <small>{SHOWCASE_TIMES[i % SHOWCASE_TIMES.length]}</small>
+                </span>
+              ))}
             </div>
             <footer>
               <span>
@@ -1253,7 +1298,9 @@ function Landing({
                   if (e.key === "Enter") add();
                 }}
                 placeholder={
-                  courses.length ? "Add another course…" : "Try MATH 152…"
+                  courses.length
+                    ? "Add another course…"
+                    : `Try ${showcase[0]?.label ?? "a course code"}…`
                 }
               />
             </div>

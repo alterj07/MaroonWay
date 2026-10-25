@@ -467,6 +467,8 @@ export function saveSchedule(
 export type CourseProfessor = {
   instructor_id: number | null;
   name: string | null;
+  /** The department the grade reports file most of their sections under. */
+  department: string | null;
   adj_rating: number | null;
   adj_difficulty: number | null;
   adj_gpa: number | null;
@@ -485,6 +487,12 @@ export type ExploreCourse = {
   credits: string | null;
   honors: boolean;
   prereq_text: string | null;
+  /** "Undergraduate" or "Graduate", from the grade reports. */
+  level: string | null;
+  dept_code: string | null;
+  /** Where most of its sections run: A&M teaches the same number at College
+   *  Station, Galveston and in Qatar, and a student can attend only one. */
+  campus: string | null;
   professor_count: number;
   avg_rating: number | null;
   avg_pct_a: number | null;

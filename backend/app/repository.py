@@ -423,8 +423,11 @@ _EXPLORE = text(
             c.id                        as course_id,
             upper(c.dept || c.number)   as code,
             c.dept, c.number, c.title, c.credits, c.honors, c.prereq_text,
+            c.level, c.dept_code,
             i.id                        as instructor_id,
             i.full_name                 as instructor_name,
+            i.department                as instructor_department,
+            ics.campus,
             ics.adj_rating, ics.adj_difficulty, ics.adj_gpa, ics.pct_a,
             ics.class_rating_count, ics.instructor_rating_count, ics.section_count
         from courses c
@@ -442,6 +445,11 @@ _EXPLORE = text(
     )
     select
         course_id, code, dept, number, title, credits, honors, prereq_text,
+        level, dept_code,
+        -- The campus most of this course's sections ran on. A&M teaches the
+        -- same catalog number at College Station, Galveston and in Qatar, and
+        -- a student can only attend one of them.
+        mode() within group (order by campus)                      as campus,
         count(instructor_id)                                      as professor_count,
         avg(adj_rating)                                           as avg_rating,
         avg(pct_a)                                                as avg_pct_a,
@@ -450,6 +458,7 @@ _EXPLORE = text(
                 jsonb_build_object(
                     'instructor_id', instructor_id,
                     'name', instructor_name,
+                    'department', instructor_department,
                     'adj_rating', adj_rating,
                     'adj_difficulty', adj_difficulty,
                     'adj_gpa', adj_gpa,
@@ -463,7 +472,8 @@ _EXPLORE = text(
             '[]'::jsonb
         )                                                         as professors
     from ranked
-    group by course_id, code, dept, number, title, credits, honors, prereq_text
+    group by course_id, code, dept, number, title, credits, honors, prereq_text,
+             level, dept_code
     order by count(instructor_id) desc, code
     limit cast(:limit as integer)
     """
