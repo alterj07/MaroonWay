@@ -38,6 +38,8 @@ export type Course = {
   start: number;
   end: number;
   room: string;
+  /** Each actual meeting; omitted only by older saved schedules. */
+  meetings?: { day: number; start: number; end: number; room: string }[];
   color: string;
   /** Everything the hover card shows. Null where there is no data to show. */
   section?: string;
@@ -103,32 +105,48 @@ export type Plan = {
   tags: string[];
   courses: Course[];
 };
-const days = ["MON", "TUE", "WED", "THU", "FRI"],
-  hours = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
+const days = ["MON", "TUE", "WED", "THU", "FRI"];
+const weekDays = [...days, "SAT", "SUN"];
+
+function courseMeetings(course: Course) {
+  return course.meetings ?? course.days.map((day) => ({
+    day, start: course.start, end: course.end, room: course.room,
+  }));
+}
 const time = (n: number) => {
   const h = Math.floor(n),
     m = Math.round((n - h) * 60);
-  return `${h > 12 ? h - 12 : h}:${String(m).padStart(2, "0")} ${h >= 12 ? "PM" : "AM"}`;
+  return `${h % 12 || 12}:${String(m).padStart(2, "0")} ${h >= 12 ? "PM" : "AM"}`;
 };
 function Mini({ courses }: { courses: Course[] }) {
+  const meetings = courses.flatMap(courseMeetings);
+  const visibleDays = weekDays.slice(0, Math.max(5, ...meetings.map((m) => m.day + 1)));
+  const startHour = Math.min(8, ...meetings.map((m) => Math.floor(m.start)));
+  const endHour = Math.max(18, ...meetings.map((m) => Math.ceil(m.end)));
   return (
-    <div className="mini">
+    <div className="mini" style={{
+      gridTemplateColumns: `18px repeat(${visibleDays.length}, 1fr)`,
+      gridTemplateRows: `13px repeat(${(endHour - startHour) * 4}, minmax(0, 1fr))`,
+      height: 79,
+      rowGap: 0,
+    }}>
       <i />
-      {days.map((d, i) => (
+      {visibleDays.map((d, i) => (
         <b key={d} style={{ gridColumn: i + 2 }}>
           {d[0]}
         </b>
       ))}
       {courses.flatMap((c, i) =>
-        c.days.map((d) => (
+        courseMeetings(c).map((meeting, index) => (
           <span
-            key={`${i}-${d}`}
+            key={`${i}-${index}`}
             className={c.color}
             style={{
-              gridColumn: d + 2,
-              gridRow: Math.min(5, Math.floor((c.start - 8) / 2) + 2),
+              gridColumn: meeting.day + 2,
+              gridRow: `${Math.floor((meeting.start - startHour) * 4) + 2} / ${Math.ceil((meeting.end - startHour) * 4) + 2}`,
+              alignSelf: "stretch",
             }}
-            title={`${c.code} · ${c.prof}`}
+            title={`${c.code} · ${c.prof} · ${weekDays[meeting.day]} ${time(meeting.start)}–${time(meeting.end)} · ${meeting.room}`}
           >
             {c.code}
           </span>
@@ -181,7 +199,7 @@ function ScheduleProblem({ reason }: { reason: string }) {
  * they were only ever noise.
  */
 function hourLabel(h: number) {
-  const hour = h > 12 ? h - 12 : h;
+  const hour = h % 12 || 12;
   return `${hour} ${h >= 12 ? "PM" : "AM"}`;
 }
 
@@ -192,7 +210,10 @@ function hourLabel(h: number) {
  * justify the choice -- the rating, how hard it marks, how many A's it gives --
  * belong where the choice is rather than a page away.
  */
-function CourseHover({ course }: { course: Course }) {
+function CourseHover({ course, meeting }: {
+  course: Course;
+  meeting: { day: number; start: number; end: number; room: string };
+}) {
   const stat = (v: number | null | undefined, digits = 2) =>
     v === null || v === undefined ? "—" : Number(v).toFixed(digits);
   const share = (v: number | null | undefined) =>
@@ -228,11 +249,11 @@ function CourseHover({ course }: { course: Course }) {
       <footer>
         <span>
           <Clock3 size={11} />
-          {time(course.start)}–{time(course.end)}
+          {time(meeting.start)}–{time(meeting.end)}
         </span>
         <span>
           <MapPin size={11} />
-          {course.room}
+          {meeting.room}
         </span>
         {course.campus ? (
           <span>{CAMPUS_NAMES[course.campus] ?? course.campus}</span>
@@ -247,38 +268,45 @@ function CourseHover({ course }: { course: Course }) {
 }
 
 function Calendar({ plan }: { plan: Plan }) {
+  const meetings = plan.courses.flatMap(courseMeetings);
+  const visibleDays = weekDays.slice(0, Math.max(5, ...meetings.map((m) => m.day + 1)));
+  const startHour = Math.min(8, ...meetings.map((m) => Math.floor(m.start)));
+  const endHour = Math.max(18, ...meetings.map((m) => Math.ceil(m.end)));
+  const hours = Array.from({ length: endHour - startHour }, (_, i) => startHour + i);
   return (
     <div className="cal-scroll">
-      <div className="cal">
+      <div className="cal" style={{
+        gridTemplateColumns: `var(--cal-gutter) repeat(${visibleDays.length}, 1fr)`,
+        gridTemplateRows: `var(--cal-head) repeat(${hours.length}, var(--cal-row))`,
+        height: `calc(var(--cal-head) + ${hours.length} * var(--cal-row))`,
+      }}>
         <i />
-        {days.map((d, i) => (
+        {visibleDays.map((d, i) => (
           <header
             key={d}
-            className={i === 4 ? "off" : ""}
             style={{ gridColumn: i + 2 }}
           >
             <small>{d}</small>
-            <b>{26 + i}</b>
           </header>
         ))}
         {hours.map((h) => (
-          <label key={h} style={{ gridRow: h - 6 }}>
+          <label key={h} style={{ gridRow: h - startHour + 2 }}>
             {hourLabel(h)}
           </label>
         ))}
-        {days.map((_, d) => (
+        {visibleDays.map((_, d) => (
           <div
             key={d}
-            className={`lane ${d === 4 ? "off" : ""}`}
-            style={{ gridColumn: d + 2 }}
+            className="lane"
+            style={{ gridColumn: d + 2, gridRow: `2 / ${hours.length + 2}` }}
           />
         ))}
         {plan.courses.flatMap((c) =>
-          c.days.map((d) => {
-            const hours = c.end - c.start;
+          courseMeetings(c).map((meeting, index) => {
+            const hours = meeting.end - meeting.start;
             return (
               <article
-                key={`${c.code}-${d}`}
+                key={`${c.code}-${c.section}-${index}`}
                 className={`${c.color} block`}
                 tabIndex={0}
                 style={{
@@ -286,9 +314,10 @@ function Calendar({ plan }: { plan: Plan }) {
                   // changing either cannot leave the blocks beside their
                   // column again -- the offset used to hardcode a gutter width
                   // that the grid had since outgrown.
-                  left: `calc(var(--cal-gutter) + ((100% - var(--cal-gutter)) / 5) * ${d})`,
-                  width: "calc((100% - var(--cal-gutter)) / 5)",
-                  top: `calc(var(--cal-head) + ${c.start - 8} * var(--cal-row))`,
+                  left: `calc(var(--cal-gutter) + ((100% - var(--cal-gutter)) / ${visibleDays.length}) * ${meeting.day})`,
+                  width: `calc((100% - var(--cal-gutter)) / ${visibleDays.length} - 6px)`,
+                  maxWidth: `calc((100% - var(--cal-gutter)) / ${visibleDays.length} - 6px)`,
+                  top: `calc(var(--cal-head) + ${meeting.start - startHour} * var(--cal-row))`,
                   height: `calc(${hours} * var(--cal-row))`,
                 }}
               >
@@ -298,16 +327,16 @@ function Calendar({ plan }: { plan: Plan }) {
                     card carries the rest. */}
                 {hours >= 1 ? (
                   <span>
-                    {time(c.start)}–{time(c.end)}
+                    {time(meeting.start)}–{time(meeting.end)}
                   </span>
                 ) : null}
                 {hours >= 1.5 ? (
                   <small>
                     <MapPin size={10} />
-                    {c.room}
+                    {meeting.room}
                   </small>
                 ) : null}
-                <CourseHover course={c} />
+                <CourseHover course={c} meeting={meeting} />
               </article>
             );
           }),
@@ -861,8 +890,12 @@ export function Planner({
                             : `${Math.round(Number(c.pctA) * 100)}%`}
                         </td>
                         <td>
-                          {c.days.map((d) => DAY_LETTERS[d]).join("")}{" "}
-                          {time(c.start)}–{time(c.end)}
+                          {courseMeetings(c).map((meeting, index) => (
+                            <div key={index}>
+                              {weekDays[meeting.day]} {time(meeting.start)}–{time(meeting.end)} · {meeting.room}
+                            </div>
+                          ))}
+                          {!courseMeetings(c).length && (c.delivery === "WEB" ? "Online · Asynchronous" : "Meeting times TBA")}
                         </td>
                       </tr>
                     ))}
@@ -1053,9 +1086,6 @@ function showcaseCreditTotal(showcase: { credits: number }[]) {
  *  whatever courses the catalogue supplies. */
 const SHOWCASE_COLORS = ["berry", "blue", "green", "gold", "purple"];
 const SHOWCASE_TIMES = ["9:35", "9:35", "11:30", "12:45", "14:20"];
-
-/** Monday-first, matching the calendar's own day order. */
-const DAY_LETTERS = ["M", "T", "W", "R", "F"];
 
 const CAMPUS_NAMES: Record<string, string> = {
   CSTAT: "College Station",

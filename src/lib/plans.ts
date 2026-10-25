@@ -24,7 +24,7 @@ import {
 export const DEFAULT_PRIORITIES = ['No classes before 9 AM', 'Avoid Friday classes'];
 
 /** The planner's day numbering: 0 = Monday. */
-const DAY_INDEX: Record<string, number> = { MON: 0, TUE: 1, WED: 2, THU: 3, FRI: 4 };
+const DAY_INDEX: Record<string, number> = { MON: 0, TUE: 1, WED: 2, THU: 3, FRI: 4, SAT: 5, SUN: 6 };
 /** One per class, in the order courses are chosen. Five, because a student
  *  taking five classes should not see two of them share a colour. */
 const COLORS = ['berry', 'blue', 'green', 'gold', 'purple'];
@@ -55,7 +55,18 @@ export function toCourse(section: ScheduleSection, index: number): Course {
     ),
     start: first ? decimalHours(first.start) : 0,
     end: first ? decimalHours(first.end) : 0,
-    room: [first?.building, first?.room].filter(Boolean).join(' ') || 'Online',
+    room: [first?.building, first?.room].filter(Boolean).join(' ') ||
+      (section.delivery === 'WEB' && !first ? 'Online' : 'Location TBA'),
+    meetings: section.meetings.flatMap((meeting) => {
+      const day = DAY_INDEX[meeting.day];
+      if (day === undefined) return [];
+      return [{
+        day,
+        start: decimalHours(meeting.start),
+        end: decimalHours(meeting.end),
+        room: [meeting.building, meeting.room].filter(Boolean).join(' ') || 'Location TBA',
+      }];
+    }),
     color: COLORS[index % COLORS.length],
     // Carried through for the hover card: a block is a choice of instructor as
     // much as a time, so the numbers behind that choice belong on it.
