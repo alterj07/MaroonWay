@@ -1,0 +1,12 @@
+{
+  "howdy_rows": 4516,
+  "source_grade_rows": 20386,
+  "output_candidate_rows": 4686,
+  "howdy_status_counts": {
+    "unique_supported_candidate_NOT_VERIFIED": 2123,
+    "name_only_or_conflicting_review_required": 1265,
+    "no_name_candidate": 950,
+    "ambiguous_review_required": 178
+  },
+  "verified_identities": 0
+}
