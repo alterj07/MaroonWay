@@ -1,6 +1,6 @@
 "use client";
 import {useMemo,useState} from "react";
-import {SearchIcon} from "@animateicons/react/lucide";
+import {SearchIcon,SquarePlusIcon} from "@animateicons/react/lucide";
 import {ArrowRight,BookOpen,Bot,Building2,CalendarDays,Check,ChevronDown,Clock3,Footprints,GraduationCap,Heart,Info,MapPin,MessageSquareText,Moon,Plus,SlidersHorizontal,Sparkles,Star,Sun,X} from "lucide-react";
 type Course={code:string;prof:string;days:number[];start:number;end:number;room:string;color:string};
 type Plan={id:number;name:string;subtitle:string;score:number;rating:string;aRate:string;walk:string;earliest:string;tags:string[];courses:Course[]};
@@ -49,7 +49,7 @@ function Landing({onStart,onSaved}:{onStart:()=>void,onSaved:()=>void}){const[co
     </div>
     <div className="minimal-copy"><h1>Let’s make your schedule.</h1><p>Add your classes and tell us what a good week looks like to you.</p></div>
     <div className="prompt-box">
-      <div className="course-input"><SearchIcon size={18} duration={1.15} color="currentColor"/><div>{courses.map(c=><button key={c} onClick={()=>setCourses(courses.filter(x=>x!==c))}>{c}<X size={11}/></button>)}<input value={entry} onChange={e=>setEntry(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")add()}} placeholder={courses.length?"Add another course…":"Try MATH 152…"}/></div><button className="add-course" onClick={()=>setPicker(true)} aria-label="Browse courses"><Plus size={17}/></button></div>
+      <div className="course-input"><span className="course-icon"><SearchIcon size={18} duration={1.15} color="currentColor"/></span><div className="course-chips">{courses.map(c=><button key={c} onClick={()=>setCourses(courses.filter(x=>x!==c))}>{c}<X size={11}/></button>)}<input value={entry} onChange={e=>setEntry(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")add()}} placeholder={courses.length?"Add another course…":"Try MATH 152…"}/></div><button className="add-course" onClick={()=>setPicker(true)} aria-label="Browse courses"><SquarePlusIcon size={20} duration={1} color="currentColor"/></button></div>
       <div className="preference-input"><Sparkles size={17}/><input value={pref} onChange={e=>setPref(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")go()}} placeholder="Tell us your preferences — no Fridays, late mornings, best professors…"/><button onClick={go} disabled={!courses.length||analyzing}>{analyzing?"Analyzing…":"Continue"} {!analyzing&&<ArrowRight size={16}/>}</button></div>
     </div>
     <div className="quick-prefs"><span>Try:</span>{["No 8 AMs","Free Fridays","Shortest walks","Highest-rated professors"].map(p=><button key={p} onClick={()=>setPref(p)}>{p}</button>)}</div>
