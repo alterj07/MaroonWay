@@ -1,0 +1,5 @@
+subject,number,course,title,credits,is_honors_dept,description,prereq_text,coreq_text,dept_code
+CSCE,121,CSCE 121,Introduction to Program Design and Concepts,3,False,"Computation; abstraction and algorithms.",MATH 151 or concurrent enrollment.,,CSCE
+MATH,151,MATH 151,Engineering Mathematics I,4,True,"Rectangular coordinates, vectors.",MATH 150 or acceptable placement.,MATH 151 recitation,MATH
+BADROW,,,,,,,,,
+CSCE,121,CSCE 121,Introduction to Program Design and Concepts,3,False,"A duplicate catalog row.",MATH 151 or concurrent enrollment.,,CSCE
