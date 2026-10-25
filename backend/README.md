@@ -227,12 +227,21 @@ python -m app.ingest.load_sections     out/demo_sections.csv
 `load_extras` must run after both `load_grades` and `load_catalog`: it fills in
 the campus, course level and teaching history onto rows they create.
 
-### What the CSVs do and do not contain
+### Real meeting times
 
-They carry grade distributions, the course catalog, and RateMyProfessors
-ratings. **They contain no meeting times** -- no days, no start or end times, no
-rooms. The only clock times anywhere in the data are inside review comments
-("exams were at 7:30pm"). `make_demo_sections` therefore invents times and
-labels the term `DEMO <term>`; everything else about those sections is real,
-including which instructors are likely to teach the course, which now comes
-from `instructor_course_terms`.
+`Data/output/schedule_cache/<termcode>.json` is one term of A&M's Banner
+class-search output -- the service Howdy drives -- and it is the only file in
+the project that carries **meeting times**: days, start and end, building and
+room. Load it with::
+
+    python -m app.ingest.load_schedule_json ../Data/output/schedule_cache/202711.json \
+                                            ../Data/output/schedule_cache/202712.json
+
+Term codes are `YYYYSC`: season 1 spring, 2 summer, 3 fall, then a campus digit,
+1 College Station and 2 Galveston.
+
+The CSVs themselves carry grade distributions, the catalog and RateMyProfessors
+ratings, and **no meeting times at all** -- the only clock times in them are
+inside review comments ("exams were at 7:30pm"). `make_demo_sections` exists for
+when no schedule file is available: it invents times and labels the term
+`DEMO <term>` so they cannot be mistaken for the registrar's.
