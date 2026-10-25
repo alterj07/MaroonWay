@@ -155,6 +155,7 @@ def to_payload(ranked: prefs_service.RankedSchedule) -> dict[str, Any]:
             else scheduling.format_time(schedule.earliest_start)
         ),
         "days_on_campus": schedule.days_on_campus,
+        "idle_minutes": schedule.idle_minutes,
     }
 
 

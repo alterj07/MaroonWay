@@ -222,6 +222,8 @@ class ScheduleOut(BaseModel):
     mean_pct_a: float | None = None
     earliest_start: str | None = None
     days_on_campus: int
+    #: Minutes spent waiting between classes, summed over the week.
+    idle_minutes: int
 
 
 class ScheduleRequest(BaseModel):

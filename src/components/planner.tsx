@@ -88,6 +88,10 @@ export type Plan = {
    *  stated, which is different from "conflict-free" -- `tags` falls back to
    *  generic copy, so it cannot answer "why this one". */
   reasons?: string[];
+  /** Days on campus, and minutes spent waiting between classes. What separates
+   *  two schedules that share every professor and so score the same. */
+  days?: number;
+  idle?: number;
   id: number;
   name: string;
   subtitle: string;
@@ -401,6 +405,12 @@ export function Planner({
   /** Everything the student has asked for, as one sentence for the decider. */
   const wants = priorities.filter(Boolean).join(", ");
 
+  // Schedules built from the same instructors score identically on every
+  // preference about teaching, so three equal badges are correct and
+  // unhelpful. Say what does separate them instead of leaving it a mystery.
+  const tied =
+    plans.length > 1 && plans.every((p) => p.score === plans[0].score);
+
   async function rebuild(codes = chosen, text = wants) {
     if (!codes.length || busy) return;
     setBusy(true);
@@ -651,6 +661,12 @@ export function Planner({
                   ? "No schedules"
                   : `${plans.length} schedule${plans.length === 1 ? "" : "s"} built for you`}
               </h2>
+              {tied ? (
+                <small className="tied-note">
+                  Same professors in each, so they score the same on what you
+                  asked for. They differ in timing.
+                </small>
+              ) : null}
             </span>
             {failed ? null : (
               <button onClick={() => setComparing((v) => !v)}>
@@ -673,7 +689,11 @@ export function Planner({
                   <em>{p.score}% match</em>
                 </div>
                 <h3>{p.name}</h3>
-                <p>{p.subtitle}</p>
+                <p>
+                  {tied && p.idle !== undefined
+                    ? `${p.days ?? "?"} days on campus · ${Math.round((p.idle ?? 0) / 60)}h waiting`
+                    : p.subtitle}
+                </p>
                 <Mini courses={p.courses} />
                 <footer>
                   <span>
@@ -1025,7 +1045,7 @@ function showcaseCreditTotal(showcase: { credits: number }[]) {
 
 /** Colour classes and clock labels for the landing illustration, cycled over
  *  whatever courses the catalogue supplies. */
-const SHOWCASE_COLORS = ["berry", "blue", "gold", "green"];
+const SHOWCASE_COLORS = ["berry", "blue", "green", "gold", "purple"];
 const SHOWCASE_TIMES = ["9:35", "9:35", "11:30", "12:45", "14:20"];
 
 /** Monday-first, matching the calendar's own day order. */

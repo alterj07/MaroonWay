@@ -242,6 +242,10 @@ class Schedule:
     mean_pct_a: float | None
     earliest_start: int | None
     days_on_campus: int
+    #: Minutes on campus with nothing scheduled -- the waiting a student does
+    #: between their own classes, summed over the week. Two schedules can be
+    #: identical on every professor and still differ by hours of this.
+    idle_minutes: int
 
     @property
     def sort_key(self) -> tuple[float, float]:
@@ -265,6 +269,18 @@ def summarize(sections: Sequence[Section], *, default_rating: float = 3.5) -> Sc
                     if gap is not None:
                         gaps.append(gap)
     starts = [m.start for s in sections for m in s.meetings]
+
+    # Per day: the span from the first class to the last, less the time
+    # actually spent in class.
+    idle = 0
+    by_day: dict[str, list[Meeting]] = {}
+    for section in sections:
+        for meeting in section.meetings:
+            by_day.setdefault(meeting.day, []).append(meeting)
+    for meetings in by_day.values():
+        span = max(m.end for m in meetings) - min(m.start for m in meetings)
+        idle += span - sum(m.end - m.start for m in meetings)
+
     return Schedule(
         sections=tuple(sections),
         tightest_gap=min(gaps) if gaps else None,
@@ -274,6 +290,7 @@ def summarize(sections: Sequence[Section], *, default_rating: float = 3.5) -> Sc
         mean_pct_a=_mean([s.pct_a for s in sections]),
         earliest_start=min(starts) if starts else None,
         days_on_campus=len({m.day for s in sections for m in s.meetings}),
+        idle_minutes=idle,
     )
 
 

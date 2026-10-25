@@ -240,12 +240,21 @@ class RankedSchedule:
     reasons: tuple[str, ...]
 
     @property
-    def sort_key(self) -> tuple[float, float, float]:
-        """Preference first, then the doc's rule as the tiebreak."""
+    def sort_key(self) -> tuple[float, float, float, int, int]:
+        """Preference first, then the doc's rule, then less time wasted.
+
+        Schedules built from the same instructors score identically on every
+        preference about teaching, so the doc's rule ties too and the order
+        among them was whatever the search happened to produce. Fewer days on
+        campus and less waiting between classes break that deterministically,
+        and are the difference a student would actually notice.
+        """
         return (
             -self.preference_score,
             -self.schedule.mean_rating,
             self.schedule.mean_difficulty,
+            self.schedule.days_on_campus,
+            self.schedule.idle_minutes,
         )
 
 

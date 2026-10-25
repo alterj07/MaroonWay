@@ -281,6 +281,8 @@ export type Schedule = {
   mean_pct_a: number | null;
   earliest_start: string | null;
   days_on_campus: number;
+  /** Minutes waiting between classes, summed over the week. */
+  idle_minutes: number;
 };
 
 export type Preferences = {

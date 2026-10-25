@@ -25,7 +25,9 @@ export const DEFAULT_PRIORITIES = ['No classes before 9 AM', 'Avoid Friday class
 
 /** The planner's day numbering: 0 = Monday. */
 const DAY_INDEX: Record<string, number> = { MON: 0, TUE: 1, WED: 2, THU: 3, FRI: 4 };
-const COLORS = ['berry', 'blue', 'gold', 'green'];
+/** One per class, in the order courses are chosen. Five, because a student
+ *  taking five classes should not see two of them share a colour. */
+const COLORS = ['berry', 'blue', 'green', 'gold', 'purple'];
 
 /** "09:35" -> 9.58, which is how the planner lays blocks out. */
 function decimalHours(clock: string) {
@@ -83,6 +85,8 @@ export function toPlan(schedule: Schedule, index: number): Plan {
     aRate: schedule.mean_pct_a === null ? '—' : `${Math.round(schedule.mean_pct_a * 100)}%`,
     gap: schedule.tightest_gap === null ? 'no clash' : `${schedule.tightest_gap} min`,
     earliest: clockLabel(schedule.earliest_start),
+    days: schedule.days_on_campus,
+    idle: schedule.idle_minutes,
     tags: reasons.length ? reasons : ['Conflict-free', 'At least 20 minutes between classes'],
     reasons,
     courses: schedule.sections.map(toCourse),

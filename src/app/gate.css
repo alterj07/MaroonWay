@@ -609,3 +609,66 @@
     overflow-y: hidden;
   }
 }
+
+/* ---- one colour per class ---- */
+
+/*
+ * The five class colours were flattened to near-identical maroons
+ * (#5b111b, #6d1b28, #4d0b17, #7d2730, #3d0712), which is brand-consistent and
+ * useless: on a week grid a student cannot tell which block is which course.
+ *
+ * These keep the maroon as the first and most prominent, then step through
+ * clearly separated hues at a similar depth, so the set still reads as one
+ * family while every block is distinguishable at a glance. Each is dark enough
+ * for white text at the sizes used.
+ */
+:root {
+  --class-1: #7c1d2c; /* maroon  */
+  --class-2: #2f5d8c; /* blue    */
+  --class-3: #1f6b61; /* teal    */
+  --class-4: #8a601c; /* ochre   */
+  --class-5: #5e3a7e; /* plum    */
+}
+
+.berry,
+.mini .berry,
+.cal article.berry {
+  background: var(--class-1) !important;
+}
+.blue,
+.mini .blue,
+.cal article.blue {
+  background: var(--class-2) !important;
+}
+.green,
+.mini .green,
+.cal article.green {
+  background: var(--class-3) !important;
+}
+.gold,
+.mini .gold,
+.cal article.gold {
+  background: var(--class-4) !important;
+}
+.purple,
+.mini .purple,
+.cal article.purple {
+  background: var(--class-5) !important;
+}
+
+/* The sidebar's course bullet uses the same scale, so the colour in the list
+   and the colour on the grid are the same course. */
+.course > i.berry { background: var(--class-1) !important; }
+.course > i.blue { background: var(--class-2) !important; }
+.course > i.green { background: var(--class-3) !important; }
+.course > i.gold { background: var(--class-4) !important; }
+.course > i.purple { background: var(--class-5) !important; }
+
+.tied-note {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  opacity: 0.6;
+  max-width: 62ch;
+}
