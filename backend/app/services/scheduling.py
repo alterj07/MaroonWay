@@ -71,11 +71,13 @@ def parse_time(value: Any) -> int | None:
         return None
     hour, minute = int(match.group(1)), int(match.group(2))
     suffix = (match.group(3) or "").replace(".", "").upper()
+    if suffix and not 1 <= hour <= 12:
+        return None
     if suffix == "PM" and hour < 12:
         hour += 12
     elif suffix == "AM" and hour == 12:
         hour = 0
-    if not (0 <= hour <= 24 and 0 <= minute < 60):
+    if not (0 <= hour <= 24 and 0 <= minute < 60) or (hour == 24 and minute != 0):
         return None
     return hour * 60 + minute
 
@@ -302,6 +304,10 @@ def summarize(sections: Sequence[Section], *, default_rating: float = 3.5) -> Sc
     )
 
 
+class SearchLimitExceeded(RuntimeError):
+    """An incomplete search is not proof that a schedule is impossible."""
+
+
 def generate(
     candidates: Mapping[str, Sequence[Section]],
     *,
@@ -315,6 +321,10 @@ def generate(
     Depth-first with pruning: a partial schedule that already breaks the gap
     rule is abandoned rather than completed and discarded, which is what keeps
     a dozen courses with a dozen sections each tractable.
+
+    The budget counts attempted section choices, including rejected branches.
+    At exhaustion, return valid results found so far or explain the incomplete
+    search; an unfinished search must not claim that no schedule exists.
     """
     availability = availability or Availability()
     courses = sorted(candidates)
@@ -331,16 +341,18 @@ def generate(
 
     results: list[Schedule] = []
     examined = 0
+    exhausted = False
 
     def walk(index: int, chosen: list[Section]) -> None:
-        nonlocal examined
-        if examined >= max_combinations:
-            return
+        nonlocal examined, exhausted
         if index == len(pools):
-            examined += 1
             results.append(summarize(chosen))
             return
         for section in pools[index]:
+            if examined >= max_combinations:
+                exhausted = True
+                return
+            examined += 1
             if any(clash(section, picked, min_gap) for picked in chosen):
                 continue
             chosen.append(section)
@@ -348,6 +360,8 @@ def generate(
             chosen.pop()
 
     walk(0, [])
+    if exhausted and not results:
+        raise SearchLimitExceeded("Search limit reached. Try fewer courses or narrower time filters; a schedule may still exist.")
     results.sort(key=lambda schedule: schedule.sort_key)
     return results[:limit]
 

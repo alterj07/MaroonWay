@@ -13,11 +13,11 @@ vi.mock('@/lib/session', () => ({
 
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
-function backend(failList = false) {
+function backend(failList = false, unhealthy = false) {
   const records: SavedSchedule[] = [];
   vi.stubGlobal('fetch', async (url: string, options?: RequestInit) => {
     const path = new URL(url).pathname;
-    if (path === '/healthz') return Response.json({ status: 'ok', database: 'ok', data_version: 1, detail: null });
+    if (path === '/healthz') return Response.json({ status: unhealthy ? 'degraded' : 'ok', database: unhealthy ? 'unreachable' : 'ok', data_version: 1, detail: null });
     if (path === '/courses/explore' || path === '/schedule/terms') return Response.json([]);
     if (path === '/me/preferences') return Response.json({
       wants: null, weights: {}, engine: null, courses: [], term: null, updated_at: null,
@@ -56,4 +56,10 @@ it('distinguishes a failed saved-list request from an empty account', async () =
   fireEvent.click(screen.getByRole('button', { name: 'My schedules' }));
   expect(screen.getByRole('alert').textContent).toContain('Could not load your saved schedules');
   expect(screen.queryByText('No saved schedules yet')).toBeNull();
+});
+
+it('explains a backend outage on the landing screen immediately', async () => {
+  backend(false, true);
+  render(await Home({ searchParams: Promise.resolve({}) }));
+  expect(screen.getByRole('alert').textContent).toContain('temporarily unavailable');
 });

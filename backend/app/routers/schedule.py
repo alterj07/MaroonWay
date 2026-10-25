@@ -11,7 +11,7 @@ from __future__ import annotations
 from dataclasses import replace
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import repository
@@ -173,7 +173,7 @@ async def list_terms(session: SessionDep) -> list[dict[str, Any]]:
 async def list_courses(
     session: SessionDep,
     term: str,
-    limit: int = 200,
+    limit: int = Query(200, ge=1, le=1000),
 ) -> list[dict[str, Any]]:
     """Courses with sections this term, most choice first."""
     return await repository.courses_with_sections(session, term=term, limit=limit)
@@ -373,6 +373,9 @@ async def generate_schedules(
             "relaxed": relaxed,
         }
 
-    payload = await caches.search.get_or_compute(key, factory)
+    try:
+        payload = await caches.search.get_or_compute(key, factory)
+    except scheduling.SearchLimitExceeded as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     stamp(response)
     return payload

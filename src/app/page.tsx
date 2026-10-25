@@ -59,6 +59,7 @@ export default async function Home({
         terms={[]}
         onUseSchedule={useSchedule}
         savedSchedulesError="Could not load your saved schedules while the backend is unavailable."
+        serviceError="Course data is temporarily unavailable. Please try again in a moment."
       />
     );
   }
@@ -78,7 +79,7 @@ export default async function Home({
   // A signed-in student's own courses come first; otherwise lead with courses
   // that actually have sections this term, so the first paint is not empty.
   let chosen = saved?.courses ?? [];
-  if (!chosen.length && term) {
+  if (!chosen.length && !saved?.updated_at && term) {
     const options = await getCourseOptions(term, 120).catch(() => []);
     chosen = leadCourses(options, 4);
   }
@@ -92,7 +93,7 @@ export default async function Home({
     plans = (await plansFor(
       term,
       chosen,
-      saved?.wants || DEFAULT_PRIORITIES.join(', ')
+      saved?.wants ?? DEFAULT_PRIORITIES.join(', ')
     ).catch(() => ({
       plans: emptyPlan('Could not build schedules', 'The backend returned an error'),
     }))).plans;
@@ -104,7 +105,7 @@ export default async function Home({
       courses={courses}
       student={student}
       savedCourses={chosen}
-      savedWants={saved?.wants ?? ''}
+      savedWants={saved?.wants ?? DEFAULT_PRIORITIES.join(', ')}
       onSaveCourses={saveCourses}
       onBuildPlans={buildPlans}
       terms={terms.map((t) => t.term)}

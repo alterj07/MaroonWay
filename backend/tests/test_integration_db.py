@@ -27,6 +27,8 @@ from app.ingest.common import bump_data_version, split_sql
 from app.ingest.load_grades import load as load_grades
 from app.scoring import shrink
 from app.services.summarize import PROMPT_VERSION
+from app.routers.me import write_preferences
+from app.schemas import StudentPreferencesRequest
 
 TEST_DATABASE_URL = os.environ.get("TEST_DATABASE_URL")
 pytestmark = pytest.mark.skipif(
@@ -35,6 +37,23 @@ pytestmark = pytest.mark.skipif(
 
 SQL_DIR = Path(__file__).resolve().parents[1] / "sql"
 SAMPLE_CSV = Path(__file__).parent / "fixtures" / "grades_sample.csv"
+
+
+@pytest.mark.parametrize("clear", [False, True])
+async def test_preference_updates_distinguish_omitted_fields_from_empty_values(sessions, clear):
+    async with sessions() as session:
+        student_id = (await session.execute(text(
+            "insert into students(subject,email) values ('demo-test','demo-test@tamu.edu') returning id"
+        ))).scalar_one()
+        student = {"id": student_id}
+        await write_preferences(StudentPreferencesRequest(
+            courses=["CSCE121"], wants="no Fridays", weights={"lecture": 1},
+        ), student, session)
+        update = StudentPreferencesRequest(courses=[], wants="", weights={}) if clear else StudentPreferencesRequest(term="FALL 2026")
+        saved = await write_preferences(update, student, session)
+        assert saved["courses"] == ([] if clear else ["CSCE121"])
+        assert saved["wants"] == ("" if clear else "no Fridays")
+        assert saved["weights"] == ({} if clear else {"lecture": 1})
 
 SEED_RMP = """
 insert into rmp_professors (

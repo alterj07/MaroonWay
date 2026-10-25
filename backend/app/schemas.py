@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 class ScoreOut(BaseModel):
@@ -249,6 +249,59 @@ class ScheduleRequest(BaseModel):
     open_only: bool = False
     limit: int = Field(default=10, ge=1, le=50)
 
+    @field_validator("term")
+    @classmethod
+    def nonempty_term(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("choose a term")
+        return value.strip()
+
+    @field_validator("wants")
+    @classmethod
+    def optional_preference_text(cls, value: str | None) -> str | None:
+        return value.strip() or None if value is not None else None
+
+    @field_validator("courses")
+    @classmethod
+    def normalized_courses(cls, values: list[str]) -> list[str]:
+        from app.ingest.columns import split_course_code
+        codes = []
+        for value in values:
+            parts = split_course_code(value)
+            if parts is None:
+                raise ValueError("use course codes such as CSCE121")
+            codes.append("".join(parts))
+        return list(dict.fromkeys(codes))
+
+    @field_validator("earliest", "latest")
+    @classmethod
+    def valid_clock(cls, value: str | None) -> str | None:
+        from app.services.scheduling import format_time, parse_time
+        if value is None:
+            return None
+        minutes = parse_time(value)
+        if minutes is None:
+            raise ValueError("use a valid time such as 09:00")
+        return format_time(minutes)
+
+    @field_validator("excluded_days")
+    @classmethod
+    def valid_days(cls, values: list[str]) -> list[str]:
+        from app.services.scheduling import DAYS, parse_days
+        result = set()
+        for value in values:
+            days = parse_days(value)
+            if not days:
+                raise ValueError("use weekdays such as MON or FRI")
+            result.update(days)
+        return [day for day in DAYS if day in result]
+
+    @model_validator(mode="after")
+    def valid_window(self):
+        if self.earliest is not None and self.latest is not None and self.earliest >= self.latest:
+            raise ValueError("the earliest time must come before the latest time")
+        return self
+
 
 class ScheduleResponse(BaseModel):
     request: ScheduleRequest
@@ -266,6 +319,13 @@ class PreferenceRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     wants: str = Field(min_length=1, max_length=2000)
+
+    @field_validator("wants")
+    @classmethod
+    def nonempty_preference_text(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("describe at least one preference")
+        return value.strip()
 
 
 class PreferenceResponse(BaseModel):

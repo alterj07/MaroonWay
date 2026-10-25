@@ -342,6 +342,7 @@ export type ScheduleRequest = {
 };
 
 export type ScheduleResponse = {
+  relaxed?: string[];
   request: ScheduleRequest;
   count: number;
   schedules: Schedule[];
@@ -388,8 +389,10 @@ export async function buildSchedules(request: ScheduleRequest): Promise<Schedule
     body: JSON.stringify(request),
   });
   if (!response.ok) {
-    const detail = await response.text().catch(() => '');
-    throw new ApiError(response.status, '/schedule', `${response.status}: ${detail}`);
+    const body = await response.json().catch(() => null);
+    const detail = typeof body?.detail === 'string' ? body.detail :
+      'Check your course codes and time filters, then try again.';
+    throw new ApiError(response.status, '/schedule', detail);
   }
   return (await response.json()) as ScheduleResponse;
 }

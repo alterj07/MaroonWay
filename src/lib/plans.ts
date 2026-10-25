@@ -23,6 +23,10 @@ import {
  */
 export const DEFAULT_PRIORITIES = ['No classes before 9 AM', 'Avoid Friday classes'];
 
+export function normalizeCourseCodes(codes: string[]): string[] {
+  return [...new Set(codes.map((code) => code.trim().toUpperCase().replace(/[\s_-]+/g, '')).filter(Boolean))];
+}
+
 /** Old or incompatible stored snapshots must not crash the saved-list page. */
 export function readSavedPlan(value: unknown): Plan | null {
   const object = (v: unknown): v is Record<string, unknown> =>
@@ -35,6 +39,7 @@ export function readSavedPlan(value: unknown): Plan | null {
   if (!object(value) || value.failed || !number(value.id) || !number(value.score) ||
       !['name', 'subtitle', 'rating', 'aRate', 'gap', 'earliest'].every((k) => typeof value[k] === 'string') ||
       !strings(value.tags) || (value.reasons !== undefined && !strings(value.reasons)) ||
+      (value.warnings !== undefined && !strings(value.warnings)) ||
       !Array.isArray(value.courses)) return null;
   for (const course of value.courses) {
     if (!object(course) || !['code', 'prof', 'room', 'color'].every((k) => typeof course[k] === 'string') ||
@@ -163,7 +168,9 @@ export async function plansFor(
     const detail = result.detail ?? 'No conflict-free combination exists';
     return { plans: emptyPlan('No schedule fits', detail), detail };
   }
-  return { plans: result.schedules.map(toPlan), detail: null };
+  return { plans: result.schedules.map((schedule, index) => ({
+    ...toPlan(schedule, index), warnings: result.relaxed ?? [],
+  })), detail: null };
 }
 
 /**

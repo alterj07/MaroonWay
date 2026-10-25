@@ -2,9 +2,9 @@
 
 import { revalidatePath } from 'next/cache';
 
-import { getTerms, saveSchedule, saveStudentPreferences } from '@/lib/api';
+import { ApiError, getTerms, saveSchedule, saveStudentPreferences } from '@/lib/api';
 import type { Plan } from '@/components/planner';
-import { emptyPlan, plansFor } from '@/lib/plans';
+import { emptyPlan, normalizeCourseCodes, plansFor } from '@/lib/plans';
 import { currentStudent, studentHeaders } from '@/lib/session';
 
 /**
@@ -56,23 +56,23 @@ export async function buildPlans(
     return emptyPlan('No term loaded', 'Load a term with section times first');
   }
 
-  const codes = courses
-    .map((code) => code.trim().toUpperCase().replace(/\s+/g, ''))
-    .filter(Boolean);
+  const codes = normalizeCourseCodes(courses);
+  if (codes.length > 10) return emptyPlan('Too many classes', 'Choose up to 10 classes at a time');
 
   const student = await currentStudent();
   if (student) {
     await saveStudentPreferences(studentHeaders(student), {
       courses: codes,
       term: chosen,
-      ...(wants.trim() ? { wants } : {}),
+      wants: wants.trim(),
     }).catch(() => undefined);
   }
 
   try {
     return (await plansFor(chosen, codes, wants)).plans;
   } catch (error) {
-    return emptyPlan('Could not reach the backend', String(error));
+    return emptyPlan('Could not build schedules', error instanceof ApiError
+      ? error.message : 'The schedule service is unavailable. Please try again.');
   }
 }
 

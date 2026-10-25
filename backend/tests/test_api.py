@@ -448,6 +448,24 @@ def test_missing_meeting_times_are_only_schedulable_for_explicit_online_sections
         assert "meeting times" in body["detail"] and "CSCE121" in body["detail"]
 
 
+def test_search_exhaustion_returns_a_useful_error_instead_of_hanging(client, monkeypatch):
+    from app.services import scheduling
+    generate = scheduling.generate
+
+    def small_search(*args, **kwargs):
+        return generate(*args, **kwargs, max_combinations=1)
+
+    monkeypatch.setattr(scheduling, "generate", small_search)
+    response = client.post("/schedule", json={"term": "FALL 2026", "courses": ["CSCE121", "MATH151"]})
+    assert response.status_code == 422
+    assert "Search limit" in response.json()["detail"]
+
+
+@pytest.mark.parametrize("limit", [-1, 0, 10001])
+def test_invalid_course_list_limits_are_rejected(client, limit):
+    assert client.get("/schedule/courses", params={"term": "FALL 2026", "limit": limit}).status_code == 422
+
+
 def test_a_schedule_is_built_and_honours_the_twenty_minute_gap(client):
     response = client.post(
         "/schedule",

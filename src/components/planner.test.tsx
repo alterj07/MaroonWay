@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { Planner, type Plan } from './planner';
+import { Planner, type Plan, type ExploreCourse } from './planner';
 
 afterEach(cleanup);
 
@@ -11,9 +11,9 @@ const plan: Plan = {
   tags: ['Conflict-free'], courses: [],
 };
 
-function setup(initialTerm = 'FALL 2026') {
+function setup(initialTerm = 'FALL 2026', catalog: ExploreCourse[] = []) {
   const props = {
-    plans: [plan], courses: [], student: null,
+    plans: [plan], courses: catalog, student: { email: 'demo@tamu.edu', name: 'Demo' },
     savedCourses: ['CSCE120'], savedWants: '',
     initialTerm, terms: ['FALL 2026', 'SPRING 2027'],
     onSaveCourses: vi.fn(async () => ({ saved: true })),
@@ -30,6 +30,36 @@ async function openBuilder() {
 }
 
 describe('planner semester selection', () => {
+  it('keeps an explorer course change saved even if rebuilding subsequently fails', async () => {
+    const props = setup('FALL 2026', [{
+      course_id: 2, code: 'MATH151', title: 'Calculus', credits: '4', honors: false,
+      prereq_text: null, level: null, dept_code: null, campus: null,
+      professor_count: 0, avg_rating: null, avg_pct_a: null, professors: [],
+    }]);
+    await openBuilder();
+    props.onBuildPlans.mockRejectedValueOnce(new Error('Network unavailable'));
+    fireEvent.click(screen.getByRole('button', { name: 'Course explorer' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add to my plan' }));
+    await screen.findByRole('button', { name: 'Saved to your plan' });
+    fireEvent.click(screen.getByRole('button', { name: 'Schedule builder' }));
+    expect(screen.getByRole('button', { name: 'Remove MATH 151' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'No schedule could be built' })).toBeTruthy();
+  });
+  it('clears the final course instead of leaving its old schedule on screen', async () => {
+    setup();
+    await openBuilder();
+    fireEvent.click(screen.getByRole('button', { name: 'Remove CSCE 120' }));
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'Remove CSCE 120' })).toBeNull());
+    expect(screen.getByText('Add the classes you need')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Use this schedule' })).toBeNull();
+  });
+
+  it('shows the preferences entered on the landing page after building', async () => {
+    setup();
+    fireEvent.change(screen.getByPlaceholderText(/Tell us your preferences/), { target: { value: 'Prefer online classes' } });
+    await openBuilder();
+    expect(screen.getByRole('button', { name: 'Prefer online classes' })).toBeTruthy();
+  });
   it('builds the saved semester even when it is not the first available semester', async () => {
     const props = setup('SPRING 2027');
     await openBuilder();

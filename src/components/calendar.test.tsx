@@ -96,3 +96,17 @@ it('labels midnight correctly when the calendar expands to include it', async ()
   expect(within(calendar).getByText('12 AM')).toBeTruthy();
   expect(within(calendar).getAllByText('12:00 AM–1:00 AM').length).toBeGreaterThan(0);
 });
+
+it('displays GPA on the academic 0–4 scale rather than the ranking 0–5 scale', async () => {
+  const container = await showCalendar({ ...section, adj_gpa: 5 });
+  const block = container.querySelector('.cal article') as HTMLElement;
+  expect(within(block).getByText('4.00 / 4.0')).toBeTruthy();
+});
+
+it('labels a class ending at 24:00 as midnight rather than noon', async () => {
+  const container = await showCalendar({ ...section, meetings: [
+    { day: 'MON', start: '23:00', end: '24:00', building: 'HRBB', room: '101' },
+  ] });
+  const block = container.querySelector('.cal article') as HTMLElement;
+  expect(within(block).getAllByText('11:00 PM–12:00 AM').length).toBeGreaterThan(0);
+});

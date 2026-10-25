@@ -3,7 +3,7 @@
 // fetches real schedules and maps them into Plan/Course.
 import { useMemo, useState } from "react";
 
-import { DEFAULT_PRIORITIES, emptyPlan, readSavedPlan } from "@/lib/plans";
+import { emptyPlan, normalizeCourseCodes, readSavedPlan } from "@/lib/plans";
 import type { SavedSchedule } from "@/lib/api";
 import { PlusIcon, SearchIcon } from "@animateicons/react/lucide";
 import {
@@ -85,6 +85,7 @@ export type ExploreCourse = {
 };
 
 export type Plan = {
+  warnings?: string[];
   /** Why no schedule could be built. Set means this is not a schedule at all. */
   failed?: string;
   /** Why the ranker put it here, in its own words. Empty when nothing was
@@ -115,8 +116,9 @@ function courseMeetings(course: Course) {
   }));
 }
 const time = (n: number) => {
-  const h = Math.floor(n),
-    m = Math.round((n - h) * 60);
+  const minutes = Math.round(n * 60),
+    h = Math.floor(minutes / 60) % 24,
+    m = minutes % 60;
   return `${h % 12 || 12}:${String(m).padStart(2, "0")} ${h >= 12 ? "PM" : "AM"}`;
 };
 function Mini({ courses }: { courses: Course[] }) {
@@ -243,8 +245,8 @@ function CourseHover({ course, meeting }: {
           <dd>{share(course.pctA)}</dd>
         </div>
         <div>
-          <dt>Avg GPA</dt>
-          <dd>{stat(course.gpa)}</dd>
+          <dt>Adjusted GPA</dt>
+          <dd>{stat(course.gpa == null ? null : Number(course.gpa) * 4 / 5)} / 4.0</dd>
         </div>
       </dl>
       <footer>
@@ -358,6 +360,7 @@ export function Planner({
   initialTerm,
   savedSchedules: initialSavedSchedules = [],
   savedSchedulesError = null,
+  serviceError = null,
   onUseSchedule,
 }: {
   plans: Plan[];
@@ -376,6 +379,7 @@ export function Planner({
   initialTerm?: string | null;
   savedSchedules?: SavedSchedule[];
   savedSchedulesError?: string | null;
+  serviceError?: string | null;
   /** Persists a built schedule; what "Use this schedule" means. */
   onUseSchedule: (
     term: string,
@@ -394,7 +398,9 @@ export function Planner({
   const [chosen, setChosen] = useState<string[]>(savedCourses);
   const build = async (codes: string[], wants: string, selectedTerm = term) => {
     if (busy) return;
+    codes = normalizeCourseCodes(codes);
     setChosen(codes);
+    setPriorities(wants.split(",").map((s) => s.trim()).filter(Boolean));
     setBusy(true);
     setKept(false);
     setSaveError(null);
@@ -410,7 +416,7 @@ export function Planner({
   // The sidebar shows the student's own courses; the showcase is only a
   // stand-in for a first visit when nothing has been chosen yet.
   const sidebar = useMemo(() => {
-    if (!chosen.length) return showcaseCourses(courses);
+    if (!chosen.length) return [];
     const byCode = new Map(courses.map((c) => [c.code, c]));
     return chosen.map((code) => {
       const found = byCode.get(code);
@@ -438,7 +444,7 @@ export function Planner({
             .split(",")
             .map((s) => s.trim())
             .filter(Boolean)
-        : DEFAULT_PRIORITIES,
+        : [],
     ),
     // Each of these backs a control that previously did nothing.
     [term, setTerm] = useState(initialTerm ?? terms[0] ?? ""),
@@ -472,8 +478,7 @@ export function Planner({
     setAddingCourse(false);
     if (!code || chosen.includes(code)) return;
     const next = [...chosen, code];
-    await onSaveCourses(next, term || null);
-    await rebuild(next);
+    await changeCourses(next);
   }
 
   function addPriority() {
@@ -485,8 +490,33 @@ export function Planner({
 
   async function dropCourse(code: string) {
     const next = chosen.filter((c) => c !== code);
-    await onSaveCourses(next, term || null);
-    if (next.length) await rebuild(next);
+    await changeCourses(next);
+  }
+
+  async function changeCourses(codes: string[]) {
+    if (busy) return { saved: false };
+    setBusy(true);
+    setSaveError(null);
+    try {
+      const result = await onSaveCourses(codes, term || null);
+      if (!result.saved) throw new Error("not saved");
+      setChosen(codes);
+      setKept(false);
+      setActive(1);
+      try {
+        setPlans(codes.length ? await onBuildPlans(codes, wants, term || null)
+          : emptyPlan("No classes chosen", "Add the classes you need"));
+      } catch {
+        setPlans(emptyPlan("Classes saved, schedule unavailable", "Your classes were saved. Try rebuilding your schedule again."));
+      }
+      return result;
+    } catch {
+      setPlans(emptyPlan("Could not update classes", "Please try updating your classes again"));
+      setSaveError("Could not update your classes. Please try again.");
+      return { saved: false };
+    } finally {
+      setBusy(false);
+    }
   }
   const plan = useMemo(
     () => plans.find((p) => p.id === active) ?? plans[0],
@@ -551,9 +581,10 @@ export function Planner({
         setDark={setDark}
         catalog={courses}
         student={student}
-        savedCourses={savedCourses}
-        savedWants={savedWants}
+        savedCourses={chosen}
+        savedWants={wants}
         onBuild={build}
+        serviceError={serviceError}
       />
     );
   if (page === "explore")
@@ -564,8 +595,8 @@ export function Planner({
         setDark={setDark}
         courses={courses}
         student={student}
-        savedCourses={savedCourses}
-        onSaveCourses={(codes) => onSaveCourses(codes, term || null)}
+        savedCourses={chosen}
+        onSaveCourses={changeCourses}
       />
     );
   if (page === "saved")
@@ -672,6 +703,7 @@ export function Planner({
               </span>
               <button
                 className="course-drop"
+                disabled={busy}
                 aria-label={`Remove ${c.label}`}
                 onClick={() => void dropCourse(c.code)}
               >
@@ -713,18 +745,7 @@ export function Planner({
               </button>
             ))}
           </div>
-          <Range
-            icon={<Clock3 />}
-            title="Workload balance"
-            sub="Prefer steady weeks"
-            width="61%"
-          />
-          <Range
-            icon={<Footprints />}
-            title="Walking tolerance"
-            sub="Up to 12 minutes"
-            width="45%"
-          />
+          <p className="analysis-note">Describe your preferred week in the priorities above, then rebuild.</p>
           <button
             className="rebuild"
             disabled={busy || !chosen.length}
@@ -854,6 +875,7 @@ export function Planner({
               </div>
             </div>
             {saveError && <p role="alert">{saveError}</p>}
+            {plan.warnings?.map((warning) => <p role="status" key={warning}>{warning}</p>)}
             <div className="metrics">
               <Metric
                 icon={<Star />}
@@ -963,7 +985,7 @@ export function Planner({
           <Building2 /> Aggie Schedule Builder
         </span>
         <span>
-          <BookOpen /> Course syllabi
+          <BookOpen /> Loaded section times
         </span>
         <button onClick={() => setScoring((v) => !v)}>
           <Info /> How scoring works
@@ -1225,6 +1247,7 @@ function Explorer({
   );
   const [added, setAdded] = useState<string[]>(savedCourses);
   const [saving, setSaving] = useState(false);
+  const [courseError, setCourseError] = useState<string | null>(null);
 
   const shown = useMemo(() => {
     const needle = q.trim().toLowerCase();
@@ -1244,14 +1267,19 @@ function Explorer({
       : (shown[0] ?? null);
 
   async function toggle(code: string) {
+    if (saving) return;
     const next = added.includes(code)
       ? added.filter((x) => x !== code)
       : [...added, code];
-    setAdded(next);
-    if (!student) return; // nothing to save to
+    if (!student) { setAdded(next); return; }
     setSaving(true);
+    setCourseError(null);
     try {
-      await onSaveCourses(next);
+      const result = await onSaveCourses(next);
+      if (!result.saved) throw new Error("not saved");
+      setAdded(next);
+    } catch {
+      setCourseError("Could not update your classes. Please try again.");
     } finally {
       setSaving(false);
     }
@@ -1420,6 +1448,7 @@ function Explorer({
                   Sign in to keep your plan between visits.
                 </small>
               ) : null}
+              {courseError && <p role="alert">{courseError}</p>}
             </aside>
           ) : null}
         </div>
@@ -1491,33 +1520,6 @@ function SavedSchedules({
     </main>
   );
 }
-function Range({
-  icon,
-  title,
-  sub,
-  width,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  sub: string;
-  width: string;
-}) {
-  return (
-    <div className="range">
-      <span>
-        {icon}
-        <i>
-          <b>{title}</b>
-          <small>{sub}</small>
-        </i>
-      </span>
-      <div>
-        <i style={{ width }} />
-        <b style={{ left: width }} />
-      </div>
-    </div>
-  );
-}
 function Metric({
   icon,
   label,
@@ -1547,6 +1549,7 @@ function Landing({
   savedCourses,
   savedWants,
   onBuild,
+  serviceError,
 }: {
   onStart: () => void;
   onSaved: () => void;
@@ -1557,6 +1560,7 @@ function Landing({
   savedCourses: string[];
   savedWants: string;
   onBuild: (courses: string[], wants: string) => Promise<void>;
+  serviceError?: string | null;
 }) {
   const showcase = useMemo(() => showcaseCourses(catalog), [catalog]);
   const showcaseCredits = showcaseCreditTotal(showcase);
@@ -1569,7 +1573,7 @@ function Landing({
     [pickQuery, setPickQuery] = useState(""),
     [picked, setPicked] = useState<string[]>([]);
   const add = () => {
-    const v = entry.trim().toUpperCase();
+    const v = normalizeCourseCodes([entry])[0];
     if (v && !courses.includes(v)) setCourses([...courses, v]);
     setEntry("");
   };
@@ -1622,8 +1626,8 @@ function Landing({
           <span>Building your best week</span>
           <h2>Comparing every possible schedule…</h2>
           <p>
-            Checking professors, grade distributions, exam weight, syllabi, and
-            walking time.
+            Comparing available sections, meeting times, professor ratings, and
+            your preferences.
           </p>
           <div className="analysis-progress">
             <i />
@@ -1741,9 +1745,9 @@ function Landing({
           <div className="schedule-card">
             <header>
               <span>
-                <Sparkles size={12} /> YOUR BEST FIT
+                <Sparkles size={12} /> SAMPLE WEEK
               </span>
-              <b>94% match</b>
+              <b>Illustration</b>
             </header>
             <div className="week-head">
               {days.map((d) => (
@@ -1766,24 +1770,24 @@ function Landing({
             <footer>
               <span>
                 <Star size={12} />
-                <b>4.6</b> professors
+                Compare professors
               </span>
               <span>
                 <Footprints size={12} />
-                <b>9 min</b> walk
+                Plan class gaps
               </span>
               <span>
                 <CalendarDays size={12} />
-                <b>Fri</b> free
+                Choose your days
               </span>
             </footer>
             <div className="scan-line" />
           </div>
           <div className="choice-chip chip-one">
-            <Check size={11} /> No 8 AMs
+            <Check size={11} /> Choose your hours
           </div>
           <div className="choice-chip chip-two">
-            <Check size={11} /> Friday free
+            <Check size={11} /> Set your priorities
           </div>
         </div>
         <div className="minimal-copy">
@@ -1793,6 +1797,7 @@ function Landing({
           </p>
         </div>
         <div className="prompt-box">
+          {serviceError && <p role="alert">{serviceError}</p>}
           <div className="course-input">
             <span className="course-icon">
               <SearchIcon size={18} duration={1.15} color="currentColor" />

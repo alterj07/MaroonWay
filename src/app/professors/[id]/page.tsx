@@ -86,7 +86,7 @@ export default async function ProfessorPage({ params }: { params: Promise<{ id: 
           />
         </Card>
         <Card>
-          <Stat label="GPA (0-5)" value={fixed(score.adj_gpa)} hint="from A&M grade data" />
+          <Stat label="Grade score (0-5)" value={fixed(score.adj_gpa)} hint="normalized from A&M GPA" />
         </Card>
       </section>
 
