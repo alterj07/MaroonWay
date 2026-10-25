@@ -568,28 +568,6 @@
   max-width: 72ch;
 }
 
-/* The footer explainer behind "How scoring works". */
-.scoring-note {
-  flex-basis: 100%;
-  margin-top: 12px;
-  padding: 13px 15px;
-  border-radius: 10px;
-  background: #ffffff0d;
-  border: 1px solid #ffffff14;
-}
-.scoring-note b {
-  display: block;
-  margin-bottom: 5px;
-  font-size: 0.8125rem;
-}
-.scoring-note p {
-  margin: 0;
-  max-width: 86ch;
-  font-size: 0.75rem;
-  line-height: 1.6;
-  opacity: 0.72;
-}
-
 .rebuild:disabled,
 .use:disabled {
   opacity: 0.6;
@@ -671,4 +649,68 @@
   line-height: 1.5;
   opacity: 0.6;
   max-width: 62ch;
+}
+
+/* ---- confirming a removal ---- */
+
+.confirm-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: #0c000366;
+  backdrop-filter: blur(3px);
+}
+.confirm {
+  width: min(100%, 380px);
+  padding: 22px 22px 18px;
+  border-radius: 14px;
+  background: linear-gradient(145deg, #fffaf5, #f3e3dc);
+  border: 1px solid #f3cabe;
+  box-shadow: 0 30px 70px #16000370;
+  color: #2c1715;
+}
+.confirm > b {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 1.0625rem;
+  letter-spacing: -0.01em;
+}
+.confirm > p {
+  margin: 0 0 18px;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  opacity: 0.72;
+}
+.confirm > div {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+}
+.confirm button {
+  padding: 9px 15px;
+  border-radius: 9px;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+/* Keeping it is the safe default, so it reads first and takes focus. */
+.confirm-cancel {
+  border: 1px solid #d9bdb2;
+  background: transparent;
+  color: #2c1715;
+}
+.confirm-cancel:hover {
+  background: #50000010;
+}
+.confirm-go {
+  border: 1px solid transparent;
+  background: #8c1f2b;
+  color: #fff;
+}
+.confirm-go:hover {
+  background: #a3262f;
 }

@@ -10,7 +10,6 @@ import {
   ArrowRight,
   BookOpen,
   Bot,
-  Building2,
   CalendarDays,
   Check,
   ChevronDown,
@@ -246,6 +245,120 @@ function CourseHover({ course }: { course: Course }) {
   );
 }
 
+/**
+ * The course picker, shared by the landing page and the builder's sidebar.
+ *
+ * It existed only on the landing page, so adding a course once inside the
+ * builder meant typing a code into a bare text field -- a different and worse
+ * way to do the same thing, in the same app, a few pixels apart.
+ */
+function CoursePicker({
+  open,
+  catalog,
+  already,
+  onClose,
+  onAdd,
+}: {
+  open: boolean;
+  catalog: ExploreCourse[];
+  /** Courses already chosen: shown as "Added", not selectable again. */
+  already: string[];
+  onClose: () => void;
+  onAdd: (codes: string[]) => void;
+}) {
+  const [query, setQuery] = useState("");
+  const [picked, setPicked] = useState<string[]>([]);
+
+  if (!open) return null;
+
+  const close = () => {
+    setPicked([]);
+    setQuery("");
+    onClose();
+  };
+
+  return (
+    <div className="picker-backdrop" onClick={close}>
+      <section className="course-picker" onClick={(e) => e.stopPropagation()}>
+        <header>
+          <div>
+            <span>ADD COURSES</span>
+            <h2>What are you taking?</h2>
+          </div>
+          <button onClick={close}>
+            <X size={18} />
+          </button>
+        </header>
+        <div className="picker-search">
+          <SearchIcon size={17} duration={1.15} color="currentColor" />
+          <input
+            autoFocus
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search course code or name…"
+          />
+        </div>
+        <div className="picker-results">
+          {catalog
+            .filter((c) =>
+              (c.code + " " + (c.title ?? ""))
+                .toLowerCase()
+                .includes(query.toLowerCase()),
+            )
+            .slice(0, 80)
+            .map((c) => (
+              <button
+                key={c.code}
+                className={
+                  picked.includes(c.code) || already.includes(c.code)
+                    ? "picked"
+                    : ""
+                }
+                disabled={already.includes(c.code)}
+                onClick={() =>
+                  setPicked((v) =>
+                    v.includes(c.code)
+                      ? v.filter((x) => x !== c.code)
+                      : [...v, c.code],
+                  )
+                }
+              >
+                <span>
+                  <b>{c.code}</b>
+                  <small>
+                    {c.title ?? "Untitled"} · {c.professor_count} prof
+                    {c.professor_count === 1 ? "" : "s"}
+                  </small>
+                </span>
+                <i>
+                  {already.includes(c.code) ? (
+                    "Added"
+                  ) : picked.includes(c.code) ? (
+                    <Check size={15} />
+                  ) : (
+                    <Plus size={15} />
+                  )}
+                </i>
+              </button>
+            ))}
+        </div>
+        <footer>
+          <span>{picked.length} selected</span>
+          <button
+            disabled={!picked.length}
+            onClick={() => {
+              onAdd(picked);
+              close();
+            }}
+          >
+            Add {picked.length || ""} course{picked.length === 1 ? "" : "s"}
+          </button>
+        </footer>
+      </section>
+    </div>
+  );
+}
+
 function Calendar({ plan }: { plan: Plan }) {
   return (
     <div className="cal-scroll">
@@ -393,12 +506,12 @@ export function Planner({
     // Each of these backs a control that previously did nothing.
     [term, setTerm] = useState(terms[0] ?? ""),
     [addingCourse, setAddingCourse] = useState(false),
-    [courseDraft, setCourseDraft] = useState(""),
+    // The course a student has asked to remove, pending confirmation.
+    [confirmDrop, setConfirmDrop] = useState<string | null>(null),
     [addingPriority, setAddingPriority] = useState(false),
     [priorityDraft, setPriorityDraft] = useState(""),
     [comparing, setComparing] = useState(false),
     [analysing, setAnalysing] = useState(false),
-    [scoring, setScoring] = useState(false),
     [busy, setBusy] = useState(false),
     [kept, setKept] = useState(false);
 
@@ -422,12 +535,10 @@ export function Planner({
     }
   }
 
-  async function addCourse() {
-    const code = courseDraft.trim().toUpperCase().replace(/\s+/g, "");
-    setCourseDraft("");
+  async function addCourses(codes: string[]) {
     setAddingCourse(false);
-    if (!code || chosen.includes(code)) return;
-    const next = [...chosen, code];
+    const next = [...new Set([...chosen, ...codes])];
+    if (next.length === chosen.length) return;
     await onSaveCourses(next, term || null);
     await rebuild(next);
   }
@@ -440,6 +551,7 @@ export function Planner({
   }
 
   async function dropCourse(code: string) {
+    setConfirmDrop(null);
     const next = chosen.filter((c) => c !== code);
     await onSaveCourses(next, term || null);
     if (next.length) await rebuild(next);
@@ -567,20 +679,44 @@ export function Planner({
               <Plus size={13} /> Add
             </button>
           </div>
-          {addingCourse ? (
-            <input
-              className="side-add"
-              autoFocus
-              value={courseDraft}
-              placeholder="Course code, e.g. ENGL203"
-              onChange={(e) => setCourseDraft(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") void addCourse();
-                if (e.key === "Escape") setAddingCourse(false);
-              }}
-              onBlur={() => void addCourse()}
-            />
+          {confirmDrop ? (
+            <div className="confirm-backdrop" onClick={() => setConfirmDrop(null)}>
+              <div
+                className="confirm"
+                role="alertdialog"
+                aria-modal="true"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <b>Remove {confirmDrop.replace(/^([A-Z]+)(\d.*)$/, "$1 $2")}?</b>
+                <p>
+                  It comes out of this schedule and out of your saved courses.
+                  You can add it again from the picker.
+                </p>
+                <div>
+                  <button
+                    className="confirm-cancel"
+                    autoFocus
+                    onClick={() => setConfirmDrop(null)}
+                  >
+                    Keep it
+                  </button>
+                  <button
+                    className="confirm-go"
+                    onClick={() => void dropCourse(confirmDrop)}
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            </div>
           ) : null}
+          <CoursePicker
+            open={addingCourse}
+            catalog={courses}
+            already={chosen}
+            onClose={() => setAddingCourse(false)}
+            onAdd={(codes) => void addCourses(codes)}
+          />
           {sidebar.map((c, i) => (
             <div className="course" key={c.code}>
               <i className={SHOWCASE_COLORS[i % SHOWCASE_COLORS.length]} />
@@ -591,7 +727,7 @@ export function Planner({
               <button
                 className="course-drop"
                 aria-label={`Remove ${c.label}`}
-                onClick={() => void dropCourse(c.code)}
+                onClick={() => setConfirmDrop(c.code)}
               >
                 <X size={13} />
               </button>
@@ -631,18 +767,6 @@ export function Planner({
               </button>
             ))}
           </div>
-          <Range
-            icon={<Clock3 />}
-            title="Workload balance"
-            sub="Prefer steady weeks"
-            width="61%"
-          />
-          <Range
-            icon={<Footprints />}
-            title="Walking tolerance"
-            sub="Up to 12 minutes"
-            width="45%"
-          />
           <button
             className="rebuild"
             disabled={busy || !chosen.length}
@@ -874,34 +998,6 @@ export function Planner({
           </div>
         </section>
       </div>
-      <footer className="sources">
-        <b>DATA SOURCES</b>
-        <span>
-          <Star /> Rate My Professors
-        </span>
-        <span>
-          <Building2 /> Aggie Schedule Builder
-        </span>
-        <span>
-          <BookOpen /> Course syllabi
-        </span>
-        <button onClick={() => setScoring((v) => !v)}>
-          <Info /> How scoring works
-        </button>
-        {scoring ? (
-          <div className="scoring-note">
-            <b>How a schedule is scored</b>
-            <p>
-              Professors are ranked by their RateMyProfessors rating pulled
-              toward the average by how few reviews they have, then by
-              difficulty, lowest first. Grade data from A&amp;M&apos;s own
-              reports sets the A rate. What you type is read into preferences,
-              and schedules are ranked by how well they match, never by one
-              number alone.
-            </p>
-          </div>
-        ) : null}
-      </footer>
     </main>
   );
 }
@@ -1517,9 +1613,7 @@ function Landing({
     [entry, setEntry] = useState(""),
     [pref, setPref] = useState(savedWants),
     [analyzing, setAnalyzing] = useState(false),
-    [picker, setPicker] = useState(false),
-    [pickQuery, setPickQuery] = useState(""),
-    [picked, setPicked] = useState<string[]>([]);
+    [picker, setPicker] = useState(false);
   const add = () => {
     const v = entry.trim().toUpperCase();
     if (v && !courses.includes(v)) setCourses([...courses, v]);
@@ -1534,11 +1628,6 @@ function Landing({
       setAnalyzing(false);
     }
     onStart();
-  };
-  const addPicked = () => {
-    setCourses([...new Set([...courses, ...picked])]);
-    setPicked([]);
-    setPicker(false);
   };
   return (
     <main className={`minimal-home ${dark ? "dark-mode" : "light-mode"}`}>
@@ -1582,83 +1671,13 @@ function Landing({
           </div>
         </div>
       )}
-      {picker && (
-        <div className="picker-backdrop" onClick={() => setPicker(false)}>
-          <section
-            className="course-picker"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <header>
-              <div>
-                <span>ADD COURSES</span>
-                <h2>What are you taking?</h2>
-              </div>
-              <button onClick={() => setPicker(false)}>
-                <X size={18} />
-              </button>
-            </header>
-            <div className="picker-search">
-              <SearchIcon size={17} duration={1.15} color="currentColor" />
-              <input
-                autoFocus
-                value={pickQuery}
-                onChange={(e) => setPickQuery(e.target.value)}
-                placeholder="Search course code or name…"
-              />
-            </div>
-            <div className="picker-results">
-              {catalog
-                .filter((c) =>
-                  (c.code + " " + (c.title ?? ""))
-                    .toLowerCase()
-                    .includes(pickQuery.toLowerCase()),
-                )
-                .slice(0, 80)
-                .map((c) => (
-                  <button
-                    key={c.code}
-                    className={
-                      picked.includes(c.code) || courses.includes(c.code)
-                        ? "picked"
-                        : ""
-                    }
-                    disabled={courses.includes(c.code)}
-                    onClick={() =>
-                      setPicked((v) =>
-                        v.includes(c.code)
-                          ? v.filter((x) => x !== c.code)
-                          : [...v, c.code],
-                      )
-                    }
-                  >
-                    <span>
-                      <b>{c.code}</b>
-                      <small>
-                        {c.title ?? "Untitled"} · {c.professor_count} prof
-                        {c.professor_count === 1 ? "" : "s"}
-                      </small>
-                    </span>
-                    <i>
-                      {courses.includes(c.code) ? (
-                        "Added"
-                      ) : picked.includes(c.code) ? (
-                        <Check size={15} />
-                      ) : (
-                        <Plus size={15} />
-                      )}
-                    </i>
-                  </button>
-                ))}
-            </div>
-            <footer>
-              <span>{picked.length} selected</span>
-              <button disabled={!picked.length} onClick={addPicked}>
-                Add {picked.length || ""} course{picked.length === 1 ? "" : "s"}
-              </button>
-            </footer>
-          </section>
-        </div>
-      )}
+      <CoursePicker
+        open={picker}
+        catalog={catalog}
+        already={courses}
+        onClose={() => setPicker(false)}
+        onAdd={(codes) => setCourses([...new Set([...courses, ...codes])])}
+      />
       <section className="minimal-stage">
         <div
           className="composer"
