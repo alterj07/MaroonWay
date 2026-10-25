@@ -197,6 +197,19 @@ class RatingRecord:
     attendance_mandatory: bool | None = None
     textbook_use: str | None = None
     is_for_credit: bool | None = None
+    #: RateMyProfessors' own id for the review, when the source provides it.
+    #: Makes upserts exact rather than heuristic.
+    rating_id: int | None = None
+    #: The three fields the pinned package's parser drops. They are present in
+    #: the richer payload the project's own scraper collected, and two of them
+    #: answer planning-doc requirements directly: the student's letter grade and
+    #: their individual would-take-again answer.
+    grade: str | None = None
+    would_take_again: bool | None = None
+    rating_tags: str | None = None
+    thumbs_up: int | None = None
+    thumbs_down: int | None = None
+    course_match_status: str | None = None
     raw: dict[str, Any] = field(default_factory=dict)
 
 
@@ -241,6 +254,15 @@ def normalize_rating(raw: Any, rmp_id: int) -> RatingRecord:
         ),
         textbook_use=str(textbook) if textbook not in (None, "") else None,
         is_for_credit=_as_bool(_pick(raw, "isForCredit", "is_for_credit")),
+        rating_id=_as_int(_pick(raw, "legacyId", "legacy_id", "ratingId")),
+        grade=(str(g).strip() or None if (g := _pick(raw, "grade")) else None),
+        would_take_again=_as_bool(_pick(raw, "wouldTakeAgain", "would_take_again")),
+        rating_tags=(str(t).strip() or None if (t := _pick(raw, "ratingTags")) else None),
+        thumbs_up=_as_int(_pick(raw, "thumbsUpTotal", "thumbs_up")),
+        thumbs_down=_as_int(_pick(raw, "thumbsDownTotal", "thumbs_down")),
+        course_match_status=(
+            str(s).strip() or None if (s := _pick(raw, "course_match_status")) else None
+        ),
         raw=_as_dict(raw),
     )
 

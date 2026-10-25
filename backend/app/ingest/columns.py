@@ -20,7 +20,10 @@ OVERRIDES: dict[str, str] = {}
 #: Candidate spellings per field, as normalised header text (see norm_header).
 FIELD_ALIASES: dict[str, tuple[str, ...]] = {
     "term": ("term", "semester", "term_code", "termcode", "year_semester", "yearterm"),
-    "dept": ("dept", "department", "subject", "subject_code", "prefix", "course_prefix"),
+    # "subject" outranks "department" deliberately: A&M's grade reports carry
+    # both, where subject is the course prefix ("ASCC") and department is the
+    # administrative unit ("TASP/TSI ADMINISTRATION").
+    "dept": ("subject", "dept", "subject_code", "prefix", "course_prefix", "department"),
     "number": ("number", "course_number", "course_no", "catalog_number", "catalog_nbr", "nbr"),
     "course_code": ("course", "course_code", "class", "class_code", "course_id"),
     "title": ("title", "course_title", "course_name", "class_title"),
@@ -41,7 +44,16 @@ FIELD_ALIASES: dict[str, tuple[str, ...]] = {
     "grade_d": ("d", "grade_d", "d_count", "num_d", "ds"),
     "grade_f": ("f", "grade_f", "f_count", "num_f", "fs"),
     "grade_q": ("q", "grade_q", "q_count", "q_drop", "q_drops", "w", "withdrawn"),
-    "campus": ("campus", "college", "location", "site"),
+    "grade_i": ("i", "grade_i", "incomplete"),
+    "grade_s": ("s", "grade_s", "satisfactory"),
+    "grade_u": ("u", "grade_u", "unsatisfactory"),
+    "grade_x": ("x", "grade_x"),
+    "af_total": ("af_total", "af", "a_f_total"),
+    "level": ("level", "course_level", "career"),
+    "source_file": ("file", "source_file", "report_file"),
+    # Not "college": in A&M's reports that is the academic college
+    # ("CENTER FOR ACAD ENHANCEMENT"), not a campus.
+    "campus": ("campus", "campus_basis", "location", "site"),
     "honors": ("honors", "honor", "is_honors"),
     # Scheduling fields. Whether these exist is the open question from planning:
     # if the profiler finds them, sections can be loaded for real; if not, the

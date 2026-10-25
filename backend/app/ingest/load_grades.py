@@ -102,9 +102,12 @@ class ParsedRow:
     term_year: int | None
     term_season: str | None
     section: str | None
+    level: str | None
+    source_file: str | None
     instructor: str
     gpa: float | None
     enrolled: int | None
+    af_total: int | None
     grades: dict[str, int | None]
     source_row: int
 
@@ -136,13 +139,22 @@ def parse_row(row: dict[str, str], cmap: ColumnMap, index: int) -> tuple[ParsedR
         "grade_d": _int(cmap.get(row, "grade_d")),
         "grade_f": _int(cmap.get(row, "grade_f")),
         "grade_q": _int(cmap.get(row, "grade_q")),
+        "grade_i": _int(cmap.get(row, "grade_i")),
+        "grade_s": _int(cmap.get(row, "grade_s")),
+        "grade_u": _int(cmap.get(row, "grade_u")),
+        "grade_x": _int(cmap.get(row, "grade_x")),
     }
     if gpa is None and not any(v is not None for v in grades.values()):
         return None, "no_values"
 
+    af_total = _int(cmap.get(row, "af_total"))
+
     enrolled = _int(cmap.get(row, "enrolled"))
     if enrolled is None:
-        counted = [v for k, v in grades.items() if k != "grade_q" and v is not None]
+        enrolled = af_total
+    if enrolled is None:
+        graded = ("grade_a", "grade_b", "grade_c", "grade_d", "grade_f")
+        counted = [grades[k] for k in graded if grades.get(k) is not None]
         enrolled = sum(counted) if counted else None
 
     return (
@@ -156,9 +168,12 @@ def parse_row(row: dict[str, str], cmap: ColumnMap, index: int) -> tuple[ParsedR
             term_year=term.year if term else None,
             term_season=term.season if term else None,
             section=cmap.get(row, "section"),
+            level=cmap.get(row, "level"),
+            source_file=cmap.get(row, "source_file"),
             instructor=instructor.strip(),
             gpa=gpa,
             enrolled=enrolled,
+            af_total=af_total,
             grades=grades,
             source_row=index,
         ),
@@ -172,7 +187,7 @@ class Resolver:
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
         self._instructors: dict[str, int] = {}
-        self._courses: dict[tuple[str, str, str | None, bool], int] = {}
+        self._courses: dict[tuple[str, str, bool], int] = {}
 
     async def instructor_id(self, name: str) -> int:
         key = canonical_key(name)
@@ -195,15 +210,13 @@ class Resolver:
         self._instructors[key] = instructor_id
         return instructor_id
 
-    async def course_id(
-        self, dept: str, number: str, title: str | None, campus: str | None, honors: bool
-    ) -> int:
-        key = (dept, number, campus, honors)
+    async def course_id(self, dept: str, number: str, title: str | None, honors: bool) -> int:
+        key = (dept, number, honors)
         if key in self._courses:
             return self._courses[key]
         stmt = (
             pg_insert(courses)
-            .values(dept=dept, number=number, title=title, campus=campus, honors=honors)
+            .values(dept=dept, number=number, title=title, honors=honors)
             .on_conflict_do_update(
                 constraint="courses_identity",
                 set_={"title": func.coalesce(courses.c.title, title)},
@@ -223,6 +236,14 @@ _grade_insert = pg_insert(course_grades)
 _GRADE_UPDATABLE = (
     "gpa",
     "enrolled",
+    "af_total",
+    "campus",
+    "level",
+    "source_file",
+    "grade_i",
+    "grade_s",
+    "grade_u",
+    "grade_x",
     "grade_a",
     "grade_b",
     "grade_c",
@@ -285,7 +306,7 @@ async def load(
 
     if dry_run:
         stats.instructors_seen = len({canonical_key(r.instructor) for r in parsed})
-        stats.courses_seen = len({(r.dept, r.number, r.campus, r.honors) for r in parsed})
+        stats.courses_seen = len({(r.dept, r.number, r.honors) for r in parsed})
         stats.rows_loaded = 0
         for record in parsed[:3]:
             log.info("sample %s", record)
@@ -300,14 +321,18 @@ async def load(
                 {
                     "instructor_id": await resolver.instructor_id(record.instructor),
                     "course_id": await resolver.course_id(
-                        record.dept, record.number, record.title, record.campus, record.honors
+                        record.dept, record.number, record.title, record.honors
                     ),
                     "term": record.term,
                     "term_year": record.term_year,
                     "term_season": record.term_season,
                     "section": record.section,
+                    "campus": record.campus,
+                    "level": record.level,
+                    "source_file": record.source_file,
                     "gpa": record.gpa,
                     "enrolled": record.enrolled,
+                    "af_total": record.af_total,
                     "source_row": record.source_row,
                     **record.grades,
                 }
