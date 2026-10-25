@@ -12,3 +12,4 @@ html,body,button,input,textarea,select{font-family:var(--font-ui)!important}body
 
 @media(prefers-color-scheme:dark){:root{--bg:var(--page-dark);--text:var(--dark-text);--muted:var(--dark-muted);--line:var(--dark-line);--m:#e9968b}body{background:var(--page-dark);color:var(--dark-text)}.bg-background{background-color:#211d1f}.bg-surface{background-color:var(--dark-panel)}.border-line{border-color:var(--dark-line)}}
 @media(max-width:720px){.minimal-brand,.brand{min-width:0}.result-title{margin-bottom:14px}}
+.explorer-wrap{padding-top:30px}.explorer-wrap .explore-search{margin-top:0}.saved-intro{min-height:48px}.saved-intro h1{margin:0}.saved-grid>article{cursor:pointer;transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}.saved-grid>article:hover{transform:translateY(-3px);border-color:#b86a62!important;box-shadow:0 16px 35px #0003}.saved-grid>article:focus-visible{outline:2px solid var(--dark-accent);outline-offset:3px}
