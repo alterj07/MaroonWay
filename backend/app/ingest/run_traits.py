@@ -199,7 +199,7 @@ async def run(
     decider: Decider = (
         HeuristicDecider()
         if stub
-        else build_decider(settings.typesafe_api_key, settings.jev_model, base_url=settings.jev_base_url)
+        else build_decider(settings)
     )
     log.info("deciding with %s", decider.model)
 

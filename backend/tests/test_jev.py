@@ -19,6 +19,7 @@ from app.services.jev import (
     Question,
     build_decider,
     choice,
+    noul,
     score,
 )
 from app.services.preferences import (
@@ -282,9 +283,169 @@ async def test_the_fallback_marks_itself_low_confidence():
     assert decisions.low_confidence, "a keyword guess must not look calibrated"
 
 
-def test_build_decider_falls_back_without_a_key():
-    assert build_decider(None).model == "heuristic"
-    assert build_decider("").model == "heuristic"
+def settings_with(**overrides):
+    from app.config import Settings
+
+    base = {
+        "database_url": "postgresql+asyncpg://unused/unused",
+        "typesafe_api_key": None,
+        "gemini_api_key": None,
+    }
+    return Settings(**{**base, **overrides})
+
+
+def test_build_decider_prefers_jev(monkeypatch):
+    built: dict[str, object] = {}
+
+    class FakeJev:
+        model = "jev-latest"
+
+        def __init__(self, key, model, *, base_url=None):
+            built["key"] = key
+
+    monkeypatch.setattr("app.services.jev.JevDecider", FakeJev)
+    decider = build_decider(settings_with(typesafe_api_key="sk-x", gemini_api_key="g"))
+    assert isinstance(decider, FakeJev)
+    assert built["key"] == "sk-x", "Jev wins when both keys are present"
+
+
+def test_build_decider_uses_gemini_when_jev_is_absent(monkeypatch):
+    class FakeGemini:
+        model = "gemini:flash"
+
+        def __init__(self, key, model, *, rpm=10.0):
+            pass
+
+    monkeypatch.setattr("app.services.jev.GeminiDecider", FakeGemini)
+    assert isinstance(build_decider(settings_with(gemini_api_key="g")), FakeGemini)
+
+
+def test_build_decider_falls_back_with_no_keys():
+    assert build_decider(settings_with()).model == "heuristic"
+
+
+# --- the Gemini decider's schema and parsing ----------------------------------
+
+
+def gemini_decider(response):
+    """A GeminiDecider wired to a fake client, so no network and no key."""
+    from app.services.jev import GeminiDecider
+
+    decider = GeminiDecider.__new__(GeminiDecider)
+    decider.model = "gemini:test"
+    decider._model_id = "test"
+
+    class Bucket:
+        async def acquire(self):
+            return 0.0
+
+    class Models:
+        def __init__(self):
+            self.config = None
+
+        async def generate_content(self, *, model, contents, config):
+            self.config = config
+            self.contents = contents
+            return response
+
+    client = type("Client", (), {})()
+    client.aio = type("Aio", (), {})()
+    client.aio.models = Models()
+    decider._client = client
+    decider._bucket = Bucket()
+    return decider
+
+
+def test_the_gemini_schema_pins_every_answer():
+    from app.services.jev import GeminiDecider
+
+    schema = GeminiDecider._schema(
+        {
+            "a": noul("yes or no?"),
+            "b": choice("which?", {"x": "the x", "y": "the y"}),
+            "c": score("how much?", ("low", "mid", "high")),
+        }
+    )
+
+    assert schema["required"] == ["a", "b", "c"]
+    assert schema["properties"]["b"]["properties"]["choice"]["enum"] == ["x", "y"]
+    assert "0 to 2" in schema["properties"]["c"]["properties"]["level"]["description"]
+
+
+async def test_gemini_answers_are_mapped_to_decisions():
+    class Response:
+        parsed = {
+            "a": {"noul": 0.8},
+            "b": {"choice": "y", "confidence": 0.6},
+            "c": {"level": 2, "confidence": 0.7},
+        }
+        text = "{}"
+
+    decider = gemini_decider(Response())
+    decisions = await decider.decide(
+        "some state",
+        {
+            "a": noul("yes or no?"),
+            "b": choice("which?", {"x": "the x", "y": "the y"}),
+            "c": score("how much?", ("low", "mid", "high")),
+        },
+    )
+
+    assert decisions.model == "gemini:test"
+    assert decisions["a"].unit() == pytest.approx(0.8)
+    assert decisions["b"].value == "y"
+    assert decisions["c"].unit() == pytest.approx(1.0), "level 2 of 3 is the top"
+
+
+async def test_gemini_rejects_a_choice_outside_the_schema():
+    """Belt and braces: response_schema should prevent it, but a value that is
+    not an option must never become an answer."""
+
+    class Response:
+        parsed = {"b": {"choice": "something_else"}}
+        text = "{}"
+
+    decisions = await gemini_decider(Response()).decide(
+        "state", {"b": choice("which?", {"x": "the x", "y": "the y"})}
+    )
+    assert decisions.get("b") is None
+
+
+async def test_gemini_falls_back_to_parsing_the_text():
+    class Response:
+        parsed = None
+        text = '{"a": {"noul": 0.25}}'
+
+    decisions = await gemini_decider(Response()).decide("state", {"a": noul("yes?")})
+    assert decisions["a"].unit() == pytest.approx(0.25)
+
+
+async def test_gemini_clamps_an_out_of_range_answer():
+    class Response:
+        parsed = {"a": {"noul": 7.5}, "c": {"level": 99}}
+        text = "{}"
+
+    decisions = await gemini_decider(Response()).decide(
+        "state", {"a": noul("yes?"), "c": score("how much?", ("low", "mid", "high"))}
+    )
+    assert decisions["a"].unit() == 1.0
+    assert decisions["c"].value == 2.0
+
+
+async def test_the_gemini_prompt_lists_the_allowed_values():
+    class Response:
+        parsed = {}
+        text = "{}"
+
+    decider = gemini_decider(Response())
+    await decider.decide(
+        {"reviews": ["tough grader"]},
+        {"c": score("how hard?", ("easy", "fair", "brutal"))},
+    )
+    prompt = decider._client.aio.models.contents
+    assert "0 = easy" in prompt and "2 = brutal" in prompt
+    assert "tough grader" in prompt
+
 
 
 async def test_an_unstated_choice_defaults_to_the_least_constraining_option():

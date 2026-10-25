@@ -71,9 +71,7 @@ def _number(value: Any) -> float | None:
 
 
 def decider_for(settings: Settings):
-    return build_decider(
-        settings.typesafe_api_key, settings.jev_model, base_url=settings.jev_base_url
-    )
+    return build_decider(settings)
 
 
 def preferences_payload(preferences: Preferences) -> dict[str, Any]:

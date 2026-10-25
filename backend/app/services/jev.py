@@ -1,4 +1,11 @@
-"""Jev: typed decisions, not prose.
+"""The decision layer: typed answers, not prose.
+
+Jev is the reference implementation and the reason this layer exists, so it
+leads. Two fallbacks live here too, behind the same ``Decider`` protocol --
+Gemini with a response schema (free on the tier this project already uses) and
+a keyword heuristic (free, crude, no key at all). Callers see ``Question`` and
+``Decision`` and never learn which answered.
+
 
 Jev is TypeSafe AI's "System One" decision model (released 15 Sep 2026). It is
 *non-generative*: you send it state plus named, schema-constrained questions and
@@ -31,11 +38,15 @@ The SDK is kept at this boundary: the rest of the app sees ``Question`` and
 
 from __future__ import annotations
 
+import json
 import logging
 import re
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
-from typing import Any, Protocol
+from typing import TYPE_CHECKING, Any, Protocol
+
+if TYPE_CHECKING:
+    from app.config import Settings
 
 log = logging.getLogger("maroonway.jev")
 
@@ -314,18 +325,171 @@ class HeuristicDecider:
         return DecisionSet(answers=answers, model=self.model)
 
 
-def build_decider(
-    api_key: str | None,
-    model: str = "jev-latest",
-    *,
-    base_url: str | None = None,
-) -> Decider:
-    """Jev when a key is configured, the keyword fallback otherwise."""
-    if not api_key:
-        log.warning(
-            "TYPESAFE_API_KEY is unset -- falling back to keyword heuristics. "
-            "Preference and trait decisions will be crude and are reported as "
-            "model=heuristic."
+class GeminiDecider:
+    """Gemini, constrained to the same typed answers.
+
+    Not a decision model: it is generative, so it has to be *asked* for a shape
+    and the shape has to be enforced. ``response_schema`` does that -- an enum
+    per choice question, a bounded number per noul, a level index per score --
+    which gets back the one property that makes Jev usable here. What it does
+    not get back is a calibrated confidence: Gemini's self-reported number is
+    not a probability, so it is recorded but never thresholded on, and the
+    engine name says which model answered.
+
+    Free on the tier this project already uses for summaries, which is the
+    reason it exists.
+    """
+
+    def __init__(
+        self,
+        api_key: str,
+        model: str = "gemini-flash-lite-latest",
+        *,
+        rpm: float = 10.0,
+        sleep: Any = None,
+    ) -> None:
+        from google import genai
+
+        from app.services.throttle import TokenBucket
+
+        self._client = genai.Client(api_key=api_key)
+        self.model = f"gemini:{model}"
+        self._model_id = model
+        self._bucket = TokenBucket(rpm) if sleep is None else TokenBucket(rpm, sleep=sleep)
+
+    @staticmethod
+    def _schema(questions: Mapping[str, Question]) -> dict[str, Any]:
+        """One JSON object, one property per question, values pinned."""
+        properties: dict[str, Any] = {}
+        for name, question in questions.items():
+            if question.kind == NOUL:
+                properties[name] = {
+                    "type": "object",
+                    "properties": {
+                        "noul": {
+                            "type": "number",
+                            "description": "Probability of yes, 0 to 1",
+                        }
+                    },
+                    "required": ["noul"],
+                }
+            elif question.kind == CHOICE:
+                properties[name] = {
+                    "type": "object",
+                    "properties": {
+                        "choice": {"type": "string", "enum": list(question.criteria or {})},
+                        "confidence": {"type": "number"},
+                    },
+                    "required": ["choice"],
+                }
+            else:
+                levels = len(question.criteria or [])
+                properties[name] = {
+                    "type": "object",
+                    "properties": {
+                        "level": {
+                            "type": "integer",
+                            "description": f"0 to {max(levels - 1, 0)}, where 0 is the first level",
+                        },
+                        "confidence": {"type": "number"},
+                    },
+                    "required": ["level"],
+                }
+        return {"type": "object", "properties": properties, "required": list(properties)}
+
+    @staticmethod
+    def _prompt(state: Any, questions: Mapping[str, Question]) -> str:
+        lines = [
+            "Answer each question about the state below. Use only the allowed "
+            "values. Report what the state actually says; where it says nothing "
+            "about a question, answer neutrally rather than guessing.",
+            "",
+            "Questions:",
+        ]
+        for name, question in questions.items():
+            lines.append(f"- {name} ({question.kind}): {question.instructions}")
+            if question.kind == CHOICE and question.criteria:
+                for option, description in question.criteria.items():
+                    lines.append(f"    {option}: {description}")
+            elif question.kind == SCORE and question.criteria:
+                for index, level in enumerate(question.criteria):
+                    lines.append(f"    {index} = {level}")
+        lines += ["", "State:", state if isinstance(state, str) else json.dumps(state, default=str)]
+        return "\n".join(lines)
+
+    async def decide(self, state: Any, questions: Mapping[str, Question]) -> DecisionSet:
+        await self._bucket.acquire()
+        response = await self._client.aio.models.generate_content(
+            model=self._model_id,
+            contents=self._prompt(state, questions),
+            config={
+                "response_mime_type": "application/json",
+                "response_schema": self._schema(questions),
+                "temperature": 0.0,
+            },
         )
-        return HeuristicDecider()
-    return JevDecider(api_key, model, base_url=base_url)
+        raw = getattr(response, "parsed", None)
+        if not isinstance(raw, dict):
+            raw = json.loads(getattr(response, "text", None) or "{}")
+
+        answers: dict[str, Decision] = {}
+        for name, question in questions.items():
+            given = raw.get(name)
+            if not isinstance(given, dict):
+                continue
+            # Recorded, never thresholded on: a generative model's self-reported
+            # confidence is not a calibrated probability.
+            confidence = given.get("confidence")
+            if question.kind == NOUL:
+                answers[name] = Decision(
+                    name, NOUL, max(0.0, min(float(given.get("noul", 0.5)), 1.0))
+                )
+            elif question.kind == CHOICE:
+                picked = given.get("choice")
+                if picked in (question.criteria or {}):
+                    answers[name] = Decision(name, CHOICE, picked, confidence=confidence)
+            else:
+                levels = len(question.criteria or [])
+                level = int(given.get("level", 0))
+                answers[name] = Decision(
+                    name,
+                    SCORE,
+                    float(max(0, min(level, max(levels - 1, 0)))),
+                    confidence=confidence,
+                    levels=levels,
+                )
+        usage = getattr(response, "usage_metadata", None)
+        return DecisionSet(
+            answers=answers,
+            model=self.model,
+            input_tokens=getattr(usage, "prompt_token_count", None),
+        )
+
+
+def build_decider(settings: "Settings") -> Decider:
+    """The best engine the configuration allows.
+
+    Jev first, because it is the only one here that is actually a decision
+    model. Gemini next, because it is free on the tier this project already
+    uses and ``response_schema`` keeps answers on-schema. The keyword heuristic
+    last, so the product still works with no keys at all.
+    """
+    if settings.typesafe_api_key:
+        return JevDecider(
+            settings.typesafe_api_key, settings.jev_model, base_url=settings.jev_base_url
+        )
+    if settings.gemini_api_key:
+        log.info(
+            "TYPESAFE_API_KEY is unset; deciding with Gemini (%s). Free, but "
+            "slower than Jev and without a calibrated confidence.",
+            settings.gemini_model,
+        )
+        return GeminiDecider(
+            settings.gemini_api_key, settings.gemini_model, rpm=settings.summary_rpm
+        )
+    log.warning(
+        "no TYPESAFE_API_KEY or GEMINI_API_KEY -- falling back to keyword "
+        "heuristics. Decisions will be crude and are reported as "
+        "model=heuristic so nothing presents them as calibrated."
+    )
+    return HeuristicDecider()
