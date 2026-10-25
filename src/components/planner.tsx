@@ -2,7 +2,7 @@
 // The planner UI. Data comes from the backend via src/app/page.tsx, which
 // fetches real schedules and maps them into Plan/Course.
 import { useMemo, useState } from "react";
-import { SearchIcon, SquarePlusIcon } from "@animateicons/react/lucide";
+import { PlusIcon, SearchIcon } from "@animateicons/react/lucide";
 import {
   ArrowRight,
   BookOpen,
@@ -1351,7 +1351,7 @@ function Landing({
               onClick={() => setPicker(true)}
               aria-label="Browse courses"
             >
-              <SquarePlusIcon size={20} duration={1} color="currentColor" />
+              <PlusIcon size={20} duration={1} color="currentColor" />
             </button>
           </div>
           <div className="preference-input">
