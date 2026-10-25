@@ -7,7 +7,7 @@ import {
   getStudentPreferences,
   getTerms,
 } from '@/lib/api';
-import { emptyPlan, plansFor } from '@/lib/plans';
+import { emptyPlan, leadCourses, plansFor } from '@/lib/plans';
 import { currentStudent, studentHeaders } from '@/lib/session';
 
 /**
@@ -57,11 +57,8 @@ export default async function Home() {
   // that actually have sections this term, so the first paint is not empty.
   let chosen = saved?.courses ?? [];
   if (!chosen.length && term) {
-    const options = await getCourseOptions(term, 40).catch(() => []);
-    chosen = options
-      .filter((option) => option.with_times > 0)
-      .slice(0, 4)
-      .map((option) => option.code);
+    const options = await getCourseOptions(term, 120).catch(() => []);
+    chosen = leadCourses(options, 4);
   }
 
   let plans: Plan[];

@@ -14,6 +14,7 @@ import {
   type Schedule,
   type ScheduleSection,
 } from '@/lib/api';
+import { leadCourses } from '@/lib/plans';
 import { currentStudent, studentHeaders } from '@/lib/session';
 
 export const metadata: Metadata = { title: 'Schedule' };
@@ -202,21 +203,7 @@ export default async function SchedulePage({
   // been loaded, so a literal list breaks as soon as the data changes. Lead
   // with courses that actually have sections this term.
   const fallback = term
-    ? (await getCourseOptions(term, 120).catch(() => []))
-        .filter((option) => option.with_times > 0)
-        // Research, internship and directed-studies numbers have the most
-        // sections of anything in the term -- MSEN691 alone has over a
-        // hundred -- so ordering by section count alone offers a student a
-        // timetable of graduate research. Undergraduate numbers only.
-        .filter((option) => {
-          const number = Number.parseInt(
-            option.code.replace(/^[A-Z]+/, ''),
-            10,
-          );
-          return Number.isFinite(number) && number < 500;
-        })
-        .slice(0, 3)
-        .map((option) => option.code)
+    ? leadCourses(await getCourseOptions(term, 120).catch(() => []), 3)
     : [];
   const rawCourses = params.courses ?? saved?.courses?.join(', ') ?? fallback.join(', ');
   const courses = rawCourses

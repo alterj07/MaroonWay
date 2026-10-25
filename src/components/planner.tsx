@@ -182,11 +182,29 @@ export function Planner({
   onBuildPlans: (codes: string[], wants: string) => Promise<Plan[]>;
 }) {
   const [plans, setPlans] = useState<Plan[]>(initialPlans);
+  // What the student actually asked for, so the builder's sidebar lists their
+  // courses rather than the ones in the landing illustration.
+  const [chosen, setChosen] = useState<string[]>(savedCourses);
   const build = async (codes: string[], wants: string) => {
+    setChosen(codes);
     setPlans(await onBuildPlans(codes, wants));
   };
-  const showcase = useMemo(() => showcaseCourses(courses), [courses]);
-  const showcaseCredits = showcaseCreditTotal(showcase);
+  // The sidebar shows the student's own courses; the showcase is only a
+  // stand-in for a first visit when nothing has been chosen yet.
+  const sidebar = useMemo(() => {
+    if (!chosen.length) return showcaseCourses(courses);
+    const byCode = new Map(courses.map((c) => [c.code, c]));
+    return chosen.map((code) => {
+      const found = byCode.get(code);
+      return {
+        code,
+        label: code.replace(/^([A-Z]+)(\d.*)$/, "$1 $2"),
+        title: found?.title ?? null,
+        credits: Number.parseInt(found?.credits ?? "", 10),
+      };
+    });
+  }, [chosen, courses]);
+  const sidebarCredits = showcaseCreditTotal(sidebar);
   const [page, setPage] = useState<"home" | "planner" | "explore" | "saved">(
       "home",
     ),
@@ -291,12 +309,12 @@ export function Planner({
             <ChevronDown size={16} />
           </button>
           <div className="label">
-            <b>COURSES · {showcaseCredits} CREDITS</b>
+            <b>COURSES · {sidebarCredits} CREDITS</b>
             <button>
               <Plus size={13} /> Add
             </button>
           </div>
-          {showcase.map((c, i) => (
+          {sidebar.map((c, i) => (
             <div className="course" key={c.code}>
               <i className={SHOWCASE_COLORS[i % SHOWCASE_COLORS.length]} />
               <span>

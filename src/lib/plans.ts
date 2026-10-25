@@ -1,5 +1,10 @@
 import type { Plan, Course } from '@/components/planner';
-import { buildSchedules, type Schedule, type ScheduleSection } from '@/lib/api';
+import {
+  buildSchedules,
+  type CourseOption,
+  type Schedule,
+  type ScheduleSection,
+} from '@/lib/api';
 
 /**
  * Turning built schedules into the shape the planner UI speaks.
@@ -95,4 +100,36 @@ export async function plansFor(
     return { plans: emptyPlan('No schedule fits', detail), detail };
   }
   return { plans: result.schedules.map(toPlan), detail: null };
+}
+
+/**
+ * Courses whose title says they are arranged individually with a professor
+ * rather than taught on a timetable.
+ *
+ * These dominate a term by section count -- one per student, so MEEN691 runs
+ * 121 sections -- and a student picking classes never means them. The number
+ * alone does not identify them: 691 is graduate research but 491 is
+ * undergraduate research, and both are wrong to propose.
+ */
+const ARRANGED_TITLE =
+  /\b(RESEARCH|THESIS|DISSERTATION|INTERNSHIP|PRACTICUM|DIRECTED STUD|INDEPENDENT STUD|SPECIAL TOPIC|SPECIAL PROBLEM|FIELD (WORK|EXPERIENCE)|STUDY ABROAD|SEMINAR)\b/;
+
+/**
+ * Courses to lead with when a student has not chosen any yet.
+ *
+ * Ordered by how much choice a course offers, but only real taught classes:
+ * undergraduate, with meeting times, and not arranged individually.
+ */
+export function leadCourses(options: CourseOption[], count: number): string[] {
+  return options
+    .filter((option) => option.with_times > 0 && isTaughtClass(option))
+    .slice(0, count)
+    .map((option) => option.code);
+}
+
+/** Whether this is a class a student sits in, rather than arranged work. */
+export function isTaughtClass(option: CourseOption): boolean {
+  const number = Number.parseInt(option.code.replace(/^[A-Z]+/, ''), 10);
+  if (!Number.isFinite(number) || number >= 500) return false;
+  return !ARRANGED_TITLE.test((option.title ?? '').toUpperCase());
 }
