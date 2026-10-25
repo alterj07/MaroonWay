@@ -109,3 +109,21 @@ describe('planner semester selection', () => {
     expect((screen.getByRole('combobox', { name: 'Semester' }) as HTMLSelectElement).disabled).toBe(false);
   });
 });
+
+
+it('links explorer professor names to their review pages without inventing links for unknown identities', async () => {
+  setup('FALL 2026', [{
+    course_id: 2, code: 'CSCE181', title: 'Introduction to Computing', credits: '1', honors: false,
+    prereq_text: null, level: null, dept_code: null, campus: null,
+    professor_count: 2, avg_rating: 4, avg_pct_a: null,
+    professors: [1, null].map((id) => ({
+      instructor_id: id, name: id === null ? 'Unknown professor' : 'TYAGI A', department: 'CSCE',
+      adj_rating: 4, adj_difficulty: 3, adj_gpa: null, pct_a: null,
+      class_reviews: 2, professor_reviews: 10, sections: 1,
+    })),
+  }]);
+  await openBuilder();
+  fireEvent.click(screen.getByRole('button', { name: 'Course explorer' }));
+  expect(screen.getByRole('link', { name: 'TYAGI A' }).getAttribute('href')).toBe('/professors/1');
+  expect(screen.queryByRole('link', { name: 'Unknown professor' })).toBeNull();
+});

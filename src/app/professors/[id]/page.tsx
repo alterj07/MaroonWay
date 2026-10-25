@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { connection } from 'next/server';
 
+import { ProfessorReviews } from '@/components/professor-reviews';
 import { Card } from '@/components/card';
 import { Text } from '@/components/text';
 import { getProfessor } from '@/lib/api';
@@ -124,23 +125,7 @@ export default async function ProfessorPage({ params }: { params: Promise<{ id: 
         </div>
       </section>
 
-      <section className="flex flex-col gap-4">
-        <Text variant="heading">Recent comments</Text>
-        {professor.recent_comments.slice(0, 5).map((comment, index) => (
-          <Card key={index}>
-            <Text>{comment.comment}</Text>
-            <Text variant="caption" muted>
-              {[
-                comment.class_code,
-                comment.rated_at?.slice(0, 10),
-                comment.difficulty === null ? null : `difficulty ${fixed(comment.difficulty, 1)}`,
-              ]
-                .filter(Boolean)
-                .join(' · ')}
-            </Text>
-          </Card>
-        ))}
-      </section>
+      <ProfessorReviews comments={professor.recent_comments} rmpId={professor.rmp_id} />
     </main>
   );
 }

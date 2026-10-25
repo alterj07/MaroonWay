@@ -1402,7 +1402,9 @@ function Explorer({
                           key={p.instructor_id ?? p.name}
                           className={band(p.adj_rating)}
                         >
-                          <td>{p.name}</td>
+                          <td>{p.instructor_id != null ? (
+                            <a href={`/professors/${p.instructor_id}`} className="underline underline-offset-2">{p.name ?? "View professor"}</a>
+                          ) : p.name}</td>
                           <td className="prof-dept">{p.department ?? "—"}</td>
                           <td>{score(p.adj_rating)}</td>
                           <td>{score(p.adj_difficulty)}</td>
