@@ -602,8 +602,9 @@ export function Planner({
         setDark={setDark}
         courses={courses}
         student={student}
-        savedCourses={savedCourses}
-        onSaveCourses={onSaveCourses}
+        savedCourses={chosen}
+        onAddToPlan={addCourses}
+        onRemoveFromPlan={dropCourse}
       />
     );
   if (page === "saved")
@@ -1267,7 +1268,8 @@ function Explorer({
   courses,
   student,
   savedCourses,
-  onSaveCourses,
+  onAddToPlan,
+  onRemoveFromPlan,
 }: {
   onNav: (p: "home" | "planner" | "explore" | "saved") => void;
   dark: boolean;
@@ -1275,16 +1277,17 @@ function Explorer({
   courses: ExploreCourse[];
   student: Student | null;
   savedCourses: string[];
-  onSaveCourses: (
-    codes: string[],
-    term?: string | null,
-  ) => Promise<{ saved: boolean }>;
+  /** Adds to the schedule being built, not merely to a saved list. */
+  onAddToPlan: (codes: string[]) => Promise<void>;
+  onRemoveFromPlan: (code: string) => Promise<void>;
 }) {
   const [q, setQ] = useState("");
   const [selected, setSelected] = useState<ExploreCourse | null>(
     courses[0] ?? null,
   );
-  const [added, setAdded] = useState<string[]>(savedCourses);
+  // The builder's own list, not a copy taken when this page opened: adding
+  // here has to reach the schedule, and a copy would drift from it.
+  const added = savedCourses;
   const [saving, setSaving] = useState(false);
 
   const shown = useMemo(() => {
@@ -1305,14 +1308,13 @@ function Explorer({
       : (shown[0] ?? null);
 
   async function toggle(code: string) {
-    const next = added.includes(code)
-      ? added.filter((x) => x !== code)
-      : [...added, code];
-    setAdded(next);
-    if (!student) return; // nothing to save to
     setSaving(true);
     try {
-      await onSaveCourses(next);
+      // Goes through the builder, so the course lands in the schedule as well
+      // as the saved list. This wrote the saved list only, which is why the
+      // button said "Saved to your plan" while the plan did not change.
+      if (added.includes(code)) await onRemoveFromPlan(code);
+      else await onAddToPlan([code]);
     } finally {
       setSaving(false);
     }
@@ -1400,7 +1402,7 @@ function Explorer({
               <div className="insight-grid">
                 <Metric
                   icon={<Star />}
-                  label="AVG. PROFESSOR"
+                  label="AVG. RATING"
                   value={`${score(active.avg_rating)} / 5`}
                 />
                 <Metric

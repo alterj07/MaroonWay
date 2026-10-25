@@ -1045,10 +1045,30 @@
   opacity: 0.85;
 }
 
-/* "AVG. PROFESSOR" wrapped onto two lines in its cell. */
+/*
+ * "AVG. PROFESSOR" wrapped onto two lines; forbidding the wrap then pushed it
+ * into the next column instead. The cells need room before they need a rule,
+ * so the grid gets gaps and the labels a size that fits three across.
+ */
+.insight-grid {
+  gap: 10px;
+  padding: 12px 14px;
+}
+.insight-grid > div {
+  min-width: 0;
+  padding-right: 10px;
+}
+.insight-grid > div:last-child {
+  padding-right: 0;
+  border-right: 0;
+}
 .insight-grid span,
 .insight-grid small {
+  font-size: 0.5625rem;
+  letter-spacing: 0.05em;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* ---- motion: hovers and page changes ---- */
