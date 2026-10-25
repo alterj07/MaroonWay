@@ -187,8 +187,41 @@ def test_a_student_who_wants_easy_gets_easy_first():
 
 def test_an_unweighted_dimension_contributes_nothing():
     prefs = Preferences(rating=1.0, difficulty=0.0, grades=0.0, engine="jev")
-    result = score_schedule(schedule_of(section("A", rating=5.0, difficulty=5.0)), prefs)
+    # Well evidenced, so the one always-on dimension is satisfied too and the
+    # score is free to reach 1.0 on the rating alone.
+    result = score_schedule(
+        schedule_of(section("A", rating=5.0, difficulty=5.0, reviews=40)), prefs
+    )
     assert result.preference_score == pytest.approx(1.0)
+
+
+def test_a_schedule_people_have_written_about_ranks_above_one_they_have_not():
+    """Same rating, same hours: the difference is whether anyone can vouch."""
+    prefs = Preferences(rating=1.0, difficulty=0.0, grades=0.0, engine="jev")
+    known = score_schedule(schedule_of(section("A", rating=4.5, reviews=60)), prefs)
+    unknown = score_schedule(schedule_of(section("A", rating=4.5, reviews=0)), prefs)
+
+    assert known.preference_score > unknown.preference_score
+    assert "known professors" in known.reasons
+
+
+def test_an_unassigned_instructor_counts_as_knowing_nothing():
+    prefs = Preferences(rating=1.0, engine="jev")
+    staff = schedule_of(section("A", rating=4.5, reviews=90, instructor="STAFF"))
+    named = schedule_of(section("A", rating=4.5, reviews=90, instructor="DOE J"))
+
+    assert score_schedule(staff, prefs).preference_score < score_schedule(
+        named, prefs
+    ).preference_score
+
+
+def test_evidence_stops_counting_once_there_is_enough_of_it():
+    """Past the threshold more reviews say nothing new, so they cannot buy rank."""
+    prefs = Preferences(rating=1.0, engine="jev")
+    enough = score_schedule(schedule_of(section("A", rating=4.5, reviews=20)), prefs)
+    plenty = score_schedule(schedule_of(section("A", rating=4.5, reviews=400)), prefs)
+
+    assert enough.preference_score == pytest.approx(plenty.preference_score)
 
 
 def test_avoiding_fridays_ranks_a_friday_free_week_first():
@@ -228,7 +261,13 @@ def test_a_professor_with_no_reviews_is_not_punished_for_our_missing_data():
     prefs = Preferences(rating=0.5, difficulty=0.0, grades=0.0, lecture=1.0, engine="jev")
     result = score_schedule(schedule_of(section("A", rating=4.0)), prefs, {})
     # Lecture quality is unknown, so it is skipped rather than scored zero.
-    assert [c.name for c in result.contributions] == ["professor rating", "easier classes"]
+    # Evidence is the one dimension that does score what is missing, and it is
+    # named separately so it can never be mistaken for a poor review.
+    assert [c.name for c in result.contributions] == [
+        "professor rating",
+        "easier classes",
+        "known professors",
+    ]
 
 
 def test_reasons_name_what_earned_the_place():

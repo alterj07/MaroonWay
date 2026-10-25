@@ -105,6 +105,38 @@ PREFERENCE_QUESTIONS: dict[str, Question] = {
 }
 
 #: gap_tolerance -> minutes. Never below the doc's 20-minute floor.
+#: Reviews at which a rating stops being mostly guesswork. The same number the
+#: frontend marks against: below it, a block carries an asterisk.
+SOLID_EVIDENCE = 20
+
+#: How much a schedule's evidence counts next to what the student asked for.
+#: Deliberately light. It should separate two schedules that are otherwise
+#: alike, not talk a student out of something they asked for outright.
+EVIDENCE_WEIGHT = 0.35
+
+#: Placeholders A&M uses where an instructor has not been assigned yet. A
+#: section taught by one of these is a section nobody can tell you anything
+#: about.
+UNNAMED_INSTRUCTOR = frozenset(
+    {"STAFF", "TBA", "TBD", "TO BE ANNOUNCED", "INSTRUCTOR", "NOT ASSIGNED"}
+)
+
+
+def section_evidence(section: Section) -> float:
+    """How much is actually known about who teaches this, 0-1.
+
+    Nothing is known about a section with no named instructor, whatever its
+    ratings claim, so it scores zero regardless. Otherwise it is the reviews
+    behind the rating, capped at the point where more reviews stop telling you
+    anything new.
+    """
+    name = (section.instructor_name or "").strip().upper()
+    if not name or name in UNNAMED_INSTRUCTOR:
+        return 0.0
+    reviews = max(section.class_reviews, section.professor_reviews)
+    return min(1.0, reviews / SOLID_EVIDENCE)
+
+
 GAP_MINUTES = {
     "tight": 20,
     "comfortable": 30,
@@ -307,6 +339,14 @@ def score_schedule(
     ranking around. Unknown data (a professor with no reviews) is skipped
     instead of being scored as zero, which would punish professors for our
     missing data.
+
+    Evidence is the exception, and deliberately so. Not knowing a professor's
+    rating is no reason to mark that professor down -- but a schedule a student
+    would be committing to blind is genuinely worse for them than one built on
+    professors people have written about, and that is a fact about the
+    schedule, not about the professor. So it is scored as its own dimension,
+    where it is visible in the reasons, rather than folded into the rating,
+    where it would be indistinguishable from a bad review.
     """
     traits = traits or {}
     per_section = [
@@ -324,6 +364,10 @@ def score_schedule(
         components.append(
             Contribution("grade distribution", preferences.grades, schedule.mean_gpa / 5.0)
         )
+
+    evidence = _mean([section_evidence(s) for s in schedule.sections])
+    if evidence is not None:
+        components.append(Contribution("known professors", EVIDENCE_WEIGHT, evidence))
 
     lecture = _mean([t.lecture_quality for t in per_section])
     if lecture is not None:

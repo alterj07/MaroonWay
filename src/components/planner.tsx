@@ -600,6 +600,11 @@ export function Planner({
     setAddingCourse(false);
     const next = [...new Set([...chosen, ...codes])];
     if (next.length === chosen.length) return;
+    // The list is what the student asked for, so it changes when they ask --
+    // not several seconds later when a search happens to come back. `rebuild`
+    // only sets it through `build`, which meant any path that skipped the
+    // rebuild left the list showing something the student had already changed.
+    setChosen(next);
     await onSaveCourses(next, term || null);
     await rebuild(next);
   }
@@ -614,8 +619,19 @@ export function Planner({
   async function dropCourse(code: string) {
     setConfirmDrop(null);
     const next = chosen.filter((c) => c !== code);
+    setChosen(next);
     await onSaveCourses(next, term || null);
-    if (next.length) await rebuild(next);
+    if (next.length) {
+      await rebuild(next);
+      return;
+    }
+    // Removing the last course skipped the rebuild, and with it the only thing
+    // that updated the list -- so the course stayed on screen. Nothing left to
+    // search for, so clear the schedules too rather than leaving the calendar
+    // showing a plan for courses that are gone.
+    setPlans([]);
+    setRelaxed([]);
+    setKept(false);
   }
   const plan = useMemo(
     () => plans.find((p) => p.id === active) ?? plans[0],
