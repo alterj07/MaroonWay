@@ -202,8 +202,19 @@ export default async function SchedulePage({
   // been loaded, so a literal list breaks as soon as the data changes. Lead
   // with courses that actually have sections this term.
   const fallback = term
-    ? (await getCourseOptions(term, 40).catch(() => []))
+    ? (await getCourseOptions(term, 120).catch(() => []))
         .filter((option) => option.with_times > 0)
+        // Research, internship and directed-studies numbers have the most
+        // sections of anything in the term -- MSEN691 alone has over a
+        // hundred -- so ordering by section count alone offers a student a
+        // timetable of graduate research. Undergraduate numbers only.
+        .filter((option) => {
+          const number = Number.parseInt(
+            option.code.replace(/^[A-Z]+/, ''),
+            10,
+          );
+          return Number.isFinite(number) && number < 500;
+        })
         .slice(0, 3)
         .map((option) => option.code)
     : [];
