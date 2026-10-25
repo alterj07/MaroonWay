@@ -154,7 +154,9 @@ function Mini({ courses }: { courses: Course[] }) {
  * the reason, was a line of small grey text.
  */
 function ScheduleProblem({ reason }: { reason: string }) {
-  const missing = reason.match(/no sections on record for ([A-Z]+ ?\d+[A-Z]?)/i);
+  const missing = reason.match(
+    /no sections on record for ([A-Z]+ ?\d+[A-Z]?)/i,
+  );
   return (
     <div className="problem">
       <span className="problem-mark">
@@ -386,11 +388,7 @@ function Calendar({ plan }: { plan: Plan }) {
       <div className="cal">
         <i />
         {days.map((d, i) => (
-          <header
-            key={d}
-            className={i === 4 ? "off" : ""}
-            style={{ gridColumn: i + 2 }}
-          >
+          <header key={d} style={{ gridColumn: i + 2 }}>
             <small>{d}</small>
             <b>{26 + i}</b>
           </header>
@@ -401,11 +399,7 @@ function Calendar({ plan }: { plan: Plan }) {
           </label>
         ))}
         {days.map((_, d) => (
-          <div
-            key={d}
-            className={`lane ${d === 4 ? "off" : ""}`}
-            style={{ gridColumn: d + 2 }}
-          />
+          <div key={d} className="lane" style={{ gridColumn: d + 2 }} />
         ))}
         {plan.courses.flatMap((c) =>
           c.days.map((d) => {
@@ -727,14 +721,19 @@ export function Planner({
             </button>
           </div>
           {confirmDrop ? (
-            <div className="confirm-backdrop" onClick={() => setConfirmDrop(null)}>
+            <div
+              className="confirm-backdrop"
+              onClick={() => setConfirmDrop(null)}
+            >
               <div
                 className="confirm"
                 role="alertdialog"
                 aria-modal="true"
                 onClick={(e) => e.stopPropagation()}
               >
-                <b>Remove {confirmDrop.replace(/^([A-Z]+)(\d.*)$/, "$1 $2")}?</b>
+                <b>
+                  Remove {confirmDrop.replace(/^([A-Z]+)(\d.*)$/, "$1 $2")}?
+                </b>
                 <p>
                   It comes out of this schedule and out of your saved courses.
                   You can add it again from the picker.
@@ -864,7 +863,7 @@ export function Planner({
                   {p.sameShape
                     ? "Same timetable as above · different instructors"
                     : tied && p.idle !== undefined
-                    ? `${p.days ?? "?"} days on campus · ${Math.round((p.idle ?? 0) / 60)}h waiting`
+                      ? `${p.days ?? "?"} days on campus · ${Math.round((p.idle ?? 0) / 60)}h waiting`
                       : p.subtitle}
                 </p>
                 <Mini courses={p.courses} />
@@ -920,128 +919,138 @@ export function Planner({
               <ScheduleProblem reason={plan.failed} />
             ) : (
               <>
-            <div className="detail-head">
-              <span>
-                <em>
-                  <Sparkles size={11} /> BEST MATCH
-                </em>
-                <h2>{plan.name}</h2>
-                <p>{plan.tags.join(" · ")}</p>
-              </span>
-              <div>
-                <button className="save" onClick={() => setSaved(!saved)}>
-                  <Heart size={17} fill={saved ? "currentColor" : "none"} />
-                </button>
-                <button
-                  className="use"
-                  disabled={busy || kept || !term}
-                  onClick={async () => {
-                    setBusy(true);
-                    try {
-                      const result = await onUseSchedule(term, plan.name, plan);
-                      setKept(result.saved);
-                      if (result.saved) setPage("saved");
-                    } finally {
-                      setBusy(false);
-                    }
-                  }}
-                >
-                  {kept ? "Saved" : "Use this schedule"}{" "}
-                  <ArrowRight size={15} />
-                </button>
-              </div>
-            </div>
-            <div className="metrics">
-              <Metric
-                icon={<Star />}
-                label="PROFESSOR AVG."
-                value={`${plan.rating} / 5.0`}
-              />
-              <Metric
-                icon={<GraduationCap />}
-                label="AVERAGE A RATE"
-                value={plan.aRate}
-              />
-              <Metric icon={<Clock3 />} label="TIGHTEST GAP" value={plan.gap} />
-              <Metric
-                icon={<Clock3 />}
-                label="EARLIEST CLASS"
-                value={plan.earliest}
-              />
-            </div>
-            <Calendar plan={plan} />
-            <div className="why">
-              <span>
-                <Bot size={18} />
-              </span>
-              <div>
-                <b>Why this works for you</b>
-                {/* The reasons the ranker actually gave. This was a fixed
+                <div className="detail-head">
+                  <span>
+                    <em>
+                      <Sparkles size={11} /> BEST MATCH
+                    </em>
+                    <h2>{plan.name}</h2>
+                    <p>{plan.tags.join(" · ")}</p>
+                  </span>
+                  <div>
+                    <button className="save" onClick={() => setSaved(!saved)}>
+                      <Heart size={17} fill={saved ? "currentColor" : "none"} />
+                    </button>
+                    <button
+                      className="use"
+                      disabled={busy || kept || !term}
+                      onClick={async () => {
+                        setBusy(true);
+                        try {
+                          const result = await onUseSchedule(
+                            term,
+                            plan.name,
+                            plan,
+                          );
+                          setKept(result.saved);
+                          if (result.saved) setPage("saved");
+                        } finally {
+                          setBusy(false);
+                        }
+                      }}
+                    >
+                      {kept ? "Saved" : "Use this schedule"}{" "}
+                      <ArrowRight size={15} />
+                    </button>
+                  </div>
+                </div>
+                <div className="metrics">
+                  <Metric
+                    icon={<Star />}
+                    label="PROFESSOR AVG."
+                    value={`${plan.rating} / 5.0`}
+                  />
+                  <Metric
+                    icon={<GraduationCap />}
+                    label="AVERAGE A RATE"
+                    value={plan.aRate}
+                  />
+                  <Metric
+                    icon={<Clock3 />}
+                    label="TIGHTEST GAP"
+                    value={plan.gap}
+                  />
+                  <Metric
+                    icon={<Clock3 />}
+                    label="EARLIEST CLASS"
+                    value={plan.earliest}
+                  />
+                </div>
+                <Calendar plan={plan} />
+                <div className="why">
+                  <span>
+                    <Bot size={18} />
+                  </span>
+                  <div>
+                    <b>Why this works for you</b>
+                    {/* The reasons the ranker actually gave. This was a fixed
                     sentence claiming "no Friday classes" about every schedule,
                     including ones with a Friday class in them. */}
-                <p>
-                  {plan.reasons?.length
-                    ? `Ranked on ${plan.reasons.join(", ")}.`
-                    : "You have not said what you want yet, so this is ranked on professor rating, then on difficulty."}
-                </p>
-              </div>
-              <button onClick={() => setAnalysing((v) => !v)}>
-                {analysing ? "Hide analysis" : "View full analysis"}{" "}
-                <ArrowRight size={13} />
-              </button>
-            </div>
-            {analysing ? (
-              <div className="analysis">
-                <h3>Every class in this schedule</h3>
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Class</th>
-                      <th>Professor</th>
-                      <th>Rating</th>
-                      <th>Difficulty</th>
-                      <th>A rate</th>
-                      <th>When</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {plan.courses.map((c) => (
-                      <tr key={c.code}>
-                        <td>
-                          <b>{c.code}</b>
-                          {c.section ? <em> sec {c.section}</em> : null}
-                        </td>
-                        <td>{c.prof}</td>
-                        <td className={band(c.rating ?? null)}>
-                          {c.rating === null || c.rating === undefined
-                            ? "—"
-                            : Number(c.rating).toFixed(2)}
-                        </td>
-                        <td>
-                          {c.difficulty === null || c.difficulty === undefined
-                            ? "—"
-                            : Number(c.difficulty).toFixed(2)}
-                        </td>
-                        <td>
-                          {c.pctA === null || c.pctA === undefined
-                            ? "—"
-                            : `${Math.round(Number(c.pctA) * 100)}%`}
-                        </td>
-                        <td>
-                          {c.days.map((d) => DAY_LETTERS[d]).join("")}{" "}
-                          {time(c.start)}–{time(c.end)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                <p className="analysis-note">
-                  Ratings are shrunk toward the average by how few reviews a
-                  professor has, so one glowing review does not outrank eighty
-                  steady ones. Ties break on difficulty, lowest first.
-                </p>
-              </div>
-            ) : null}
+                    <p>
+                      {plan.reasons?.length
+                        ? `Ranked on ${plan.reasons.join(", ")}.`
+                        : "You have not said what you want yet, so this is ranked on professor rating, then on difficulty."}
+                    </p>
+                  </div>
+                  <button onClick={() => setAnalysing((v) => !v)}>
+                    {analysing ? "Hide analysis" : "View full analysis"}{" "}
+                    <ArrowRight size={13} />
+                  </button>
+                </div>
+                {analysing ? (
+                  <div className="analysis">
+                    <h3>Every class in this schedule</h3>
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Class</th>
+                          <th>Professor</th>
+                          <th>Rating</th>
+                          <th>Difficulty</th>
+                          <th>A rate</th>
+                          <th>When</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {plan.courses.map((c) => (
+                          <tr key={c.code}>
+                            <td>
+                              <b>{c.code}</b>
+                              {c.section ? <em> sec {c.section}</em> : null}
+                            </td>
+                            <td>{c.prof}</td>
+                            <td className={band(c.rating ?? null)}>
+                              {c.rating === null || c.rating === undefined
+                                ? "—"
+                                : Number(c.rating).toFixed(2)}
+                            </td>
+                            <td>
+                              {c.difficulty === null ||
+                              c.difficulty === undefined
+                                ? "—"
+                                : Number(c.difficulty).toFixed(2)}
+                            </td>
+                            <td>
+                              {c.pctA === null || c.pctA === undefined
+                                ? "—"
+                                : `${Math.round(Number(c.pctA) * 100)}%`}
+                            </td>
+                            <td>
+                              {c.days.map((d) => DAY_LETTERS[d]).join("")}{" "}
+                              {time(c.start)}–{time(c.end)}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    <p className="analysis-note">
+                      Ratings are shrunk toward the average by how few reviews a
+                      professor has, so one glowing review does not outrank
+                      eighty steady ones. Ties break on difficulty, lowest
+                      first.
+                    </p>
+                  </div>
+                ) : null}
               </>
             )}
           </div>
@@ -1125,7 +1134,11 @@ function NavRail({
     label: string;
     icon: ReactNode;
   }[] = [
-    { key: "planner", label: "Schedule builder", icon: <CalendarDays size={18} /> },
+    {
+      key: "planner",
+      label: "Schedule builder",
+      icon: <CalendarDays size={18} />,
+    },
     { key: "explore", label: "Course explorer", icon: <BookOpen size={18} /> },
     { key: "saved", label: "Saved schedules", icon: <Heart size={18} /> },
   ];
@@ -1735,7 +1748,9 @@ function Landing({
     <main className={`minimal-home ${dark ? "dark-mode" : "light-mode"}`}>
       <NavRail
         page="home"
-        onNav={(p) => (p === "saved" ? onSaved() : p === "home" ? undefined : onStart())}
+        onNav={(p) =>
+          p === "saved" ? onSaved() : p === "home" ? undefined : onStart()
+        }
         student={student}
         dark={dark}
         setDark={setDark}
