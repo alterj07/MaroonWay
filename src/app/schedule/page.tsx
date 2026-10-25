@@ -6,6 +6,7 @@ import { SignIn } from '@/components/sign-in';
 import { Text } from '@/components/text';
 import {
   buildSchedules,
+  getCourseOptions,
   getStudentPreferences,
   getTerms,
   saveStudentPreferences,
@@ -187,19 +188,31 @@ export default async function SchedulePage({
   await connection();
   const params = await searchParams;
 
+  // A signed-in student's saved courses and wants prefill the form, so they do
+  // not retype them. Anything in the query string wins, since that is this
+  // visit's intent.
+  const student = await currentStudent();
+  const headers = student ? studentHeaders(student) : null;
+  const saved = headers ? await getStudentPreferences(headers).catch(() => null) : null;
+
   const terms = await getTerms().catch(() => []);
-  const term = params.term ?? terms[0]?.term;
-  const rawCourses = params.courses ?? 'BIOL100, CHEM107, ANTH205';
+  const term =
+    params.term ?? terms.find((t) => t.with_times > 0)?.term ?? terms[0]?.term;
+  // No hardcoded defaults: which courses have sections depends on what has
+  // been loaded, so a literal list breaks as soon as the data changes. Lead
+  // with courses that actually have sections this term.
+  const fallback = term
+    ? (await getCourseOptions(term, 40).catch(() => []))
+        .filter((option) => option.with_times > 0)
+        .slice(0, 3)
+        .map((option) => option.code)
+    : [];
+  const rawCourses = params.courses ?? saved?.courses?.join(', ') ?? fallback.join(', ');
   const courses = rawCourses
     .split(',')
     .map((c) => c.trim().toUpperCase().replace(/\s+/g, ''))
     .filter(Boolean);
 
-  // A signed-in student's saved wants prefill the form, so they do not retype
-  // them. Anything in the query string wins, since that is this visit's intent.
-  const student = await currentStudent();
-  const headers = student ? studentHeaders(student) : null;
-  const saved = headers ? await getStudentPreferences(headers).catch(() => null) : null;
   const wants = params.wants ?? saved?.wants ?? '';
 
   const result =
