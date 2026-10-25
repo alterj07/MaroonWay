@@ -1614,3 +1614,43 @@ a,
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* ---- the calendar grid itself ---- */
+
+/*
+ * The lane was written when the grid had ten hours in it and still spanned
+ * `2 / 12`, so the ruled lines stopped at 6 PM and the evening sat on blank
+ * background. Fourteen rows of hours start at row 2, so they end at row 16.
+ *
+ * Its stripes were hardcoded at 24px too, from a row that is now 62px, which
+ * is why the lines no longer landed on the hours they were drawn for. Reading
+ * the row height means they cannot drift again.
+ */
+.lane {
+  grid-row: 2 / 16;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent calc(var(--cal-row) - 1px),
+    #ffffff14 calc(var(--cal-row))
+  );
+}
+.site-light .lane {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent calc(var(--cal-row) - 1px),
+    #e9e3dd calc(var(--cal-row))
+  );
+}
+
+/*
+ * The hour label straddled its line, which put 8 AM -- the first one -- over
+ * the dates in the header. It sits just under its line now, so it still reads
+ * as marking that hour without reaching into the row above it.
+ */
+.cal > label {
+  align-self: start;
+  padding-top: 4px;
+  transform: none;
+}
