@@ -807,15 +807,35 @@
   font-weight: 750 !important;
   letter-spacing: -0.4px;
 }
+
+/*
+ * Every leading element occupies the same 26px square, so the brand mark, the
+ * three nav icons and the avatar share one vertical axis while collapsed.
+ * Before this the brand was a 34px tile against 18px icons, which put its
+ * centre 8px to the right of theirs -- visible as soon as the labels were
+ * hidden and the icons were all you could see.
+ */
+.rail-brand > span,
+.rail-me > i,
+.rail ul svg,
+.rail-foot > button > svg,
+.rail-foot > a > svg {
+  width: 26px;
+  height: 26px;
+  flex: none;
+}
 .rail-brand > span {
   display: grid;
   place-items: center;
-  width: 34px;
-  height: 34px;
-  flex: none;
-  border-radius: 10px;
+  border-radius: 8px;
   background: #fff5ef;
   color: #500000;
+}
+/* The glyphs themselves stay their own size inside that square. */
+.rail ul svg,
+.rail-foot > button > svg,
+.rail-foot > a > svg {
+  padding: 4px;
 }
 .rail-brand > b {
   font-size: 1rem;
@@ -852,9 +872,6 @@
 .rail-me > i {
   display: grid;
   place-items: center;
-  width: 28px;
-  height: 28px;
-  flex: none;
   border-radius: 50%;
   background: #8c1f2b;
   color: #fff;

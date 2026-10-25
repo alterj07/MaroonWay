@@ -554,34 +554,33 @@ export async function backendStatus(): Promise<{ ok: boolean; detail: string | n
     };
   }
 
-  // Two attempts, the second patient. A free Render instance sleeps after
-  // fifteen minutes idle and takes the better part of a minute to wake, so the
-  // first request after a quiet spell times out -- and a sleeping backend
-  // reported as an unavailable one sends you to check configuration that was
-  // never wrong. The first attempt keeps a warm instance fast; the second
-  // waits out a cold one.
-  const attempts: { timeout: number; note: string }[] = [
-    { timeout: 6000, note: 'warm' },
-    { timeout: 60000, note: 'cold start' },
-  ];
-
+  // A free instance sleeps after fifteen minutes idle, and while it wakes the
+  // host answers 502 *immediately* and keeps doing so for several seconds --
+  // measured at three in a row, then healthy at about eight. So a single retry
+  // after a short pause still lands on a 502 and reports the backend as down.
+  // Keep trying until a deadline instead, which is the difference between a
+  // slow first visit and an app that looks broken.
+  const deadline = Date.now() + 45000;
   let lastDetail: string | null = null;
-  for (const [index, attempt] of attempts.entries()) {
+  let attempt = 0;
+
+  while (Date.now() < deadline) {
+    attempt += 1;
     try {
-      const health = await getHealth(AbortSignal.timeout(attempt.timeout));
+      const health = await getHealth(AbortSignal.timeout(attempt === 1 ? 6000 : 20000));
       return { ok: health.database === 'ok', detail: health.detail };
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      // A waking instance answers 502 immediately rather than hanging, so a
-      // timeout-only retry fails twice in under a second and reports the
-      // backend as down. Pause before trying again.
-      const waking = error instanceof ApiError && [502, 503, 504].includes(error.status);
+      const status = error instanceof ApiError ? error.status : 0;
+      const waking = [502, 503, 504].includes(status);
       lastDetail = waking
-        ? `the API returned ${error instanceof ApiError ? error.status : ''}, which is what a host returns while a service is starting`
-        : message;
-      if (index < attempts.length - 1 && waking) {
-        await new Promise((resume) => setTimeout(resume, 4000));
-      }
+        ? `the API is starting up (it answered ${status} for ${Math.round((45000 - (deadline - Date.now())) / 1000)}s). Reload in a moment.`
+        : error instanceof Error
+          ? error.message
+          : String(error);
+      // Only a gateway error is worth waiting out; anything else will not fix
+      // itself by being asked again.
+      if (!waking) break;
+      await new Promise((resume) => setTimeout(resume, 3000));
     }
   }
   return { ok: false, detail: lastDetail };
