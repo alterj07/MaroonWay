@@ -3,7 +3,7 @@
 // fetches real schedules and maps them into Plan/Course.
 import { useMemo, useState } from "react";
 
-import { DEFAULT_PRIORITIES } from "@/lib/plans";
+import { DEFAULT_PRIORITIES, emptyPlan } from "@/lib/plans";
 import { PlusIcon, SearchIcon } from "@animateicons/react/lucide";
 import {
   AlertTriangle,
@@ -325,6 +325,7 @@ export function Planner({
   onSaveCourses,
   onBuildPlans,
   terms,
+  initialTerm,
   onUseSchedule,
 }: {
   plans: Plan[];
@@ -336,9 +337,11 @@ export function Planner({
     codes: string[],
     term?: string | null,
   ) => Promise<{ saved: boolean }>;
-  onBuildPlans: (codes: string[], wants: string) => Promise<Plan[]>;
+  onBuildPlans: (codes: string[], wants: string, term?: string | null) => Promise<Plan[]>;
   /** Terms with sections loaded, for the semester picker. */
   terms: string[];
+  /** The semester used to generate initialPlans on the server. */
+  initialTerm?: string | null;
   /** Persists a built schedule; what "Use this schedule" means. */
   onUseSchedule: (
     term: string,
@@ -352,9 +355,18 @@ export function Planner({
   // What the student actually asked for, so the builder's sidebar lists their
   // courses rather than the ones in the landing illustration.
   const [chosen, setChosen] = useState<string[]>(savedCourses);
-  const build = async (codes: string[], wants: string) => {
+  const build = async (codes: string[], wants: string, selectedTerm = term) => {
     setChosen(codes);
-    setPlans(await onBuildPlans(codes, wants));
+    setBusy(true);
+    setKept(false);
+    try {
+      setPlans(await onBuildPlans(codes, wants, selectedTerm || null));
+      setActive(1);
+    } catch {
+      setPlans(emptyPlan("Could not build schedules", "Try rebuilding this semester again"));
+    } finally {
+      setBusy(false);
+    }
   };
   // The sidebar shows the student's own courses; the showcase is only a
   // stand-in for a first visit when nothing has been chosen yet.
@@ -391,7 +403,7 @@ export function Planner({
         : DEFAULT_PRIORITIES,
     ),
     // Each of these backs a control that previously did nothing.
-    [term, setTerm] = useState(terms[0] ?? ""),
+    [term, setTerm] = useState(initialTerm ?? terms[0] ?? ""),
     [addingCourse, setAddingCourse] = useState(false),
     [courseDraft, setCourseDraft] = useState(""),
     [addingPriority, setAddingPriority] = useState(false),
@@ -411,15 +423,9 @@ export function Planner({
   const tied =
     plans.length > 1 && plans.every((p) => p.score === plans[0].score);
 
-  async function rebuild(codes = chosen, text = wants) {
+  async function rebuild(codes = chosen, text = wants, selectedTerm = term) {
     if (!codes.length || busy) return;
-    setBusy(true);
-    setKept(false);
-    try {
-      await build(codes, text);
-    } finally {
-      setBusy(false);
-    }
+    await build(codes, text, selectedTerm);
   }
 
   async function addCourse() {
@@ -491,7 +497,7 @@ export function Planner({
         courses={courses}
         student={student}
         savedCourses={savedCourses}
-        onSaveCourses={onSaveCourses}
+        onSaveCourses={(codes) => onSaveCourses(codes, term || null)}
       />
     );
   if (page === "saved")
@@ -547,11 +553,11 @@ export function Planner({
             <select
               aria-label="Semester"
               value={term}
-              disabled={!terms.length}
+              disabled={!terms.length || !chosen.length || busy}
               onChange={(e) => {
-                setTerm(e.target.value);
-                void onSaveCourses(chosen, e.target.value);
-                void rebuild();
+                const nextTerm = e.target.value;
+                setTerm(nextTerm);
+                void rebuild(chosen, wants, nextTerm);
               }}
             >
               {terms.map((t) => (

@@ -103,6 +103,7 @@ export default async function Home({
       onSaveCourses={saveCourses}
       onBuildPlans={buildPlans}
       terms={terms.map((t) => t.term)}
+      initialTerm={term}
       onUseSchedule={useSchedule}
     />
   );
