@@ -1746,3 +1746,14 @@ a,
     overflow-y: hidden;
   }
 }
+
+
+/* A rating that is the professor's overall average rather than this class's.
+   Still worth showing -- it is a real number about a real person -- but it
+   answers a slightly different question from the one the column header asks,
+   so it does not get to look as solid as a figure built from reviews of this
+   class. */
+.prof-table .stat-overall {
+  opacity: 0.68;
+  font-style: italic;
+}

@@ -100,7 +100,7 @@ export type Plan = {
   days?: number;
   idle?: number;
   /** An earlier option has this exact timetable; only the staff differ. */
-  sameShape?: boolean;
+  scored?: boolean;
   id: number;
   name: string;
   subtitle: string;
@@ -1152,15 +1152,17 @@ export function Planner({
                   <strong>
                     {i === 0 ? <Sparkles size={14} /> : "#" + (i + 1)}
                   </strong>
-                  <em>{p.score}% match</em>
+                  {/* A percentage is only worth printing when there was
+                      something to score against. With no stated priorities
+                      every option scores the same defaults, and three cards
+                      reading "48% match" say nothing three times. */}
+                  {p.scored ? <em>{p.score}% match</em> : null}
                 </div>
                 <h3>{p.name}</h3>
                 <p>
-                  {p.sameShape
-                    ? "Same timetable as above · different instructors"
-                    : tied && p.idle !== undefined
-                      ? `${p.days ?? "?"} days on campus · ${Math.round((p.idle ?? 0) / 60)}h waiting`
-                      : p.subtitle}
+                  {!p.scored || (tied && p.idle !== undefined)
+                    ? `${p.days ?? "?"} days on campus · ${Math.round((p.idle ?? 0) / 60)}h waiting`
+                    : p.subtitle}
                 </p>
                 <Mini courses={p.courses} />
                 <footer>
@@ -1654,15 +1656,26 @@ function Explorer({
 
   const shown = useMemo(() => {
     const needle = q.trim().toLowerCase();
-    if (!needle) return courses;
     const compact = needle.replace(/\s+/g, "");
-    return courses.filter(
-      (c) =>
-        c.code.toLowerCase().includes(compact) ||
-        (c.title ?? "").toLowerCase().includes(needle) ||
-        c.professors.some((p) => (p.name ?? "").toLowerCase().includes(needle)),
-    );
-  }, [q, courses]);
+    const matches = !needle
+      ? courses
+      : courses.filter(
+          (c) =>
+            c.code.toLowerCase().includes(compact) ||
+            (c.title ?? "").toLowerCase().includes(needle) ||
+            c.professors.some((p) => (p.name ?? "").toLowerCase().includes(needle)),
+        );
+    // The classes already in the plan first. This page is mostly read while
+    // deciding between sections of a course you have chosen, and hunting for
+    // it in an alphabetical list of every course at A&M is the slow way to
+    // answer a question you came here with. Relative order is otherwise
+    // untouched, so nothing moves except to the top.
+    const inPlan = new Set(added);
+    return [
+      ...matches.filter((c) => inPlan.has(c.code)),
+      ...matches.filter((c) => !inPlan.has(c.code)),
+    ];
+  }, [q, courses, added]);
 
   const active =
     selected && shown.some((c) => c.code === selected.code)
@@ -1798,30 +1811,50 @@ function Explorer({
                       </tr>
                     </thead>
                     <tbody>
-                      {active.professors.map((p) => (
-                        <tr
-                          key={p.instructor_id ?? p.name}
-                          className={band(p.adj_rating)}
-                        >
-                          <td>{p.instructor_id != null ? (
-                            <a href={`/professors/${p.instructor_id}`} className="underline underline-offset-2">{p.name ?? "View professor"}</a>
-                          ) : p.name}</td>
-                          <td>{score(p.adj_rating)}</td>
-                          <td>{score(p.adj_difficulty)}</td>
-                          <td>{pct(p.pct_a)}</td>
-                          <td
-                            title={
-                              p.class_reviews > 0
-                                ? `${p.class_reviews} reviews for this class`
-                                : `${p.professor_reviews} reviews overall`
-                            }
+                      {active.professors.map((p) => {
+                        // What this row is actually claiming. A rating built
+                        // from reviews of *this* class is the thing a student
+                        // choosing this class wants; the professor's overall
+                        // average is a weaker answer to the same question and
+                        // has to say so. The campus mean is neither, and
+                        // belongs on a professor's own page, not here.
+                        const forClass = p.class_reviews > 0;
+                        const tier = evidenceTier(
+                          Math.max(p.class_reviews, p.professor_reviews),
+                        );
+                        return (
+                          <tr
+                            key={p.instructor_id ?? p.name}
+                            className={tier === "none" ? "" : band(p.adj_rating)}
                           >
-                            {p.class_reviews > 0
-                              ? `${p.class_reviews} here`
-                              : `${p.professor_reviews} all`}
-                          </td>
-                        </tr>
-                      ))}
+                            <td>{p.instructor_id != null ? (
+                              <a href={`/professors/${p.instructor_id}`} className="underline underline-offset-2">{p.name ?? "View professor"}</a>
+                            ) : p.name}</td>
+                            <td className={forClass ? "" : "stat-overall"}>
+                              {tier === "none" ? "—" : score(p.adj_rating)}
+                            </td>
+                            <td className={forClass ? "" : "stat-overall"}>
+                              {tier === "none" ? "—" : score(p.adj_difficulty)}
+                            </td>
+                            <td>{pct(p.pct_a)}</td>
+                            <td
+                              title={
+                                tier === "none"
+                                  ? "Nobody has rated this professor, here or anywhere"
+                                  : forClass
+                                    ? `${p.class_reviews} review${p.class_reviews === 1 ? "" : "s"} of this class`
+                                    : `No reviews of this class. ${p.professor_reviews} review${p.professor_reviews === 1 ? "" : "s"} of this professor overall, which is what these numbers are.`
+                              }
+                            >
+                              {tier === "none"
+                                ? "none"
+                                : forClass
+                                  ? `${p.class_reviews} here`
+                                  : `${p.professor_reviews} all`}
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 )}

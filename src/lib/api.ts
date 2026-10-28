@@ -305,7 +305,8 @@ export type Schedule = {
   earliest_start: string | null;
   days_on_campus: number;
   /** An earlier option has this exact timetable; only the staff differ. */
-  same_shape?: boolean;
+  /** Whether the student expressed anything to score against. */
+  scored?: boolean;
   /** Minutes waiting between classes, summed over the week. */
   idle_minutes: number;
 };

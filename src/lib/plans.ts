@@ -21,8 +21,10 @@ import {
  * heard of, so the first schedule was built without them and arrived at 8am
  * under a chip reading "No classes before 9 AM".
  */
-/** How many ranked schedules to ask for. The builder shows the first few. */
-export const SCHEDULE_OPTIONS = 10;
+/** How many distinct weeks to ask for. The builder shows the first few and
+ * offers the rest behind "show all"; the API returns only distinct timetables,
+ * so this is a ceiling rather than a quota it will pad out to. */
+export const SCHEDULE_OPTIONS = 50;
 
 export const DEFAULT_PRIORITIES = ['No classes before 9 AM', 'Avoid Friday classes'];
 
@@ -131,7 +133,7 @@ export function toPlan(schedule: Schedule, index: number): Plan {
     gap: schedule.tightest_gap === null ? 'no clash' : `${schedule.tightest_gap} min`,
     earliest: clockLabel(schedule.earliest_start),
     days: schedule.days_on_campus,
-    sameShape: schedule.same_shape ?? false,
+    scored: schedule.scored ?? false,
     idle: schedule.idle_minutes,
     tags: reasons.length ? reasons : ['Conflict-free', 'At least 20 minutes between classes'],
     reasons,
