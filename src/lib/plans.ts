@@ -169,7 +169,12 @@ export async function plansFor(
   courses: string[],
   wants?: string | null,
   locks?: Record<string, SectionLock>
-): Promise<{ plans: Plan[]; detail: string | null; relaxed?: string[] }> {
+): Promise<{
+  plans: Plan[];
+  detail: string | null;
+  relaxed?: string[];
+  pinned?: string[];
+}> {
   if (!courses.length) {
     return { plans: emptyPlan('No classes chosen', 'Add the classes you need'), detail: null };
   }
@@ -190,11 +195,17 @@ export async function plansFor(
       plans: emptyPlan('No schedule fits', [detail, ...notes].join(' · ')),
       detail,
       relaxed: notes,
+      pinned: result.pinned ?? [],
     };
   }
-  return { plans: result.schedules.map((schedule, index) => ({
-    ...toPlan(schedule, index), warnings: notes,
-  })), detail: null, relaxed: notes };
+  return {
+    plans: result.schedules.map((schedule, index) => ({
+      ...toPlan(schedule, index), warnings: notes,
+    })),
+    detail: null,
+    relaxed: notes,
+    pinned: result.pinned ?? [],
+  };
 }
 
 /**

@@ -1830,31 +1830,57 @@ a,
 /* --- pinning a class by hand ---------------------------------------------
    The priorities box is prose, and prose gets inferred. This is the other
    half: choices that are obeyed or reported, never ranked around. */
+/* The whole row is the target, so the hover state belongs to the row. */
+.course-open {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  padding: 4px 6px;
+  margin: -4px -6px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.course-open:hover {
+  background: #ffffff14;
+}
+.course-open:disabled {
+  cursor: default;
+}
+.course-open > span {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.course-open small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .course-pin {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex: none;
   width: 22px;
   height: 22px;
-  border: 0;
   border-radius: 6px;
-  background: transparent;
-  color: inherit;
-  opacity: 0.45;
-  cursor: pointer;
+  opacity: 0.35;
 }
-.course-pin:hover {
-  opacity: 1;
-  background: #ffffff1f;
+.course-open:hover .course-pin {
+  opacity: 0.9;
 }
 .course-pin.on {
   opacity: 1;
   color: #e9b0a6;
   background: #e9b0a626;
-}
-.course-pin:disabled {
-  cursor: default;
-  opacity: 0.25;
 }
 
 .lock-panel {
@@ -1966,4 +1992,88 @@ a,
   border-color: transparent;
   background: #7c1d2c;
   font-weight: 700;
+}
+
+
+/* --- what the build wants you to know -------------------------------------
+   These notes used to be one line of small text joined with semicolons, which
+   ran a confirmation, a relaxation and a plain fact together into a sentence
+   that parsed as nothing. Confirmations are now their own quiet line, and the
+   things that need a decision get the middle of the screen. */
+.confirmed {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 6px 0 0;
+  font-size: 11.5px;
+  color: #7fc6a4;
+}
+.caution-open {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid #e9b85f55;
+  background: #e9b85f1a;
+  color: #e9b85f;
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.caution-open:hover {
+  background: #e9b85f2e;
+}
+
+.notice-panel {
+  width: min(440px, 92vw);
+  padding: 20px;
+  border-radius: 16px;
+  background: #221f23;
+  color: #f2e9e6;
+  border: 1px solid #ffffff1f;
+}
+.notice-panel header {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #e9b85f;
+}
+.notice-panel h2 {
+  margin: 0;
+  font-size: 17px;
+  color: inherit;
+}
+.notice-panel ul {
+  margin: 14px 0 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.notice-panel li {
+  font-size: 13px;
+  line-height: 1.5;
+}
+.notice-panel > p {
+  margin: 14px 0 0;
+  font-size: 12px;
+  opacity: 0.6;
+}
+.notice-panel footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+.notice-panel footer button {
+  padding: 9px 18px;
+  border-radius: 9px;
+  border: 0;
+  background: #7c1d2c;
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
 }

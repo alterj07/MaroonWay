@@ -57,18 +57,25 @@ export async function buildPlans(
   // `relaxed` travels with the plans: a preference the timetable could not
   // honour is part of the answer, and dropping it leaves a student reading a
   // schedule that quietly disobeys them.
-): Promise<{ plans: Plan[]; relaxed: string[] }> {
+): Promise<{ plans: Plan[]; relaxed: string[]; pinned: string[] }> {
   const terms = await getTerms().catch(() => []);
   const chosen = term ?? terms.find((t) => t.with_times > 0)?.term ?? terms[0]?.term;
   if (!chosen) {
     return {
       plans: emptyPlan('No term loaded', 'Load a term with section times first'),
       relaxed: [],
+      pinned: [],
     };
   }
 
   const codes = normalizeCourseCodes(courses);
-  if (codes.length > 10) return { plans: emptyPlan('Too many classes', 'Choose up to 10 classes at a time'), relaxed: [] };
+  if (codes.length > 10) {
+    return {
+      plans: emptyPlan('Too many classes', 'Choose up to 10 classes at a time'),
+      relaxed: [],
+      pinned: [],
+    };
+  }
 
   const student = await currentStudent();
   if (student) {
@@ -81,12 +88,17 @@ export async function buildPlans(
 
   try {
     const result = await plansFor(chosen, codes, wants, locks);
-    return { plans: result.plans, relaxed: result.relaxed ?? [] };
+    return {
+      plans: result.plans,
+      relaxed: result.relaxed ?? [],
+      pinned: result.pinned ?? [],
+    };
   } catch (error) {
     return {
       plans: emptyPlan('Could not build schedules', error instanceof ApiError
         ? error.message : 'The schedule service is unavailable. Please try again.'),
       relaxed: [],
+      pinned: [],
     };
   }
 }

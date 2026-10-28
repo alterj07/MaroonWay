@@ -857,7 +857,7 @@ export function Planner({
     wants: string,
     term?: string | null,
     locks?: Record<string, SectionLock>,
-  ) => Promise<{ plans: Plan[]; relaxed: string[] }>;
+  ) => Promise<{ plans: Plan[]; relaxed: string[]; pinned?: string[] }>;
   /** Sections of one course, for the pinning panel. Absent in tests. */
   onCourseSections?: (term: string, code: string) => Promise<CourseSection[]>;
   /** Terms with sections loaded, for the semester picker. */
@@ -883,7 +883,15 @@ export function Planner({
   // What the student actually asked for, so the builder's sidebar lists their
   // courses rather than the ones in the landing illustration.
   const [chosen, setChosen] = useState<string[]>(savedCourses);
-  const build = async (codes: string[], wants: string, selectedTerm = term) => {
+  const build = async (
+    codes: string[],
+    wants: string,
+    selectedTerm = term,
+    // Passed rather than read from state: setLocks() does not reach this
+    // closure in the same event, so clearing pins and rebuilding in one
+    // handler would otherwise send the pins it had just cleared.
+    pins: Record<string, SectionLock> = locks,
+  ) => {
     if (busy) return;
     codes = normalizeCourseCodes(codes);
     setChosen(codes);
@@ -898,7 +906,7 @@ export function Planner({
       // constraint that matches everything, and one for a dropped course as a
       // constraint on nothing.
       const pinned = Object.fromEntries(
-        Object.entries(locks).filter(
+        Object.entries(pins).filter(
           ([code, lock]) => codes.includes(code) && lockSummary(lock),
         ),
       );
@@ -910,10 +918,13 @@ export function Planner({
       );
       setPlans(result.plans);
       setRelaxed(result.relaxed);
+      setPinned(result.pinned ?? []);
+      setNoticeOpen(true);
       setActive(1);
     } catch {
       setPlans(emptyPlan("Could not build schedules", "Try rebuilding this semester again"));
       setRelaxed([]);
+      setPinned([]);
     } finally {
       setBusy(false);
     }
@@ -972,6 +983,10 @@ export function Planner({
     // Preferences the timetable could not honour. Shown rather than swallowed:
     // a schedule that quietly disobeys is worse than one that says it had to.
     [relaxed, setRelaxed] = useState<string[]>(initialPlans[0]?.warnings ?? []),
+    // What the student's words pinned. A confirmation, kept apart from the
+    // warnings so it never appears under a warning triangle.
+    [pinned, setPinned] = useState<string[]>([]),
+    [noticeOpen, setNoticeOpen] = useState(true),
     [editing, setEditing] = useState<number | null>(null),
     // What the overlay should say: one flag covers building and saving, and an
     // overlay reporting the wrong one is worse than no overlay.
@@ -987,9 +1002,14 @@ export function Planner({
   const tied =
     plans.length > 1 && plans.every((p) => p.score === plans[0].score);
 
-  async function rebuild(codes = chosen, text = wants, selectedTerm = term) {
+  async function rebuild(
+    codes = chosen,
+    text = wants,
+    selectedTerm = term,
+    pins: Record<string, SectionLock> = locks,
+  ) {
     if (!codes.length || busy) return;
-    await build(codes, text, selectedTerm);
+    await build(codes, text, selectedTerm, pins);
   }
 
   async function addCourses(codes: string[]) {
@@ -1024,10 +1044,23 @@ export function Planner({
       setKept(false);
       setActive(1);
       try {
-        const result = codes.length ? await onBuildPlans(codes, wants, term || null)
-          : { plans: emptyPlan("No classes chosen", "Add the classes you need"), relaxed: [] };
+        const stillPinned = Object.fromEntries(
+          Object.entries(locks).filter(
+            ([code, lock]) => codes.includes(code) && lockSummary(lock),
+          ),
+        );
+        const result = codes.length
+          ? await onBuildPlans(
+              codes,
+              wants,
+              term || null,
+              Object.keys(stillPinned).length ? stillPinned : undefined,
+            )
+          : { plans: emptyPlan("No classes chosen", "Add the classes you need"), relaxed: [], pinned: [] };
         setPlans(result.plans);
         setRelaxed(result.relaxed);
+        setPinned(result.pinned ?? []);
+        setNoticeOpen(true);
       } catch {
         setPlans(emptyPlan("Classes saved, schedule unavailable", "Your classes were saved. Try rebuilding your schedule again."));
         setRelaxed([]);
@@ -1209,7 +1242,7 @@ export function Planner({
               aria-controls="semester-options"
               aria-haspopup="listbox"
               aria-expanded={termOpen}
-              disabled={!terms.length || !chosen.length || busy}
+              disabled={!terms.length || busy}
               onClick={() => setTermOpen((v) => !v)}
             >
               <span>
@@ -1238,7 +1271,13 @@ export function Planner({
                           setTermOpen(false);
                           if (t === term) return;
                           setTerm(t);
-                          void rebuild(chosen, wants, t);
+                          // A pin names a section number or an instructor id,
+                          // and both belong to one semester. Carried across,
+                          // they match nothing in the new term and the builder
+                          // returns no schedules at all -- which looks exactly
+                          // like it has broken.
+                          setLocks({});
+                          void rebuild(chosen, wants, t, {});
                         }}
                       >
                         {t}
@@ -1300,28 +1339,34 @@ export function Planner({
             onAdd={(codes) => void addCourses(codes)}
           />
           {sidebar.map((c, i) => {
-            const pinned = lockSummary(locks[c.code]);
+            const pin = lockSummary(locks[c.code]);
             return (
               <div className="course" key={c.code}>
                 <i className={SHOWCASE_COLORS[i % SHOWCASE_COLORS.length]} />
-                <span>
-                  <b>{c.label}</b>
-                  {/* The pin replaces the title when there is one: what you
-                      required of this class matters more here than its name,
-                      which is already on every block in the week. */}
-                  <small>{pinned ?? c.title ?? "Untitled"}</small>
-                </span>
+                {/* The whole row opens the panel, not just the pin: aiming
+                    at a 22px icon to say "this one, at this time" is the kind
+                    of target you miss, and the row is the thing being talked
+                    about anyway. The drop button stops the click so removing
+                    a class does not also open its panel. */}
                 <button
-                  className={`course-pin${pinned ? " on" : ""}`}
+                  className="course-open"
                   disabled={busy}
                   aria-label={`Pin ${c.label}`}
-                  title={pinned ? `Pinned: ${pinned}` : "Pin a section, instructor or time"}
+                  title={pin ? `Pinned: ${pin}` : "Pin a section, instructor or time"}
                   onClick={() => {
                     setLockWas(JSON.stringify(locks[c.code] ?? {}));
                     setLockOpen(c.code);
                   }}
                 >
-                  <Pin size={13} />
+                  <span>
+                    <b>{c.label}</b>
+                    {/* What you required of this class matters more here than
+                        its name, which is on every block in the week already. */}
+                    <small>{pin ?? c.title ?? "Untitled"}</small>
+                  </span>
+                  <i className={`course-pin${pin ? " on" : ""}`} aria-hidden="true">
+                    <Pin size={13} />
+                  </i>
                 </button>
                 <button
                   className="course-drop"
@@ -1334,6 +1379,33 @@ export function Planner({
               </div>
             );
           })}
+          {relaxed.length && noticeOpen ? (
+            <div className="picker-backdrop" onClick={() => setNoticeOpen(false)}>
+              <section
+                className="notice-panel"
+                role="alertdialog"
+                aria-label="About these schedules"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <header>
+                  <AlertTriangle size={18} />
+                  <h2>About these schedules</h2>
+                </header>
+                {/* One line per note. They used to be joined with semicolons
+                    into a single sentence, which ran a confirmation, a
+                    relaxation and a fact together and read as gibberish. */}
+                <ul>
+                  {relaxed.map((note) => (
+                    <li key={note}>{note}</li>
+                  ))}
+                </ul>
+                <p>These are the closest schedules we could build.</p>
+                <footer>
+                  <button onClick={() => setNoticeOpen(false)}>Got it</button>
+                </footer>
+              </section>
+            </div>
+          ) : null}
           {lockOpen ? (
             <CourseLock
               code={lockOpen}
@@ -1454,14 +1526,17 @@ export function Planner({
                   </button>
                 </small>
               ) : null}
-              {relaxed.length ? (
-                <p className="caution" role="status">
-                  <AlertTriangle size={14} />
-                  <span>
-                    {relaxed.join("; ")} — these schedules are the closest fit
-                    without it.
-                  </span>
+              {pinned.length ? (
+                <p className="confirmed" role="status">
+                  <Check size={13} />
+                  <span>Pinned {pinned.join(", ")}.</span>
                 </p>
+              ) : null}
+              {relaxed.length ? (
+                <button className="caution-open" onClick={() => setNoticeOpen(true)}>
+                  <AlertTriangle size={13} />
+                  {relaxed.length} thing{relaxed.length === 1 ? "" : "s"} to know
+                </button>
               ) : null}
               {tied ? (
                 <small className="tied-note">

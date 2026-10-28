@@ -588,38 +588,39 @@ def test_a_named_professor_is_pinned_to_the_course_they_teach():
     chupp = section("POLS207", "501", instructor="Christopher Chupp")
     thornton = section("POLS207", "502", instructor="Douglas S. Thornton")
 
-    locks, notes = instructor_wishes(
+    locks, pinned, notes = instructor_wishes(
         "I want Chupp as my POLS 207 teacher", pools(POLS207=[chupp, thornton])
     )
 
     assert locks["POLS207"].instructor_id == chupp.instructor_id
-    assert "Christopher Chupp" in notes[0]
+    assert pinned == ["Christopher Chupp for POLS207"]
+    assert notes == [], "a pin that worked is a confirmation, not a warning"
 
 
 def test_a_name_nobody_matches_is_said_out_loud():
     """Handing back someone else in silence is the thing to avoid."""
-    locks, notes = instructor_wishes(
+    locks, pinned, notes = instructor_wishes(
         "I want Chupp", pools(POLS207=[section("POLS207", instructor="Douglas S. Thornton")])
     )
 
-    assert locks == {}
+    assert locks == {} and pinned == []
     assert len(notes) == 1 and "Chupp" in notes[0]
 
 
 def test_a_course_code_in_the_sentence_is_not_a_missing_professor():
-    locks, notes = instructor_wishes(
+    locks, pinned, notes = instructor_wishes(
         "I want POLS207 in the morning",
         pools(POLS207=[section("POLS207", instructor="Douglas S. Thornton")]),
     )
 
-    assert locks == {} and notes == []
+    assert locks == {} and pinned == [] and notes == []
 
 
 def test_ordinary_preference_words_are_not_surnames():
     """A professor named Young must not be pinned by "I want easy classes"."""
     young = section("CSCE121", instructor="Grace Young")
 
-    locks, _ = instructor_wishes("I want easy morning classes", pools(CSCE121=[young]))
+    locks, _, _ = instructor_wishes("I want easy morning classes", pools(CSCE121=[young]))
 
     assert locks == {}
 
@@ -630,7 +631,7 @@ def test_an_ambiguous_surname_is_reported_rather_than_guessed():
         section("CSCE121", "502", instructor="Sunghee Lee"), instructor_id=99
     )
 
-    locks, notes = instructor_wishes("I want Lee", pools(CSCE121=[one, two]))
+    locks, _, notes = instructor_wishes("I want Lee", pools(CSCE121=[one, two]))
 
     assert locks == {}
     assert "more than one" in notes[0]
@@ -639,10 +640,10 @@ def test_an_ambiguous_surname_is_reported_rather_than_guessed():
 def test_initials_are_too_short_to_match():
     doe = section("CSCE121", instructor="J Doe")
 
-    locks, _ = instructor_wishes("I want a J class", pools(CSCE121=[doe]))
+    locks, _, _ = instructor_wishes("I want a J class", pools(CSCE121=[doe]))
 
     assert locks == {}
 
 
 def test_no_wants_text_pins_nothing():
-    assert instructor_wishes(None, pools(CSCE121=[section("CSCE121")])) == ({}, [])
+    assert instructor_wishes(None, pools(CSCE121=[section("CSCE121")])) == ({}, [], [])

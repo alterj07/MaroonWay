@@ -404,6 +404,8 @@ export type ScheduleResponse = {
   relaxed?: string[];
   /** What these courses can offer where they could not offer what was asked. */
   closest_fit?: string[];
+  /** What the student's own words pinned. Confirmations, not warnings. */
+  pinned?: string[];
 };
 
 export type PreferenceResponse = {

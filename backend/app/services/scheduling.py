@@ -582,7 +582,7 @@ def _surnames(full_name: str) -> set[str]:
 def instructor_wishes(
     wants: str | None,
     candidates: Mapping[str, Sequence[Section]],
-) -> tuple[dict[str, Lock], list[str]]:
+) -> tuple[dict[str, Lock], list[str], list[str]]:
     """Professors the student named, pinned to the courses they actually teach.
 
     "I want Chupp for POLS207" is not a preference to weigh against a rating --
@@ -591,16 +591,18 @@ def instructor_wishes(
     name is pinned only when it matches an instructor already in that course's
     pool, so a sentence can never ask for a section that does not exist.
 
-    Returns the locks, and notes for names that matched nobody or matched more
-    than one person in the same course, which are both things to say out loud
-    rather than resolve by guessing.
+    Returns the locks, what was pinned, and what could not be. The last two
+    are kept apart because they are not the same kind of thing: "pinned Chupp"
+    is a confirmation and belongs nowhere near a warning triangle, while a name
+    that matched nobody is a problem the student has to act on.
     """
     text = (wants or "").strip()
     if not text:
-        return {}, []
+        return {}, [], []
 
     haystack = text.upper()
     locks: dict[str, Lock] = {}
+    pinned: list[str] = []
     notes: list[str] = []
 
     for code in sorted(candidates):
@@ -615,7 +617,7 @@ def instructor_wishes(
         if len(matched) == 1:
             instructor_id, name = next(iter(matched.items()))
             locks[code] = Lock(instructor_id=instructor_id)
-            notes.append(f"pinned {name} for {code}, as you asked")
+            pinned.append(f"{name} for {code}")
         elif len(matched) > 1:
             names = ", ".join(sorted(matched.values()))
             notes.append(
@@ -648,4 +650,4 @@ def instructor_wishes(
             f"no instructor named {token} teaches any of these courses this term, "
             "so nothing was pinned for that"
         )
-    return locks, notes
+    return locks, pinned, notes

@@ -364,7 +364,9 @@ async def generate_schedules(
         # taught by someone else, silently. Matched against the real pool, so a
         # sentence can only ever pin a section that exists, and an explicit
         # pin from the course panel always wins over one read from a sentence.
-        wished, wish_notes = scheduling.instructor_wishes(request.wants, candidates)
+        wished, pinned_notes, wish_notes = scheduling.instructor_wishes(
+            request.wants, candidates
+        )
         locks = {**wished, **locks}
 
         candidates, impossible_locks = scheduling.apply_locks(candidates, locks)
@@ -381,6 +383,7 @@ async def generate_schedules(
                 "detail": "; ".join(impossible_locks),
                 "relaxed": [],
                 "closest_fit": wish_notes,
+                "pinned": pinned_notes,
             }
 
         request_availability = scheduling.Availability(
@@ -547,6 +550,8 @@ async def generate_schedules(
             # timetable the student cannot pick.
             "closest_fit": wish_notes
             + prefs_service.closest_fit(ranked, preferences, min_gap=min_gap),
+            # Confirmations, not warnings: what the student asked for and got.
+            "pinned": pinned_notes,
         }
 
     try:

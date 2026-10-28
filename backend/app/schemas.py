@@ -353,6 +353,9 @@ class ScheduleResponse(BaseModel):
     #: themselves. Pairs with ``relaxed``: that says what failed, this says
     #: what is available instead.
     closest_fit: list[str] = Field(default_factory=list)
+    #: What the student's own words pinned, confirmed back. A confirmation is
+    #: not a warning and must not be shown as one.
+    pinned: list[str] = Field(default_factory=list)
 
 
 class PreferenceRequest(BaseModel):

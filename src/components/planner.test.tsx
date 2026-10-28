@@ -183,3 +183,33 @@ describe('pinning a class by hand', () => {
     ));
   });
 });
+
+describe('switching semesters', () => {
+  it('does not carry a pin from one semester into another', async () => {
+    const props = setup('FALL 2026');
+    await openBuilder();
+    fireEvent.click(screen.getByRole('button', { name: 'Pin CSCE 120' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Honors only' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Done' }));
+    await waitFor(() => expect(props.onBuildPlans).toHaveBeenLastCalledWith(
+      ['CSCE120'], expect.any(String), 'FALL 2026', { CSCE120: { honors: true } },
+    ));
+
+    fireEvent.click(screen.getByRole('combobox', { name: 'Semester' }));
+    fireEvent.click(await screen.findByRole('option', { name: /SPRING 2027/ }));
+
+    // A section number and an instructor id belong to one semester. Carried
+    // across they match nothing, and the builder returns no schedules at all.
+    await waitFor(() => expect(props.onBuildPlans).toHaveBeenLastCalledWith(
+      ['CSCE120'], expect.any(String), 'SPRING 2027', undefined,
+    ));
+  });
+
+  it('can still change semester with no classes chosen', async () => {
+    const props = { ...setup('FALL 2026') };
+    await openBuilder();
+    expect((screen.getByRole('combobox', { name: 'Semester' }) as HTMLButtonElement).disabled)
+      .toBe(false);
+    void props;
+  });
+});
