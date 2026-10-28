@@ -291,6 +291,41 @@ async def generate_schedules(
                     section, same_time_alternatives=max(others, 0)
                 )
 
+        # 2b. What did the student pin by hand?
+        # Applied before the search, not scored after it: a pinned section is a
+        # decision, and ranking it would mean quietly offering the student
+        # something they had already ruled out.
+        locks = {
+            code.upper(): scheduling.Lock(
+                section_code=lock.section_code,
+                instructor_id=lock.instructor_id,
+                instructor_name=lock.instructor_name,
+                honors=lock.honors,
+                delivery=lock.delivery,
+                campus=lock.campus,
+                days=frozenset(
+                    day for value in lock.days for day in scheduling.parse_days(value)
+                ),
+                earliest=scheduling.parse_time(lock.earliest),
+                latest=scheduling.parse_time(lock.latest),
+            )
+            for code, lock in request.locks.items()
+        }
+        candidates, impossible_locks = scheduling.apply_locks(candidates, locks)
+        if impossible_locks:
+            # Nothing further can be true, and a generic "no schedules" would
+            # send the student looking for a conflict that is not there.
+            return {
+                "request": request.model_dump(),
+                "count": 0,
+                "schedules": [],
+                "preferences": preferences_payload(
+                    replace(preferences, min_gap_minutes=min_gap)
+                ),
+                "detail": "; ".join(impossible_locks),
+                "relaxed": [],
+            }
+
         request_availability = scheduling.Availability(
             earliest=scheduling.parse_time(request.earliest),
             latest=scheduling.parse_time(request.latest),

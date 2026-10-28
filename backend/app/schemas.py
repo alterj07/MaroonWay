@@ -235,6 +235,28 @@ class ScheduleOut(BaseModel):
     idle_minutes: int
 
 
+class SectionLock(BaseModel):
+    """One course pinned by hand, the way a schedule builder lets you.
+
+    These are hard filters, unlike anything inferred from the student's words:
+    a guess that empties the results is a bug, a choice that empties them is an
+    answer. Every field is optional and an unset one does not constrain.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    section_code: str | None = None
+    instructor_id: int | None = None
+    instructor_name: str | None = Field(default=None, max_length=200)
+    honors: bool | None = None
+    delivery: str | None = Field(default=None, description="F2F, WEB or HYBRID")
+    campus: str | None = None
+    #: Days this class may meet on, e.g. ["MON", "WED"].
+    days: list[str] = []
+    earliest: str | None = Field(default=None, description='e.g. "09:00"')
+    latest: str | None = Field(default=None, description='e.g. "17:00"')
+
+
 class ScheduleRequest(BaseModel):
     """What the student is asking for."""
 
@@ -257,6 +279,9 @@ class ScheduleRequest(BaseModel):
     delivery: str | None = Field(default=None, description="F2F, WEB or HYBRID")
     open_only: bool = False
     limit: int = Field(default=10, ge=1, le=50)
+    #: Course code -> what the student pinned for it. Applied before the search
+    #: rather than scored after it, because a pinned choice is not a preference.
+    locks: dict[str, SectionLock] = {}
 
     @field_validator("term")
     @classmethod

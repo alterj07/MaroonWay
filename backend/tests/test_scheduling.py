@@ -14,8 +14,10 @@ import pytest
 from app.services.scheduling import (
     DEFAULT_MIN_GAP_MINUTES,
     Availability,
+    Lock,
     Meeting,
     Section,
+    apply_locks,
     clash,
     describe_failure,
     format_time,
@@ -511,3 +513,64 @@ def test_an_online_class_still_conflicts_at_the_same_hour():
     clashing = section("CSCE121", days="MON", start="09:30", end="10:30", delivery="WEB")
 
     assert clash(remote, clashing) is not None
+
+
+# --- locks --------------------------------------------------------------------
+
+
+def test_a_lock_narrows_a_pool_to_the_pinned_section():
+    pool = [section("CSCE121", "501"), section("CSCE121", "502")]
+
+    narrowed, impossible = apply_locks({"CSCE121": pool}, {"CSCE121": Lock(section_code="502")})
+
+    assert [s.section_code for s in narrowed["CSCE121"]] == ["502"]
+    assert impossible == []
+
+
+def test_an_empty_lock_leaves_the_pool_alone():
+    pool = [section("CSCE121", "501"), section("CSCE121", "502")]
+
+    narrowed, impossible = apply_locks({"CSCE121": pool}, {"CSCE121": Lock()})
+
+    assert len(narrowed["CSCE121"]) == 2
+    assert impossible == []
+
+
+def test_an_impossible_lock_is_reported_rather_than_ignored():
+    pool = [section("CSCE121", "501", instructor="DOE J")]
+
+    _, impossible = apply_locks({"CSCE121": pool}, {"CSCE121": Lock(instructor_name="Nobody")})
+
+    assert len(impossible) == 1
+    assert "CSCE121" in impossible[0] and "Nobody" in impossible[0]
+
+
+def test_a_lock_matches_an_instructor_name_case_insensitively():
+    pinned = section("CSCE121", "501", instructor="Hyunyoung Lee")
+
+    assert Lock(instructor_name="  hyunyoung lee ").allows(pinned)
+
+
+def test_a_day_lock_excludes_a_section_meeting_outside_it():
+    mwf = section("CSCE121", days="MWF")
+    tr = section("CSCE121", days="TR")
+    lock = Lock(days=frozenset({"TUE", "THU"}))
+
+    assert lock.allows(tr)
+    assert not lock.allows(mwf)
+
+
+def test_a_time_lock_bounds_every_meeting():
+    morning = section("CSCE121", start="09:10", end="10:00")
+    evening = section("CSCE121", start="18:00", end="19:00")
+    lock = Lock(latest=17 * 60)
+
+    assert lock.allows(morning)
+    assert not lock.allows(evening)
+
+
+def test_a_lock_is_permissive_about_data_the_section_lacks():
+    """A missing campus must not hide a real class, as in the SQL filters."""
+    unknown = section("CSCE121", campus=None)
+
+    assert Lock(campus="CSTAT").allows(unknown)

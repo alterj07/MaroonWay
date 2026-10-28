@@ -200,6 +200,119 @@ class Availability:
         return section.is_schedulable and all(self.allows(m) for m in section.meetings)
 
 
+@dataclass(frozen=True, slots=True)
+class Lock:
+    """A choice the student made themselves, for one course.
+
+    Everything here is a hard filter, which is the whole point: a preference
+    Jev inferred is a ranking signal because guessing wrong should not empty
+    the results, but a student who pinned a section meant it. If a lock leaves
+    a course with nothing, that is an answer to report, not one to relax.
+
+    Unset fields do not constrain. Unknown data on a section does not fail a
+    filter it says nothing about -- a section with no recorded campus is not
+    excluded by a campus lock, for the same reason the SQL filters are
+    permissive about nulls.
+    """
+
+    section_code: str | None = None
+    instructor_id: int | None = None
+    instructor_name: str | None = None
+    honors: bool | None = None
+    delivery: str | None = None
+    campus: str | None = None
+    #: Days the class may meet on. A section meeting on any other day is out.
+    days: frozenset[str] = frozenset()
+    earliest: int | None = None  # minutes since midnight
+    latest: int | None = None
+
+    @property
+    def is_empty(self) -> bool:
+        return not any(
+            (
+                self.section_code,
+                self.instructor_id is not None,
+                self.instructor_name,
+                self.honors is not None,
+                self.delivery,
+                self.campus,
+                self.days,
+                self.earliest is not None,
+                self.latest is not None,
+            )
+        )
+
+    def allows(self, section: Section) -> bool:
+        if self.section_code and section.section_code != self.section_code:
+            return False
+        if self.instructor_id is not None and section.instructor_id != self.instructor_id:
+            return False
+        if self.instructor_name:
+            name = (section.instructor_name or "").strip().casefold()
+            if name != self.instructor_name.strip().casefold():
+                return False
+        if self.honors is not None and section.honors != self.honors:
+            return False
+        if self.delivery and section.delivery and section.delivery != self.delivery:
+            return False
+        if self.campus and section.campus and section.campus != self.campus:
+            return False
+        if self.days and not all(m.day in self.days for m in section.meetings):
+            return False
+        if self.earliest is not None and any(m.start < self.earliest for m in section.meetings):
+            return False
+        if self.latest is not None and any(m.end > self.latest for m in section.meetings):
+            return False
+        return True
+
+    def describe(self) -> str:
+        """The lock in the student's own terms, for an error they can act on."""
+        parts: list[str] = []
+        if self.section_code:
+            parts.append(f"section {self.section_code}")
+        if self.instructor_name:
+            parts.append(self.instructor_name)
+        elif self.instructor_id is not None:
+            parts.append(f"instructor {self.instructor_id}")
+        if self.honors is not None:
+            parts.append("honors" if self.honors else "non-honors")
+        if self.delivery:
+            parts.append({"WEB": "online", "F2F": "in person"}.get(self.delivery, self.delivery))
+        if self.campus:
+            parts.append(self.campus)
+        if self.days:
+            parts.append("/".join(d for d in DAYS if d in self.days))
+        if self.earliest is not None:
+            parts.append(f"from {format_time(self.earliest)}")
+        if self.latest is not None:
+            parts.append(f"until {format_time(self.latest)}")
+        return ", ".join(parts) or "no constraints"
+
+
+def apply_locks(
+    candidates: Mapping[str, Sequence[Section]],
+    locks: Mapping[str, Lock],
+) -> tuple[dict[str, list[Section]], list[str]]:
+    """Narrow each course's pool to what its lock allows.
+
+    Returns the narrowed pools and the courses a lock emptied. An emptied pool
+    is reported rather than silently dropped or silently ignored: both would
+    leave the student looking at a result that does not mean what they think.
+    """
+    narrowed: dict[str, list[Section]] = {}
+    impossible: list[str] = []
+    for code, sections in candidates.items():
+        lock = locks.get(code)
+        if lock is None or lock.is_empty:
+            narrowed[code] = list(sections)
+            continue
+        allowed = [s for s in sections if lock.allows(s)]
+        if not allowed:
+            impossible.append(f"no section of {code} matches what you pinned ({lock.describe()})")
+        narrowed[code] = allowed
+    return narrowed, impossible
+
+
 def gap_between(first: Meeting, second: Meeting) -> int | None:
     """Minutes between two meetings on the same day, or ``None`` if different days.
 
