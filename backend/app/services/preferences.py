@@ -458,7 +458,14 @@ def score_schedule(
         )
 
     if preferences.avoid_fridays > 0:
-        has_friday = any(m.day == "FRI" for s in schedule.sections for m in s.meetings)
+        # An online Friday lecture is not a Friday on campus, which is what
+        # "no Friday classes" is asking about.
+        has_friday = any(
+            m.day == "FRI"
+            for s in schedule.sections
+            if not s.is_online
+            for m in s.meetings
+        )
         components.append(
             Contribution("no Friday classes", preferences.avoid_fridays, 0.0 if has_friday else 1.0)
         )

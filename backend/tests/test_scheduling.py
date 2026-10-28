@@ -459,3 +459,55 @@ class TestStatedConstraintsAreApplied:
             )
             == []
         )
+
+
+# --- online sections ----------------------------------------------------------
+#
+# These use delivery="WEB" with real meeting times, not the helper's
+# online=True (which drops the meetings and would pass whatever the code did).
+# A synchronous web lecture is the case that matters: it has an hour, and that
+# hour is not time on campus.
+
+
+def test_an_online_class_is_not_a_day_on_campus():
+    """A Tuesday webinar does not make Tuesday a day a student travels in."""
+    on_campus = section("CSCE121", days="MW", start="09:10", end="10:00")
+    remote = section("ENGL104", days="TR", start="13:00", end="14:00", delivery="WEB")
+
+    assert summarize([on_campus, remote]).days_on_campus == 2
+
+
+def test_an_online_class_is_not_an_early_start():
+    """"Nothing before 9" is about leaving the house, not about logging in."""
+    remote = section("ENGL104", days="MWF", start="08:00", end="08:50", delivery="WEB")
+    later = section("CSCE121", days="MWF", start="11:10", end="12:00")
+
+    assert summarize([remote, later]).earliest_start == 11 * 60 + 10
+
+
+def test_online_hours_are_not_time_spent_waiting():
+    """The gap around a remote class is not time stranded between buildings."""
+    morning = section("CSCE121", days="MON", start="09:00", end="10:00")
+    afternoon = section("MATH151", days="MON", start="15:00", end="16:00")
+    remote = section("ENGL104", days="MON", start="12:00", end="13:00", delivery="WEB")
+
+    without = summarize([morning, afternoon]).idle_minutes
+    assert summarize([morning, afternoon, remote]).idle_minutes == without
+
+
+def test_a_wholly_online_schedule_has_no_campus_measures():
+    remote = section("ENGL104", days="MWF", start="08:00", end="08:50", delivery="WEB")
+
+    schedule = summarize([remote])
+
+    assert schedule.days_on_campus == 0
+    assert schedule.earliest_start is None
+    assert schedule.idle_minutes == 0
+
+
+def test_an_online_class_still_conflicts_at_the_same_hour():
+    """Excluding it from the measures must not make it free to double-book."""
+    remote = section("ENGL104", days="MON", start="09:00", end="10:00", delivery="WEB")
+    clashing = section("CSCE121", days="MON", start="09:30", end="10:30", delivery="WEB")
+
+    assert clash(remote, clashing) is not None

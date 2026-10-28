@@ -277,7 +277,18 @@ def _mean(values: Sequence[float]) -> float | None:
 
 
 def summarize(sections: Sequence[Section], *, default_rating: float = 3.5) -> Schedule:
-    """Describe a chosen set of sections."""
+    """Describe a chosen set of sections.
+
+    Every measure about *time* counts only the sections a student physically
+    attends. An online class is not a reason to be on campus: it does not make
+    a Tuesday a day on campus, it cannot be the early start someone asked to
+    avoid, and the hours around it are not time spent waiting between classes.
+    Counting it was quietly answering a different question from the one the
+    student asked.
+
+    Conflicts are the exception and are checked over every section in
+    ``clash``: a synchronous online lecture still occupies the hour it runs in.
+    """
     gaps: list[int] = []
     for index, left in enumerate(sections):
         for right in sections[index + 1 :]:
@@ -286,13 +297,15 @@ def summarize(sections: Sequence[Section], *, default_rating: float = 3.5) -> Sc
                     gap = gap_between(first, second)
                     if gap is not None:
                         gaps.append(gap)
-    starts = [m.start for s in sections for m in s.meetings]
+
+    on_campus = [s for s in sections if not s.is_online]
+    starts = [m.start for s in on_campus for m in s.meetings]
 
     # Per day: the span from the first class to the last, less the time
     # actually spent in class.
     idle = 0
     by_day: dict[str, list[Meeting]] = {}
-    for section in sections:
+    for section in on_campus:
         for meeting in section.meetings:
             by_day.setdefault(meeting.day, []).append(meeting)
     for meetings in by_day.values():
@@ -307,7 +320,7 @@ def summarize(sections: Sequence[Section], *, default_rating: float = 3.5) -> Sc
         mean_gpa=_mean([s.adj_gpa for s in sections]),
         mean_pct_a=_mean([s.pct_a for s in sections]),
         earliest_start=min(starts) if starts else None,
-        days_on_campus=len({m.day for s in sections for m in s.meetings}),
+        days_on_campus=len({m.day for s in on_campus for m in s.meetings}),
         idle_minutes=idle,
     )
 
