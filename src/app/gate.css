@@ -1825,3 +1825,145 @@ a,
   font-size: 9.5px;
   opacity: 0.6;
 }
+
+
+/* --- pinning a class by hand ---------------------------------------------
+   The priorities box is prose, and prose gets inferred. This is the other
+   half: choices that are obeyed or reported, never ranked around. */
+.course-pin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  opacity: 0.45;
+  cursor: pointer;
+}
+.course-pin:hover {
+  opacity: 1;
+  background: #ffffff1f;
+}
+.course-pin.on {
+  opacity: 1;
+  color: #e9b0a6;
+  background: #e9b0a626;
+}
+.course-pin:disabled {
+  cursor: default;
+  opacity: 0.25;
+}
+
+.lock-panel {
+  width: min(460px, 92vw);
+  max-height: 88vh;
+  overflow-y: auto;
+  padding: 18px;
+  border-radius: 16px;
+  background: #221f23;
+  color: #f2e9e6;
+  border: 1px solid #ffffff1f;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.lock-panel header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.lock-panel header span {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  opacity: 0.55;
+}
+.lock-panel header h2 {
+  margin: 2px 0 0;
+  font-size: 19px;
+}
+.lock-panel header button {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.6;
+}
+.lock-note {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.45;
+  opacity: 0.62;
+}
+.lock-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.lock-field > span {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+.lock-field select,
+.lock-field input {
+  width: 100%;
+  padding: 8px 9px;
+  border-radius: 8px;
+  border: 1px solid #ffffff24;
+  background: #2d282d;
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+}
+.lock-choice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.lock-choice button {
+  padding: 7px 11px;
+  border-radius: 8px;
+  border: 1px solid #ffffff24;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.lock-choice button.on {
+  border-color: #c36c62;
+  background: #c36c6230;
+  font-weight: 700;
+}
+.lock-times {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.lock-panel footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 4px;
+}
+.lock-panel footer button {
+  padding: 9px 16px;
+  border-radius: 9px;
+  border: 1px solid #ffffff24;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.lock-panel footer .lock-done {
+  border-color: transparent;
+  background: #7c1d2c;
+  font-weight: 700;
+}

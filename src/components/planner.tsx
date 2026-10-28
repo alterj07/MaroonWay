@@ -1,10 +1,10 @@
 "use client";
 // The planner UI. Data comes from the backend via src/app/page.tsx, which
 // fetches real schedules and maps them into Plan/Course.
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 
 import { emptyPlan, normalizeCourseCodes, readSavedPlan } from "@/lib/plans";
-import type { SavedSchedule } from "@/lib/api";
+import type { CourseSection, SavedSchedule, SectionLock } from "@/lib/api";
 import { PlusIcon, SearchIcon } from "@animateicons/react/lucide";
 import {
   AlertTriangle,
@@ -22,6 +22,7 @@ import {
   LogIn,
   LogOut,
   MapPin,
+  Pin,
   MessageSquareText,
   Moon,
   Plus,
@@ -452,6 +453,212 @@ function CoursePicker({
   );
 }
 
+
+/**
+ * Pinning one course by hand.
+ *
+ * The priorities box is prose and prose is inferred: good for "somewhere
+ * quiet on Fridays", hopeless for "I want this exact section". Everything
+ * chosen here is a hard filter sent as a lock, so the schedule either honours
+ * it or says it cannot -- it never quietly ranks around it.
+ *
+ * The section list is the course's real sections, so nothing offered here can
+ * fail to exist.
+ */
+function CourseLock({
+  code,
+  label,
+  term,
+  lock,
+  onChange,
+  onClose,
+  onLoad,
+}: {
+  code: string;
+  label: string;
+  term: string;
+  lock: SectionLock;
+  onChange: (next: SectionLock) => void;
+  onClose: () => void;
+  onLoad?: (term: string, code: string) => Promise<CourseSection[]>;
+}) {
+  // Without a loader there is nothing to wait for, so the empty list is the
+  // initial state rather than something an effect sets on the first paint.
+  const [sections, setSections] = useState<CourseSection[] | null>(
+    onLoad ? null : [],
+  );
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    if (!onLoad) return;
+    let live = true;
+    onLoad(term, code)
+      .then((rows) => live && setSections(rows))
+      .catch(() => live && setFailed(true));
+    return () => {
+      live = false;
+    };
+  }, [onLoad, term, code]);
+
+  const instructors = useMemo(() => {
+    const seen = new Map<number, string>();
+    for (const row of sections ?? []) {
+      if (row.instructor_id != null && row.instructor_name) {
+        seen.set(row.instructor_id, row.instructor_name);
+      }
+    }
+    return [...seen.entries()].sort((a, b) => a[1].localeCompare(b[1]));
+  }, [sections]);
+
+  const set = (patch: Partial<SectionLock>) => onChange({ ...lock, ...patch });
+  const dayCodes = ["MON", "TUE", "WED", "THU", "FRI"];
+  const chosenDays = lock.days ?? [];
+
+  return (
+    <div className="picker-backdrop" onClick={onClose}>
+      <section className="lock-panel" onClick={(e) => e.stopPropagation()}>
+        <header>
+          <div>
+            <span>PIN THIS CLASS</span>
+            <h2>{label}</h2>
+          </div>
+          <button onClick={onClose} aria-label="Close">
+            <X size={18} />
+          </button>
+        </header>
+
+        <p className="lock-note">
+          Anything set here is a requirement, not a preference. If nothing fits
+          it, you will be told rather than handed something else.
+        </p>
+
+        <label className="lock-field">
+          <span>Instructor</span>
+          <select
+            value={lock.instructor_id ?? ""}
+            onChange={(e) =>
+              set({ instructor_id: e.target.value ? Number(e.target.value) : null })
+            }
+          >
+            <option value="">Anyone</option>
+            {instructors.map(([id, name]) => (
+              <option key={id} value={id}>
+                {name}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="lock-field">
+          <span>Section</span>
+          <select
+            value={lock.section_code ?? ""}
+            onChange={(e) => set({ section_code: e.target.value || null })}
+          >
+            <option value="">Any section</option>
+            {(sections ?? []).map((row) => (
+              <option key={row.section_id} value={row.section_code}>
+                {row.section_code}
+                {row.meetings.length
+                  ? ` · ${row.meetings[0].day} ${row.meetings[0].start}`
+                  : " · no set time"}
+                {row.instructor_name ? ` · ${row.instructor_name}` : ""}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <div className="lock-field">
+          <span>Honors</span>
+          <div className="lock-choice">
+            {[
+              { value: null, text: "Either" },
+              { value: true, text: "Honors only" },
+              { value: false, text: "No honors" },
+            ].map((option) => (
+              <button
+                key={String(option.value)}
+                className={lock.honors === option.value ? "on" : ""}
+                onClick={() => set({ honors: option.value })}
+              >
+                {option.text}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="lock-field">
+          <span>May meet on</span>
+          <div className="lock-choice">
+            {dayCodes.map((day) => (
+              <button
+                key={day}
+                className={chosenDays.includes(day) ? "on" : ""}
+                aria-pressed={chosenDays.includes(day)}
+                onClick={() =>
+                  set({
+                    days: chosenDays.includes(day)
+                      ? chosenDays.filter((d) => d !== day)
+                      : [...chosenDays, day],
+                  })
+                }
+              >
+                {day[0] === "T" && day === "THU" ? "R" : day[0]}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="lock-times">
+          <label className="lock-field">
+            <span>Not before</span>
+            <input
+              type="time"
+              value={lock.earliest ?? ""}
+              onChange={(e) => set({ earliest: e.target.value || null })}
+            />
+          </label>
+          <label className="lock-field">
+            <span>Not after</span>
+            <input
+              type="time"
+              value={lock.latest ?? ""}
+              onChange={(e) => set({ latest: e.target.value || null })}
+            />
+          </label>
+        </div>
+
+        {failed ? (
+          <p className="lock-note">
+            Could not load this course&rsquo;s sections. Instructor and section
+            are unavailable; the rest still work.
+          </p>
+        ) : null}
+
+        <footer>
+          <button onClick={() => onChange({})}>Clear</button>
+          <button className="lock-done" onClick={onClose}>
+            Done
+          </button>
+        </footer>
+      </section>
+    </div>
+  );
+}
+
+function lockSummary(lock: SectionLock | undefined): string | null {
+  if (!lock) return null;
+  const parts: string[] = [];
+  if (lock.section_code) parts.push(`sec ${lock.section_code}`);
+  if (lock.instructor_id != null) parts.push("instructor");
+  if (lock.honors === true) parts.push("honors");
+  if (lock.honors === false) parts.push("no honors");
+  if (lock.days?.length) parts.push(lock.days.map((d) => d[0]).join(""));
+  if (lock.earliest) parts.push(`from ${lock.earliest}`);
+  if (lock.latest) parts.push(`to ${lock.latest}`);
+  return parts.length ? parts.join(" · ") : null;
+}
+
 function Calendar({ plan }: { plan: Plan }) {
   // An online class is not a place you have to be. Giving it a slot in the
   // grid made the week look fuller than it is and, worse, made an 8am webinar
@@ -628,6 +835,7 @@ export function Planner({
   savedWants,
   onSaveCourses,
   onBuildPlans,
+  onCourseSections,
   terms,
   initialTerm,
   savedSchedules: initialSavedSchedules = [],
@@ -644,7 +852,14 @@ export function Planner({
     codes: string[],
     term?: string | null,
   ) => Promise<{ saved: boolean }>;
-  onBuildPlans: (codes: string[], wants: string, term?: string | null) => Promise<{ plans: Plan[]; relaxed: string[] }>;
+  onBuildPlans: (
+    codes: string[],
+    wants: string,
+    term?: string | null,
+    locks?: Record<string, SectionLock>,
+  ) => Promise<{ plans: Plan[]; relaxed: string[] }>;
+  /** Sections of one course, for the pinning panel. Absent in tests. */
+  onCourseSections?: (term: string, code: string) => Promise<CourseSection[]>;
   /** Terms with sections loaded, for the semester picker. */
   terms: string[];
   /** The semester used to generate initialPlans on the server. */
@@ -678,7 +893,21 @@ export function Planner({
     setKept(false);
     setSaveError(null);
     try {
-      const result = await onBuildPlans(codes, wants, selectedTerm || null);
+      // Only pins that say something, and only for courses still chosen: an
+      // empty lock left behind by a cleared panel would be sent as a
+      // constraint that matches everything, and one for a dropped course as a
+      // constraint on nothing.
+      const pinned = Object.fromEntries(
+        Object.entries(locks).filter(
+          ([code, lock]) => codes.includes(code) && lockSummary(lock),
+        ),
+      );
+      const result = await onBuildPlans(
+        codes,
+        wants,
+        selectedTerm || null,
+        Object.keys(pinned).length ? pinned : undefined,
+      );
       setPlans(result.plans);
       setRelaxed(result.relaxed);
       setActive(1);
@@ -728,6 +957,12 @@ export function Planner({
     [addingCourse, setAddingCourse] = useState(false),
     // The course a student has asked to remove, pending confirmation.
     [confirmDrop, setConfirmDrop] = useState<string | null>(null),
+    // What the student pinned by hand, per course, and which panel is open.
+    // Kept beside the chosen courses rather than inside them: a pin outlives
+    // a rebuild and has to survive one.
+    [locks, setLocks] = useState<Record<string, SectionLock>>({}),
+    [lockOpen, setLockOpen] = useState<string | null>(null),
+    [lockWas, setLockWas] = useState<string>(""),
     [addingPriority, setAddingPriority] = useState(false),
     [priorityDraft, setPriorityDraft] = useState(""),
     [comparing, setComparing] = useState(false),
@@ -1064,23 +1299,60 @@ export function Planner({
             onClose={() => setAddingCourse(false)}
             onAdd={(codes) => void addCourses(codes)}
           />
-          {sidebar.map((c, i) => (
-            <div className="course" key={c.code}>
-              <i className={SHOWCASE_COLORS[i % SHOWCASE_COLORS.length]} />
-              <span>
-                <b>{c.label}</b>
-                <small>{c.title ?? "Untitled"}</small>
-              </span>
-              <button
-                className="course-drop"
-                disabled={busy}
-                aria-label={`Remove ${c.label}`}
-                onClick={() => setConfirmDrop(c.code)}
-              >
-                <X size={13} />
-              </button>
-            </div>
-          ))}
+          {sidebar.map((c, i) => {
+            const pinned = lockSummary(locks[c.code]);
+            return (
+              <div className="course" key={c.code}>
+                <i className={SHOWCASE_COLORS[i % SHOWCASE_COLORS.length]} />
+                <span>
+                  <b>{c.label}</b>
+                  {/* The pin replaces the title when there is one: what you
+                      required of this class matters more here than its name,
+                      which is already on every block in the week. */}
+                  <small>{pinned ?? c.title ?? "Untitled"}</small>
+                </span>
+                <button
+                  className={`course-pin${pinned ? " on" : ""}`}
+                  disabled={busy}
+                  aria-label={`Pin ${c.label}`}
+                  title={pinned ? `Pinned: ${pinned}` : "Pin a section, instructor or time"}
+                  onClick={() => {
+                    setLockWas(JSON.stringify(locks[c.code] ?? {}));
+                    setLockOpen(c.code);
+                  }}
+                >
+                  <Pin size={13} />
+                </button>
+                <button
+                  className="course-drop"
+                  disabled={busy}
+                  aria-label={`Remove ${c.label}`}
+                  onClick={() => setConfirmDrop(c.code)}
+                >
+                  <X size={13} />
+                </button>
+              </div>
+            );
+          })}
+          {lockOpen ? (
+            <CourseLock
+              code={lockOpen}
+              label={lockOpen.replace(/^([A-Z]+)(\d.*)$/, "$1 $2")}
+              term={term}
+              lock={locks[lockOpen] ?? {}}
+              onLoad={onCourseSections}
+              onChange={(next) =>
+                setLocks((all) => ({ ...all, [lockOpen]: next }))
+              }
+              onClose={() => {
+                const now = JSON.stringify(locks[lockOpen] ?? {});
+                setLockOpen(null);
+                // Rebuild only when something actually changed. Opening a
+                // panel to look and closing it should not spend a build.
+                if (now !== lockWas) void rebuild();
+              }}
+            />
+          ) : null}
           <div className="label priority-label">
             <b>PRIORITIES</b>
             <button onClick={() => setAddingPriority((v) => !v)}>

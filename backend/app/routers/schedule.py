@@ -189,6 +189,55 @@ async def list_courses(
     return await repository.courses_with_sections(session, term=term, limit=limit)
 
 
+@router.get("/sections")
+async def list_sections(
+    session: SessionDep,
+    term: str,
+    code: str,
+) -> list[dict[str, Any]]:
+    """Every section of one course, for the panel that pins one by hand.
+
+    The schedule endpoint returns the sections it chose; choosing for yourself
+    needs the ones it did not. Ordered the way the panel reads them: the best
+    rated first, then by section code, so the obvious pick is at the top.
+    """
+    rows = await repository.sections_for_courses(session, term=term, codes=[code])
+    sections = [to_section(row) for row in rows]
+    sections.sort(
+        key=lambda s: (
+            -(s.adj_rating or 0.0),
+            s.section_code,
+        )
+    )
+    return [
+        {
+            "section_id": s.section_id,
+            "section_code": s.section_code,
+            "instructor_id": s.instructor_id,
+            "instructor_name": s.instructor_name,
+            "campus": s.campus,
+            "delivery": s.delivery,
+            "honors": s.honors,
+            "seats_open": s.seats_open,
+            "adj_rating": s.adj_rating,
+            "adj_difficulty": s.adj_difficulty,
+            "class_reviews": s.class_reviews,
+            "professor_reviews": s.professor_reviews,
+            "meetings": [
+                {
+                    "day": m.day,
+                    "start": scheduling.format_time(m.start),
+                    "end": scheduling.format_time(m.end),
+                    "building": m.building,
+                    "room": m.room,
+                }
+                for m in s.meetings
+            ],
+        }
+        for s in sections
+    ]
+
+
 @router.post("/preferences", response_model=PreferenceResponse)
 async def read_preferences(
     request: PreferenceRequest,

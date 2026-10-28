@@ -4,6 +4,7 @@ import {
   type CourseOption,
   type Schedule,
   type ScheduleSection,
+  type SectionLock,
 } from '@/lib/api';
 
 /**
@@ -166,7 +167,8 @@ export function emptyPlan(title: string, detail: string): Plan[] {
 export async function plansFor(
   term: string,
   courses: string[],
-  wants?: string | null
+  wants?: string | null,
+  locks?: Record<string, SectionLock>
 ): Promise<{ plans: Plan[]; detail: string | null; relaxed?: string[] }> {
   if (!courses.length) {
     return { plans: emptyPlan('No classes chosen', 'Add the classes you need'), detail: null };
@@ -178,14 +180,21 @@ export async function plansFor(
     courses,
     wants: wants || null,
     limit: SCHEDULE_OPTIONS,
+    locks: locks && Object.keys(locks).length ? locks : undefined,
   });
+  // What failed and what is on offer instead are both part of the answer.
+  const notes = [...(result.relaxed ?? []), ...(result.closest_fit ?? [])];
   if (!result.schedules.length) {
     const detail = result.detail ?? 'No conflict-free combination exists';
-    return { plans: emptyPlan('No schedule fits', detail), detail };
+    return {
+      plans: emptyPlan('No schedule fits', [detail, ...notes].join(' · ')),
+      detail,
+      relaxed: notes,
+    };
   }
   return { plans: result.schedules.map((schedule, index) => ({
-    ...toPlan(schedule, index), warnings: result.relaxed ?? [],
-  })), detail: null, relaxed: result.relaxed ?? [] };
+    ...toPlan(schedule, index), warnings: notes,
+  })), detail: null, relaxed: notes };
 }
 
 /**

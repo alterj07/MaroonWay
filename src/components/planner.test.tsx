@@ -17,7 +17,12 @@ function setup(initialTerm = 'FALL 2026', catalog: ExploreCourse[] = [], initial
     savedCourses: ['CSCE120'], savedWants: '',
     initialTerm, terms: ['FALL 2026', 'SPRING 2027'],
     onSaveCourses: vi.fn(async () => ({ saved: true })),
-    onBuildPlans: vi.fn(async (_codes: string[], _wants: string, _term?: string | null) => ({ plans: [plan], relaxed: [] as string[] })),
+    onBuildPlans: vi.fn(async (
+      _codes: string[],
+      _wants: string,
+      _term?: string | null,
+      _locks?: Record<string, unknown>,
+    ) => ({ plans: [plan], relaxed: [] as string[] })),
     onUseSchedule: vi.fn(async () => ({ saved: true })),
   };
   render(<Planner {...props} />);
@@ -66,7 +71,8 @@ describe('planner semester selection', () => {
     await openBuilder();
     expect(screen.getByRole('combobox', { name: 'Semester' }).textContent)
       .toContain('SPRING 2027');
-    expect(props.onBuildPlans).toHaveBeenLastCalledWith(['CSCE120'], '', 'SPRING 2027');
+    // The fourth argument is the pins. Nothing pinned, nothing sent.
+    expect(props.onBuildPlans).toHaveBeenLastCalledWith(['CSCE120'], '', 'SPRING 2027', undefined);
   });
 
   it('rebuilds and saves using the newly selected semester', async () => {
@@ -75,7 +81,7 @@ describe('planner semester selection', () => {
     fireEvent.click(screen.getByRole('combobox', { name: 'Semester' }));
     fireEvent.click(screen.getByRole('option', { name: 'SPRING 2027' }));
     await waitFor(() => expect(props.onBuildPlans).toHaveBeenLastCalledWith(
-      ['CSCE120'], expect.any(String), 'SPRING 2027',
+      ['CSCE120'], expect.any(String), 'SPRING 2027', undefined,
     ));
     await waitFor(() => expect((screen.getByRole('button', { name: 'Use this schedule' }) as HTMLButtonElement).disabled).toBe(false));
     fireEvent.click(screen.getByRole('button', { name: 'Use this schedule' }));
@@ -136,4 +142,44 @@ it('keeps additional generated options accessible without presenting them as sav
   fireEvent.click(screen.getByRole('button', { name: 'Saved schedules' }));
   expect(screen.getByText('No saved schedules yet')).toBeTruthy();
   expect(screen.queryByRole('heading', { name: 'Candidate 4' })).toBeNull();
+});
+
+describe('pinning a class by hand', () => {
+  it('sends what was pinned as a hard filter, and rebuilds', async () => {
+    const props = setup('SPRING 2027');
+    await openBuilder();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Pin CSCE 120' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Honors only' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Done' }));
+
+    await waitFor(() => expect(props.onBuildPlans).toHaveBeenLastCalledWith(
+      ['CSCE120'], expect.any(String), 'SPRING 2027', { CSCE120: { honors: true } },
+    ));
+  });
+
+  it('does not spend a build when the panel is opened and closed unchanged', async () => {
+    const props = setup('SPRING 2027');
+    await openBuilder();
+    const before = props.onBuildPlans.mock.calls.length;
+
+    fireEvent.click(screen.getByRole('button', { name: 'Pin CSCE 120' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Done' }));
+
+    expect(props.onBuildPlans.mock.calls.length).toBe(before);
+  });
+
+  it('a cleared pin is not sent as a constraint that matches everything', async () => {
+    const props = setup('SPRING 2027');
+    await openBuilder();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Pin CSCE 120' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Honors only' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Clear' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Done' }));
+
+    await waitFor(() => expect(props.onBuildPlans).toHaveBeenLastCalledWith(
+      ['CSCE120'], expect.any(String), 'SPRING 2027', undefined,
+    ));
+  });
 });

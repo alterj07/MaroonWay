@@ -2,7 +2,8 @@
 
 import { revalidatePath } from 'next/cache';
 
-import { ApiError, getTerms, saveSchedule, saveStudentPreferences } from '@/lib/api';
+import { ApiError, getCourseSections, getTerms, saveSchedule, saveStudentPreferences } from '@/lib/api';
+import type { SectionLock } from '@/lib/api';
 import type { Plan } from '@/components/planner';
 import { emptyPlan, normalizeCourseCodes, plansFor } from '@/lib/plans';
 import { currentStudent, studentHeaders } from '@/lib/session';
@@ -48,7 +49,11 @@ export async function saveWants(wants: string) {
 export async function buildPlans(
   courses: string[],
   wants: string,
-  term?: string | null
+  term?: string | null,
+  // Pinned by hand in the course panel. These are hard filters, so they go to
+  // the API untouched rather than being folded into the wants text, where
+  // they would become one more thing to infer and get wrong.
+  locks?: Record<string, SectionLock>
   // `relaxed` travels with the plans: a preference the timetable could not
   // honour is part of the answer, and dropping it leaves a student reading a
   // schedule that quietly disobeys them.
@@ -75,7 +80,7 @@ export async function buildPlans(
   }
 
   try {
-    const result = await plansFor(chosen, codes, wants);
+    const result = await plansFor(chosen, codes, wants, locks);
     return { plans: result.plans, relaxed: result.relaxed ?? [] };
   } catch (error) {
     return {
@@ -106,4 +111,21 @@ export async function useSchedule(term: string, label: string, payload: Plan) {
   });
   revalidatePath('/');
   return { saved: true as const, schedule };
+}
+
+
+/**
+ * The sections of one course, for the panel that pins one by hand.
+ *
+ * A Server Action rather than a fetch from the browser, for the same reason
+ * as the rest of this file: BACKEND_URL and its tokens stay on the server.
+ * Failure is an empty list -- the panel's other controls still work without
+ * it, and a thrown error would take the whole planner down with it.
+ */
+export async function courseSections(term: string, code: string) {
+  try {
+    return await getCourseSections(term, code);
+  } catch {
+    return [];
+  }
 }

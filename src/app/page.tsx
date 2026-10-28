@@ -1,4 +1,4 @@
-import { buildPlans, saveCourses, useSchedule } from '@/app/actions';
+import { buildPlans, courseSections, saveCourses, useSchedule } from '@/app/actions';
 import { Planner, type Plan } from '@/components/planner';
 import { Welcome } from '@/components/welcome';
 import {
@@ -56,6 +56,7 @@ export default async function Home({
         savedWants=""
         onSaveCourses={saveCourses}
         onBuildPlans={buildPlans}
+      onCourseSections={courseSections}
         terms={[]}
         onUseSchedule={useSchedule}
         savedSchedulesError="Could not load your saved schedules while the backend is unavailable."
@@ -108,6 +109,7 @@ export default async function Home({
       savedWants={saved?.wants ?? DEFAULT_PRIORITIES.join(', ')}
       onSaveCourses={saveCourses}
       onBuildPlans={buildPlans}
+      onCourseSections={courseSections}
       terms={terms.map((t) => t.term)}
       initialTerm={term}
       savedSchedules={savedList.schedules}

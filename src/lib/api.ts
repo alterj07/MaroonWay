@@ -339,6 +339,42 @@ export type PreferenceAnswer = {
   unit: number;
 };
 
+/** One course pinned by hand. Every field optional; unset does not constrain. */
+export type SectionLock = {
+  section_code?: string | null;
+  instructor_id?: number | null;
+  honors?: boolean | null;
+  delivery?: string | null;
+  campus?: string | null;
+  /** Days this class may meet on, e.g. ['MON', 'WED']. */
+  days?: string[];
+  earliest?: string | null;
+  latest?: string | null;
+};
+
+/** A section as the pinning panel lists it. */
+export type CourseSection = {
+  section_id: number;
+  section_code: string;
+  instructor_id: number | null;
+  instructor_name: string | null;
+  campus: string | null;
+  delivery: string | null;
+  honors: boolean;
+  seats_open: number | null;
+  adj_rating: number | null;
+  adj_difficulty: number | null;
+  class_reviews: number;
+  professor_reviews: number;
+  meetings: Meeting[];
+};
+
+export function getCourseSections(term: string, code: string): Promise<CourseSection[]> {
+  return get<CourseSection[]>(
+    `/schedule/sections?term=${encodeURIComponent(term)}&code=${encodeURIComponent(code)}`,
+  );
+}
+
 export type ScheduleRequest = {
   term: string;
   courses: string[];
@@ -352,6 +388,8 @@ export type ScheduleRequest = {
   honors?: boolean;
   delivery?: string;
   open_only?: boolean;
+  /** Course code -> what the student pinned. Hard filters, not preferences. */
+  locks?: Record<string, SectionLock>;
   limit?: number;
 };
 
@@ -364,6 +402,8 @@ export type ScheduleResponse = {
   detail: string | null;
   /** Preferences the timetable could not honour, stated plainly. */
   relaxed?: string[];
+  /** What these courses can offer where they could not offer what was asked. */
+  closest_fit?: string[];
 };
 
 export type PreferenceResponse = {
