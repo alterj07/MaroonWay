@@ -220,8 +220,10 @@ class ScheduleOut(BaseModel):
     preference_score: float = 0.0
     #: What earned this schedule its place, for the UI to show.
     reasons: list[str] = []
-    #: An earlier option has this exact timetable; only the staff differ.
-    same_shape: bool = False
+    #: Whether the student expressed anything to score against. Without it
+    #: every option scores the same defaults, and a percentage identical on
+    #: every card tells a student nothing.
+    scored: bool = False
     contributions: list[ContributionOut] = []
     #: Minutes between the two closest classes. Null when nothing shares a day.
     tightest_gap: int | None = None
@@ -347,6 +349,10 @@ class ScheduleResponse(BaseModel):
     #: Preferences the timetable could not honour, so the student is told
     #: rather than left wondering why Friday classes came back anyway.
     relaxed: list[str] = Field(default_factory=list)
+    #: How close these courses can get to what was asked, read off the results
+    #: themselves. Pairs with ``relaxed``: that says what failed, this says
+    #: what is available instead.
+    closest_fit: list[str] = Field(default_factory=list)
 
 
 class PreferenceRequest(BaseModel):

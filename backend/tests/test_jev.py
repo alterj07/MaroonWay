@@ -30,6 +30,7 @@ from app.services.preferences import (
     TRAIT_QUESTIONS,
     Preferences,
     Traits,
+    closest_fit,
     rank,
     score_schedule,
     section_matches,
@@ -544,3 +545,61 @@ def test_a_stated_avoidance_does_carry_weight():
     prefs = Preferences.from_decisions(answers(avoid_fridays=0.9, avoid_early_mornings=0.9))
     assert prefs.avoid_fridays == pytest.approx(0.9)
     assert prefs.avoid_early_mornings == pytest.approx(0.9)
+
+
+# --- telling a student what is actually on offer ------------------------------
+
+
+def ranked_of(*schedules):
+    return [score_schedule(s, Preferences()) for s in schedules]
+
+
+def test_closest_fit_says_how_light_the_lightest_friday_is():
+    friday = schedule_of(section("CSCE121", days="F", start="09:00", end="09:50"))
+    heavier = schedule_of(section("CSCE121", days="F", start="09:00", end="11:00"))
+
+    notes = closest_fit(ranked_of(friday, heavier), Preferences(avoid_fridays=0.9))
+
+    assert len(notes) == 1
+    assert "50 minutes" in notes[0], "the lightest on offer, not the first found"
+
+
+def test_closest_fit_is_quiet_when_the_wish_was_met():
+    friday_free = schedule_of(section("CSCE121", days="MW", start="09:00", end="09:50"))
+
+    assert closest_fit(ranked_of(friday_free), Preferences(avoid_fridays=0.9)) == []
+
+
+def test_closest_fit_names_the_latest_possible_start():
+    early = schedule_of(section("CSCE121", days="MWF", start="08:00", end="08:50"))
+    later = schedule_of(section("CSCE121", days="MWF", start="08:35", end="09:25"))
+
+    notes = closest_fit(ranked_of(early, later), Preferences(avoid_early_mornings=0.9))
+
+    assert len(notes) == 1
+    assert "8:35 AM" in notes[0]
+
+
+def test_closest_fit_reports_the_widest_gap_available():
+    tight = schedule_of(
+        section("CSCE121", days="MON", start="09:00", end="10:00"),
+        section("MATH151", days="MON", start="10:25", end="11:25"),
+    )
+
+    notes = closest_fit(ranked_of(tight), Preferences(), min_gap=60)
+
+    assert len(notes) == 1
+    assert "25 minutes" in notes[0] and "60" in notes[0]
+
+
+def test_an_online_friday_is_not_a_friday_on_campus():
+    """closest_fit reads the same campus-only meetings the measures do."""
+    remote = schedule_of(
+        section("ENGL104", days="F", start="09:00", end="09:50", delivery="WEB")
+    )
+
+    assert closest_fit(ranked_of(remote), Preferences(avoid_fridays=0.9)) == []
+
+
+def test_closest_fit_has_nothing_to_say_about_no_results():
+    assert closest_fit([], Preferences(avoid_fridays=0.9)) == []

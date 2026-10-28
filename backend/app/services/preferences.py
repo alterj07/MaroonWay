@@ -520,3 +520,83 @@ def section_matches(section: Section, preferences: Preferences) -> bool:
     if preferences.honors is not None and section.honors != preferences.honors:
         return False
     return True
+
+
+def _campus_meetings(schedule: Schedule):
+    """Meetings a student physically attends -- the only ones time is about."""
+    return [m for s in schedule.sections if not s.is_online for m in s.meetings]
+
+
+def _clock(minutes: int) -> str:
+    hour, minute = divmod(minutes, 60)
+    suffix = "AM" if hour < 12 else "PM"
+    display = hour % 12 or 12
+    return f"{display}:{minute:02d} {suffix}"
+
+
+def closest_fit(
+    ranked: Sequence[RankedSchedule],
+    preferences: Preferences,
+    *,
+    min_gap: int = DEFAULT_MIN_GAP_MINUTES,
+) -> list[str]:
+    """What these courses *can* offer, where they could not offer what was asked.
+
+    "No Friday classes was impossible" tells a student their wish failed. It
+    does not tell them what to do instead, and the thing they actually want to
+    know -- how close can I get -- is already sitting in the results. Each note
+    here is read off the schedules being returned, so none of it is a guess
+    about a timetable nobody has seen.
+    """
+    if not ranked:
+        return []
+
+    notes: list[str] = []
+
+    if preferences.avoid_fridays > 0:
+        fridays = [
+            sum(m.end - m.start for m in _campus_meetings(r.schedule) if m.day == "FRI")
+            for r in ranked
+        ]
+        lightest = min(fridays)
+        if lightest > 0:
+            notes.append(
+                "Every combination of these courses puts you on campus on Friday. "
+                f"The lightest Friday on offer is {lightest} minutes of class."
+            )
+
+    if preferences.avoid_early_mornings > 0:
+        starts = [
+            r.schedule.earliest_start
+            for r in ranked
+            if r.schedule.earliest_start is not None
+        ]
+        if starts and max(starts) < EARLY_CUTOFF:
+            notes.append(
+                f"Nothing here starts later than {_clock(max(starts))}. "
+                "Dropping a course, or allowing one online section, is what moves it."
+            )
+
+    if min_gap > DEFAULT_MIN_GAP_MINUTES:
+        gaps = [r.schedule.tightest_gap for r in ranked if r.schedule.tightest_gap is not None]
+        if gaps and max(gaps) < min_gap:
+            notes.append(
+                f"The most breathing room these courses allow is {max(gaps)} minutes "
+                f"between classes, short of the {min_gap} you asked for."
+            )
+
+    if preferences.day_shape == "compact":
+        fewest = min(r.schedule.days_on_campus for r in ranked)
+        if fewest >= 5:
+            notes.append(
+                "These courses cannot be packed into fewer than five days on campus."
+            )
+    elif preferences.day_shape == "spread":
+        most = max(r.schedule.days_on_campus for r in ranked)
+        if most <= 2:
+            notes.append(
+                f"These courses only ever meet across {most} "
+                f"{'day' if most == 1 else 'days'}, so there is little to spread out."
+            )
+
+    return notes

@@ -104,15 +104,14 @@ def preferences_payload(preferences: Preferences) -> dict[str, Any]:
     }
 
 
-def to_payload(
-    ranked: prefs_service.RankedSchedule, *, same_shape: bool = False
-) -> dict[str, Any]:
+def to_payload(ranked: prefs_service.RankedSchedule, *, scored: bool = False) -> dict[str, Any]:
     schedule = ranked.schedule
     return {
         "preference_score": round(ranked.preference_score, 4),
-        #: True when an earlier option has exactly this timetable and only the
-        #: instructors differ.
-        "same_shape": same_shape,
+        #: Whether the student expressed anything to score against. Without it
+        #: every option scores the same defaults, and a percentage that is
+        #: identical on each card tells the student nothing.
+        "scored": scored,
         "reasons": list(ranked.reasons),
         "contributions": [
             {
@@ -324,6 +323,7 @@ async def generate_schedules(
                 ),
                 "detail": "; ".join(impossible_locks),
                 "relaxed": [],
+                "closest_fit": [],
             }
 
         request_availability = scheduling.Availability(
@@ -443,12 +443,16 @@ async def generate_schedules(
             )
 
         # 4. Rank.
-        # Options the student can tell apart. Several schedules can share the
-        # same shape -- the same courses at the same hours, differing only in
-        # which section number teaches them -- and offering three of those as
-        # "Option 1, 2, 3" is offering one option three times. Take the best of
-        # each distinct timetable, and fall back to the plain order if that
-        # leaves fewer than asked for.
+        # Options the student can tell apart, and only those. Several schedules
+        # can share the same shape -- the same courses at the same hours,
+        # differing only in which section number teaches them -- and offering
+        # three of those as "Option 1, 2, 3" is offering one option three
+        # times. Keep the best of each distinct timetable and stop; padding the
+        # list back out to the requested count with repeats of a shape already
+        # shown is making the result look richer than it is.
+        #
+        # So the count is whatever the timetable actually allows: every
+        # distinct week when there are many, and three when there are three.
         ordered = prefs_service.rank(schedules, preferences, traits)
         ranked: list[prefs_service.RankedSchedule] = []
         seen: set[tuple[tuple[str, str, int, int], ...]] = set()
@@ -466,20 +470,6 @@ async def generate_schedules(
             ranked.append(candidate)
             if len(ranked) == request.limit:
                 break
-        # Fewer distinct shapes than asked for means the remaining choices
-        # differ only in who teaches them. Those are still real options, so
-        # they are offered -- flagged, so the student is told that is the only
-        # difference rather than shown the same timetable three times with no
-        # explanation.
-        same_shape: set[int] = set()
-        if len(ranked) < request.limit:
-            for candidate in ordered:
-                if candidate in ranked:
-                    continue
-                same_shape.add(id(candidate))
-                ranked.append(candidate)
-                if len(ranked) == request.limit:
-                    break
         detail = (
             None
             if ranked
@@ -491,12 +481,14 @@ async def generate_schedules(
         return {
             "request": request.model_dump(),
             "count": len(ranked),
-            "schedules": [
-                to_payload(r, same_shape=id(r) in same_shape) for r in ranked
-            ],
+            "schedules": [to_payload(r, scored=preferences.expressed) for r in ranked],
             "preferences": preferences_payload(resolved),
             "detail": detail,
             "relaxed": relaxed,
+            # What these courses can actually offer where they could not offer
+            # what was asked. Read off the results, so it never describes a
+            # timetable the student cannot pick.
+            "closest_fit": prefs_service.closest_fit(ranked, preferences, min_gap=min_gap),
         }
 
     try:
