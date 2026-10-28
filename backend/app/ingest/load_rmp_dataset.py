@@ -45,7 +45,11 @@ log = logging.getLogger("ingest.rmp_dataset")
 BATCH_SIZE = 1_000
 #: The review JSON blobs are large; the default field limit rejects them.
 CSV_FIELD_LIMIT = 10_000_000
-PIPELINE_MATCHED = "matched_name_department"
+#: Statuses build_dataset.py writes when it did link a professor. A set, not
+#: one string: a name unique on its campus is accepted without the department
+#: agreeing, and gating on the old single value would have silently dropped
+#: every row matched that way.
+PIPELINE_MATCHED = frozenset({"matched_name_unique", "matched_name_department"})
 #: RateMyProfessors school ids per campus, as build_dataset.py records them.
 #: Stored on each professor so the rows say which school they belong to -- a
 #: roster fetch that loses its scoping can then be cleaned up by school.
@@ -226,7 +230,7 @@ def extract(path: Path, *, limit: int | None, stats: Stats) -> Extract:
                 "details_fetched_at": parse_rmp_date(row.get("rmp_reviews_fetched_at")),
             }
 
-            if instructor and (row.get("match_status") or "") == PIPELINE_MATCHED:
+            if instructor and (row.get("match_status") or "") in PIPELINE_MATCHED:
                 out.pipeline_links[instructor] = (rmp_id, _float(row.get("match_confidence")))
 
             subject = _text(row.get("subject"))

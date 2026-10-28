@@ -56,11 +56,49 @@ def norm(s):
     return ' '.join(re.sub(r"[^A-Z0-9 ]", ' ', s).split())
 
 
+#: Name forms we have to read, and which half of each is the surname:
+#:
+#:   "CANTU J"            grade reports -- surname first, then an initial
+#:   "Cantu, Justin Colt" Schedule Builder -- surname, comma, given names
+#:   "Justin Colt Cantu"  the same, already rearranged
+#:
+#: Only the first of these existed when this was written, which is why the old
+#: version required the final token to be a single letter and returned None for
+#: everything else.
 def name_key(name):
-    t = [x for x in norm(name).split() if x not in {'JR', 'SR', 'II', 'III', 'IV'}]
-    if len(t) > 1 and len(t[-1]) == 1:
+    """(surname, given name or initial), or None if the form is unreadable."""
+    raw = str(name or '')
+    if ',' in raw:
+        last, _, rest = raw.partition(',')
+        given = [x for x in norm(rest).split() if x not in NAME_SUFFIXES]
+        surname = ' '.join(x for x in norm(last).split() if x not in NAME_SUFFIXES)
+        return (surname, given[0]) if surname and given else None
+
+    t = [x for x in norm(raw).split() if x not in NAME_SUFFIXES]
+    if len(t) < 2:
+        return None
+    # "CANTU J": everything but the trailing initial is the surname.
+    if len(t[-1]) == 1:
         return ' '.join(t[:-1]), t[-1]
-    return None
+    # "Justin Colt Cantu": the trailing token is the surname. Middle names are
+    # dropped rather than guessed at -- RMP carries one first name.
+    return t[-1], t[0]
+
+
+NAME_SUFFIXES = {'JR', 'SR', 'II', 'III', 'IV'}
+
+
+def names_agree(ours, theirs):
+    """Whether two given names can be the same person.
+
+    One being a prefix of the other covers the only two cases we actually see:
+    an initial against a full name ("J" vs "JUSTIN"), and two spellings of the
+    same name. It is deliberately not fuzzy -- "JUSTIN" and "JUSTINE" are
+    different people and a looser rule would merge them.
+    """
+    if not ours or not theirs:
+        return False
+    return theirs.startswith(ours) if len(ours) <= len(theirs) else ours.startswith(theirs)
 
 
 def number(value):
@@ -221,11 +259,33 @@ def dept_tokens(s):
 
 
 def match(g, profs):
+    """Link one instructor to an RMP profile, or say why not.
+
+    Department agreement used to be a precondition: a candidate matched
+    uniquely by name was thrown away unless RMP's department string shared
+    half its tokens with the grade report's. That rejected 5,485 rows whose
+    *only* candidate was the right one -- "AEROSPACE ENGINEERING" against RMP's
+    "Mechanical Engineering" scores 0.33 and fails -- and is the single largest
+    reason 64% of instructors carry no rating.
+
+    Department is now what it should always have been: a tiebreak. A name that
+    matches exactly one professor on the right campus is that professor. Only
+    when several answer to the same name does the department decide between
+    them, and when it cannot, the row still goes to review rather than being
+    guessed at.
+    """
     key = name_key(g['instructor_name'])
     if not key:
         return None, 'unmatched_name_format', []
+    surname, given = key
     candidates = [p for p in profs if p['campus'] == g['campus']
-                  and norm(p['lastName']) == key[0] and norm(p['firstName']).startswith(key[1])]
+                  and norm(p['lastName']) == surname
+                  and names_agree(given, norm(p['firstName']))]
+    if not candidates:
+        return None, 'no_match', []
+    if len(candidates) == 1:
+        return candidates[0], 'matched_name_unique', candidates
+
     def dept_ok(p):
         a = dept_tokens(p['department'])
         return any(a and a & dept_tokens(d) and len(a & dept_tokens(d)) / len(a | dept_tokens(d)) >= .5
@@ -233,7 +293,7 @@ def match(g, profs):
     compatible = [p for p in candidates if dept_ok(p)]
     if len(compatible) == 1:
         return compatible[0], 'matched_name_department', candidates
-    return None, 'needs_review' if candidates else 'no_match', candidates
+    return None, 'needs_review', candidates
 
 
 def review_day(value):
