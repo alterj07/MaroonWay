@@ -23,6 +23,7 @@ from app.services.scheduling import (
     format_time,
     gap_between,
     generate,
+    instructor_wishes,
     parse_days,
     parse_meetings,
     parse_time,
@@ -574,3 +575,74 @@ def test_a_lock_is_permissive_about_data_the_section_lacks():
     unknown = section("CSCE121", campus=None)
 
     assert Lock(campus="CSTAT").allows(unknown)
+
+
+# --- professors named in the student's own words ------------------------------
+
+
+def pools(**by_code):
+    return {code: list(sections) for code, sections in by_code.items()}
+
+
+def test_a_named_professor_is_pinned_to_the_course_they_teach():
+    chupp = section("POLS207", "501", instructor="Christopher Chupp")
+    thornton = section("POLS207", "502", instructor="Douglas S. Thornton")
+
+    locks, notes = instructor_wishes(
+        "I want Chupp as my POLS 207 teacher", pools(POLS207=[chupp, thornton])
+    )
+
+    assert locks["POLS207"].instructor_id == chupp.instructor_id
+    assert "Christopher Chupp" in notes[0]
+
+
+def test_a_name_nobody_matches_is_said_out_loud():
+    """Handing back someone else in silence is the thing to avoid."""
+    locks, notes = instructor_wishes(
+        "I want Chupp", pools(POLS207=[section("POLS207", instructor="Douglas S. Thornton")])
+    )
+
+    assert locks == {}
+    assert len(notes) == 1 and "Chupp" in notes[0]
+
+
+def test_a_course_code_in_the_sentence_is_not_a_missing_professor():
+    locks, notes = instructor_wishes(
+        "I want POLS207 in the morning",
+        pools(POLS207=[section("POLS207", instructor="Douglas S. Thornton")]),
+    )
+
+    assert locks == {} and notes == []
+
+
+def test_ordinary_preference_words_are_not_surnames():
+    """A professor named Young must not be pinned by "I want easy classes"."""
+    young = section("CSCE121", instructor="Grace Young")
+
+    locks, _ = instructor_wishes("I want easy morning classes", pools(CSCE121=[young]))
+
+    assert locks == {}
+
+
+def test_an_ambiguous_surname_is_reported_rather_than_guessed():
+    one = section("CSCE121", "501", instructor="Hyunyoung Lee")
+    two = replace(
+        section("CSCE121", "502", instructor="Sunghee Lee"), instructor_id=99
+    )
+
+    locks, notes = instructor_wishes("I want Lee", pools(CSCE121=[one, two]))
+
+    assert locks == {}
+    assert "more than one" in notes[0]
+
+
+def test_initials_are_too_short_to_match():
+    doe = section("CSCE121", instructor="J Doe")
+
+    locks, _ = instructor_wishes("I want a J class", pools(CSCE121=[doe]))
+
+    assert locks == {}
+
+
+def test_no_wants_text_pins_nothing():
+    assert instructor_wishes(None, pools(CSCE121=[section("CSCE121")])) == ({}, [])

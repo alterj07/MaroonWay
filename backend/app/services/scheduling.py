@@ -552,3 +552,100 @@ def describe_failure(
     if best is not None:
         return best[1]
     return "no conflict-free combination exists for those courses"
+
+
+#: Words that pass for a surname but are just how students write. A section
+#: taught by someone named Young must not be pinned by "I want young classes".
+_NOT_A_SURNAME = frozenset(
+    {
+        "THE", "AND", "FOR", "NOT", "WITH", "WANT", "WANTS", "LIKE", "NEED", "PLEASE",
+        "CLASS", "CLASSES", "COURSE", "COURSES", "TEACHER", "TEACHERS", "PROF",
+        "PROFESSOR", "PROFESSORS", "INSTRUCTOR", "SECTION", "SCHEDULE", "MORNING",
+        "MORNINGS", "AFTERNOON", "EVENING", "EARLY", "LATE", "EASY", "EASIER", "HARD",
+        "GOOD", "BEST", "BETTER", "GREAT", "NICE", "ONLINE", "HONORS", "CAMPUS",
+        "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY",
+        "STAFF", "TBA", "TBD",
+    }
+)
+
+
+def _surnames(full_name: str) -> set[str]:
+    """The parts of a name worth searching a sentence for.
+
+    Initials and two-letter fragments are dropped: they match far too much, and
+    a student writing "I want Lee" means the surname, not the L of someone else.
+    """
+    parts = re.split(r"[^A-Za-z]+", full_name.upper())
+    return {p for p in parts if len(p) >= 3 and p not in _NOT_A_SURNAME}
+
+
+def instructor_wishes(
+    wants: str | None,
+    candidates: Mapping[str, Sequence[Section]],
+) -> tuple[dict[str, Lock], list[str]]:
+    """Professors the student named, pinned to the courses they actually teach.
+
+    "I want Chupp for POLS207" is not a preference to weigh against a rating --
+    it is a choice, and weighing it meant the schedule came back taught by
+    someone else with no explanation. Nothing here is inferred by a model: a
+    name is pinned only when it matches an instructor already in that course's
+    pool, so a sentence can never ask for a section that does not exist.
+
+    Returns the locks, and notes for names that matched nobody or matched more
+    than one person in the same course, which are both things to say out loud
+    rather than resolve by guessing.
+    """
+    text = (wants or "").strip()
+    if not text:
+        return {}, []
+
+    haystack = text.upper()
+    locks: dict[str, Lock] = {}
+    notes: list[str] = []
+
+    for code in sorted(candidates):
+        matched: dict[int, str] = {}
+        for section in candidates[code]:
+            if section.instructor_id is None or not section.instructor_name:
+                continue
+            for surname in _surnames(section.instructor_name):
+                if re.search(rf"\b{re.escape(surname)}\b", haystack):
+                    matched[section.instructor_id] = section.instructor_name
+                    break
+        if len(matched) == 1:
+            instructor_id, name = next(iter(matched.items()))
+            locks[code] = Lock(instructor_id=instructor_id)
+            notes.append(f"pinned {name} for {code}, as you asked")
+        elif len(matched) > 1:
+            names = ", ".join(sorted(matched.values()))
+            notes.append(
+                f"more than one instructor of {code} matches the name you gave "
+                f"({names}), so none was pinned -- say which in the course panel"
+            )
+
+    # A name that matched nobody. Said out loud rather than ignored: a student
+    # who asks for Chupp and is handed Thornton with no comment has no way to
+    # tell whether Chupp was unavailable or simply not understood.
+    known = {
+        surname
+        for sections in candidates.values()
+        for section in sections
+        if section.instructor_name
+        for surname in _surnames(section.instructor_name)
+    }
+    # Course codes are capitalised too, and are not people.
+    course_words = {
+        word
+        for code in candidates
+        for word in re.split(r"(?<=[A-Za-z])(?=\d)", code.upper())
+        if word
+    }
+    for token in re.findall(r"\b[A-Z][a-zA-Z]{3,}\b", text):
+        upper = token.upper()
+        if upper in known or upper in _NOT_A_SURNAME or upper in course_words:
+            continue
+        notes.append(
+            f"no instructor named {token} teaches any of these courses this term, "
+            "so nothing was pinned for that"
+        )
+    return locks, notes

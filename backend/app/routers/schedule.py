@@ -310,6 +310,14 @@ async def generate_schedules(
             )
             for code, lock in request.locks.items()
         }
+        # A professor named in the student's own words is a choice, not a
+        # preference: ranking it meant "I want Chupp for POLS207" came back
+        # taught by someone else, silently. Matched against the real pool, so a
+        # sentence can only ever pin a section that exists, and an explicit
+        # pin from the course panel always wins over one read from a sentence.
+        wished, wish_notes = scheduling.instructor_wishes(request.wants, candidates)
+        locks = {**wished, **locks}
+
         candidates, impossible_locks = scheduling.apply_locks(candidates, locks)
         if impossible_locks:
             # Nothing further can be true, and a generic "no schedules" would
@@ -323,7 +331,7 @@ async def generate_schedules(
                 ),
                 "detail": "; ".join(impossible_locks),
                 "relaxed": [],
-                "closest_fit": [],
+                "closest_fit": wish_notes,
             }
 
         request_availability = scheduling.Availability(
@@ -488,7 +496,8 @@ async def generate_schedules(
             # What these courses can actually offer where they could not offer
             # what was asked. Read off the results, so it never describes a
             # timetable the student cannot pick.
-            "closest_fit": prefs_service.closest_fit(ranked, preferences, min_gap=min_gap),
+            "closest_fit": wish_notes
+            + prefs_service.closest_fit(ranked, preferences, min_gap=min_gap),
         }
 
     try:
