@@ -126,12 +126,26 @@ const time = (n: number) => {
     m = minutes % 60;
   return `${h % 12 || 12}:${String(m).padStart(2, "0")} ${h >= 12 ? "PM" : "AM"}`;
 };
+/**
+ * The shape of a week, at card size.
+ *
+ * This used to print the course code inside every pill. At eighty pixels tall
+ * with five courses the pills overlap and the labels shred each other, so the
+ * one thing the card is for -- telling two weeks apart at a glance -- was the
+ * thing it could not do. Bars only now: the eye compares silhouettes, and the
+ * codes are a hover away and on the full calendar below.
+ */
 function Mini({ courses }: { courses: Course[] }) {
-  const meetings = courses.flatMap(courseMeetings);
+  // Same rule as the calendar: an online class is not time on campus, and
+  // drawing it here would make two weeks look different when they are not.
+  const onCampus = courses.filter((c) => c.delivery !== "WEB");
+  const onlineCount = courses.length - onCampus.length;
+  const meetings = onCampus.flatMap(courseMeetings);
   const visibleDays = weekDays.slice(0, Math.max(5, ...meetings.map((m) => m.day + 1)));
   const startHour = Math.min(8, ...meetings.map((m) => Math.floor(m.start)));
   const endHour = Math.max(22, ...meetings.map((m) => Math.ceil(m.end)));
   return (
+    <div className="mini-wrap">
     <div className="mini" style={{
       gridTemplateColumns: `18px repeat(${visibleDays.length}, 1fr)`,
       gridTemplateRows: `13px repeat(${(endHour - startHour) * 4}, minmax(0, 1fr))`,
@@ -144,7 +158,7 @@ function Mini({ courses }: { courses: Course[] }) {
           {d[0]}
         </b>
       ))}
-      {courses.flatMap((c, i) =>
+      {onCampus.flatMap((c, i) =>
         courseMeetings(c).map((meeting, index) => (
           <span
             key={`${i}-${index}`}
@@ -155,11 +169,15 @@ function Mini({ courses }: { courses: Course[] }) {
               alignSelf: "stretch",
             }}
             title={`${c.code} · ${c.prof} · ${weekDays[meeting.day]} ${time(meeting.start)}–${time(meeting.end)} · ${meeting.room}`}
-          >
-            {c.code}
-          </span>
+          />
         )),
       )}
+    </div>
+    {onlineCount ? (
+      <small className="mini-online">
+        + {onlineCount} online
+      </small>
+    ) : null}
     </div>
   );
 }
@@ -435,13 +453,61 @@ function CoursePicker({
 }
 
 function Calendar({ plan }: { plan: Plan }) {
-  const meetings = plan.courses.flatMap(courseMeetings);
+  // An online class is not a place you have to be. Giving it a slot in the
+  // grid made the week look fuller than it is and, worse, made an 8am webinar
+  // stretch the whole calendar up an hour for a class nobody travels to. They
+  // sit above the week instead, on the days they actually run.
+  const onCampus = plan.courses.filter((c) => c.delivery !== "WEB");
+  const online = plan.courses.filter((c) => c.delivery === "WEB");
+  const anytime = online.filter((c) => courseMeetings(c).length === 0);
+  const meetings = onCampus.flatMap(courseMeetings);
   const visibleDays = weekDays.slice(0, Math.max(5, ...meetings.map((m) => m.day + 1)));
   const startHour = Math.min(8, ...meetings.map((m) => Math.floor(m.start)));
   const endHour = Math.max(22, ...meetings.map((m) => Math.ceil(m.end)));
   const hours = Array.from({ length: endHour - startHour }, (_, i) => startHour + i);
   return (
     <div className="cal-scroll">
+      {online.length ? (
+        <div className="cal-online">
+          <div
+            className="cal-online-week"
+            style={{
+              gridTemplateColumns: `var(--cal-gutter) repeat(${visibleDays.length}, 1fr)`,
+            }}
+          >
+            <span className="cal-online-label">Online</span>
+            {visibleDays.map((day, index) => {
+              const here = online.filter((c) =>
+                courseMeetings(c).some((m) => m.day === index),
+              );
+              return (
+                <div key={day} style={{ gridColumn: index + 2 }}>
+                  {here.map((c) => (
+                    <em
+                      key={`${c.code}-${c.section}`}
+                      className={c.color}
+                      title={`${c.code}${c.prof ? ` · ${c.prof}` : ""} · online${
+                        courseMeetings(c)
+                          .filter((m) => m.day === index)
+                          .map((m) => ` · ${time(m.start)}–${time(m.end)}`)
+                          .join("")
+                      }`}
+                    >
+                      {c.code}
+                    </em>
+                  ))}
+                </div>
+              );
+            })}
+          </div>
+          {anytime.length ? (
+            <p className="cal-online-any">
+              No set meeting time:{" "}
+              {anytime.map((c) => c.code).join(", ")}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
       <div className="cal" style={{
         gridTemplateColumns: `var(--cal-gutter) repeat(${visibleDays.length}, 1fr)`,
         gridTemplateRows: `var(--cal-head) repeat(${hours.length}, var(--cal-row))`,
@@ -468,7 +534,7 @@ function Calendar({ plan }: { plan: Plan }) {
             style={{ gridColumn: d + 2, gridRow: `2 / ${hours.length + 2}` }}
           />
         ))}
-        {plan.courses.flatMap((c) =>
+        {onCampus.flatMap((c) =>
           courseMeetings(c).map((meeting, index) => {
             const hours = meeting.end - meeting.start;
             return (

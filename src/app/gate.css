@@ -1757,3 +1757,71 @@ a,
   opacity: 0.68;
   font-style: italic;
 }
+
+
+/* --- the online rail ------------------------------------------------------
+   Online classes sit above the week rather than in it. They are a commitment
+   at a time, not a place to be, and a block in the grid said the opposite. */
+.cal-online {
+  margin: 0 0 6px;
+}
+.cal-online-week {
+  display: grid;
+  align-items: start;
+  column-gap: 0;
+  row-gap: 2px;
+}
+.cal-online-label {
+  grid-column: 1;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.6;
+  padding-top: 3px;
+}
+.cal-online-week > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  padding-right: 6px;
+}
+.cal-online-week em {
+  font-style: normal;
+  font-size: 9.5px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 3px 5px;
+  border-radius: 5px;
+  /* Filled in the course's own colour, so the chip and its block below are
+     obviously the same class, but dashed and small so it reads as a note on
+     the day rather than another block competing for the grid. The colour
+     classes set the background with !important, and white text is what they
+     are designed for -- an outlined version would be a dark hue on a dark
+     surface in the dark theme. */
+  color: #fff;
+  border: 1px dashed #ffffff66;
+  cursor: help;
+}
+.cal-online-any {
+  margin: 4px 0 0;
+  font-size: 10px;
+  opacity: 0.62;
+}
+
+/* --- the card preview -----------------------------------------------------
+   Bars, no labels. See the Mini comment in planner.tsx. */
+.mini-wrap {
+  position: relative;
+}
+.mini span {
+  border-radius: 2px;
+  margin: 0 1px;
+  min-height: 2px;
+}
+.mini-online {
+  display: block;
+  margin-top: 3px;
+  font-size: 9.5px;
+  opacity: 0.6;
+}
