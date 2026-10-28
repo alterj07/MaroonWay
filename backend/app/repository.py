@@ -283,20 +283,32 @@ _SECTIONS_FOR_COURSES = text(
         s.seats,
         s.seats_open,
         s.meets,
-        ics.adj_rating,
-        ics.adj_difficulty,
-        ics.adj_gpa,
+        -- Course-specific scores where they exist, the professor's own
+        -- otherwise. instructor_course_scores only has a row where the
+        -- professor has reviews tagged with this course code or grade history
+        -- for it, which most section assignments do not -- and without the
+        -- fallback every one of them rendered as "no ratings" although
+        -- instructor_scores knew the professor perfectly well. The same
+        -- precedence the traits use: the exact course wins, the professor-level
+        -- row stands in.
+        coalesce(ics.adj_rating, isc.adj_rating)         as adj_rating,
+        coalesce(ics.adj_difficulty, isc.adj_difficulty) as adj_difficulty,
+        coalesce(ics.adj_gpa, isc.adj_gpa)               as adj_gpa,
+        -- No professor-level equivalent exists: the A rate is computed per
+        -- course from grade history, and a professor's rate across unrelated
+        -- courses would answer a question nobody asked. Null stays null.
         ics.pct_a,
         -- How much evidence is behind the rating. A 4.9 from three reviews and
         -- a 4.9 from ninety are not the same claim, and the shrinkage that
         -- separates them is invisible once it has been applied.
         coalesce(ics.class_rating_count, 0)      as class_rating_count,
-        coalesce(ics.instructor_rating_count, 0) as instructor_rating_count
+        coalesce(ics.instructor_rating_count, isc.rating_count, 0) as instructor_rating_count
     from sections s
     join courses c on c.id = s.course_id
     left join instructors i on i.id = s.instructor_id
     left join instructor_course_scores ics
         on ics.instructor_id = s.instructor_id and ics.course_id = s.course_id
+    left join instructor_scores isc on isc.instructor_id = s.instructor_id
     where s.term = cast(:term as text)
       and upper(c.dept || c.number) = any(cast(:codes as text[]))
       and (cast(:campus as text) is null or s.campus is null or s.campus = cast(:campus as text))
