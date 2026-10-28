@@ -447,3 +447,31 @@ class SavedScheduleOut(BaseModel):
     label: str | None = None
     payload: dict[str, Any]
     created_at: datetime | None = None
+
+
+class SummaryRunRequest(BaseModel):
+    """What one triggered chunk of the summary batch should cover."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    #: Professors considered per run. Small by default: the scheduler fires
+    #: repeatedly and the job skips what it has already written, so a chunk
+    #: that finishes well inside the ping interval beats one that overlaps.
+    limit: int = Field(default=25, ge=1, le=500)
+    min_comments: int = Field(default=3, ge=1, le=100)
+    terms_back: int = Field(default=2, ge=1, le=20)
+    include_courses: bool = True
+
+
+class SummaryRunOut(BaseModel):
+    """Whether a chunk is running, and what the last one did."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    state: str  # idle | running
+    started_at: datetime | None = None
+    finished_at: datetime | None = None
+    #: The previous run's counters, as run_summaries reports them.
+    last_report: str | None = None
+    #: Why the previous run stopped, when it did not finish.
+    last_error: str | None = None

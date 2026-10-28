@@ -21,7 +21,7 @@ from app.cache import CacheRegistry, warm_professor_cache
 from app.config import get_settings
 from app.db import make_engine, make_session_factory
 from app.presenters import professor_payload
-from app.routers import courses, me, meta, professors, schedule, sections
+from app.routers import courses, jobs, me, meta, professors, schedule, sections
 from app.scoring import ScoreWeights
 from app.services.summarize import PROMPT_VERSION
 
@@ -104,6 +104,7 @@ app = FastAPI(
 )
 
 app.include_router(meta.router)
+app.include_router(jobs.router)
 app.include_router(professors.router)
 app.include_router(courses.router)
 app.include_router(schedule.router)
