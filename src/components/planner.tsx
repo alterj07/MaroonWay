@@ -229,6 +229,36 @@ function CourseHover({ course, meeting }: {
   const share = (v: number | null | undefined) =>
     v === null || v === undefined ? "—" : `${Math.round(Number(v) * 100)}%`;
 
+  const tier = evidenceTier(course.reviews);
+  // The shrinkage that produces adj_rating returns the campus mean exactly
+  // when a professor has no ratings at all, so the API sends a number either
+  // way. Printing it would show every unrated professor the same invented
+  // 3.77, which is what made the asterisk look like it was lying.
+  const known = [
+    tier === "none"
+      ? null
+      : {
+          label: "RMP rating",
+          value: `${stat(course.rating)} / 5`,
+          className: band(course.rating ?? null),
+        },
+    tier === "none"
+      ? null
+      : { label: "Difficulty", value: `${stat(course.difficulty)} / 5`, className: "" },
+    course.pctA == null
+      ? null
+      : { label: "A rate", value: share(course.pctA), className: "" },
+    course.gpa == null
+      ? null
+      : {
+          label: "Adjusted GPA",
+          value: `${stat(Number(course.gpa) * 4 / 5)} / 4.0`,
+          className: "",
+        },
+  ].filter((entry): entry is { label: string; value: string; className: string } =>
+    entry !== null,
+  );
+
   return (
     <div className="hover-card" role="tooltip">
       <b>
@@ -236,14 +266,14 @@ function CourseHover({ course, meeting }: {
         {course.section ? <em>sec {course.section}</em> : null}
       </b>
       <span className="hover-prof">{course.prof}</span>
-      {(course.reviews ?? 0) < THIN_EVIDENCE ? (
+      {tier === "solid" ? null : (
         <span className="hover-warn">
           <b className="warn-star">*</b>{" "}
-          {(course.reviews ?? 0) === 0
-            ? "No ratings for this one — nothing to go on, so treat the numbers above as unknown rather than average."
-            : `Only ${course.reviews} review${course.reviews === 1 ? "" : "s"} — a weak signal, and the rating has been pulled toward the average because of it.`}
+          {tier === "none"
+            ? "Nobody has rated this professor, so there is no rating to show. The ranking falls back on the campus average for them."
+            : `Only ${course.reviews} review${course.reviews === 1 ? "" : "s"} behind this — a weak signal, and the rating has been pulled toward the campus average because of it.`}
         </span>
-      ) : null}
+      )}
       {(course.sameTimeAlternatives ?? 0) > 0 ? (
         <span className="hover-warn">
           <Info size={12} /> {course.sameTimeAlternatives} other instructor
@@ -252,26 +282,23 @@ function CourseHover({ course, meeting }: {
           these exact times.
         </span>
       ) : null}
-      <dl>
-        <div>
-          <dt>RMP rating</dt>
-          <dd className={band(course.rating ?? null)}>
-            {stat(course.rating)} / 5
-          </dd>
-        </div>
-        <div>
-          <dt>Difficulty</dt>
-          <dd>{stat(course.difficulty)} / 5</dd>
-        </div>
-        <div>
-          <dt>A rate</dt>
-          <dd>{share(course.pctA)}</dd>
-        </div>
-        <div>
-          <dt>Adjusted GPA</dt>
-          <dd>{stat(course.gpa == null ? null : Number(course.gpa) * 4 / 5)} / 4.0</dd>
-        </div>
-      </dl>
+      {/* Only what is actually known. A row of em dashes reads as a broken
+          page, and a rating printed for a professor nobody has rated is worse
+          than blank: it is the campus average wearing their name. */}
+      {known.length ? (
+        <dl>
+          {known.map((entry) => (
+            <div key={entry.label}>
+              <dt>{entry.label}</dt>
+              <dd className={entry.className}>{entry.value}</dd>
+            </div>
+          ))}
+        </dl>
+      ) : (
+        <span className="hover-warn">
+          No ratings and no grade history for this section yet.
+        </span>
+      )}
       <footer>
         <span>
           <Clock3 size={11} />
@@ -464,16 +491,20 @@ function Calendar({ plan }: { plan: Plan }) {
                 <span className="block-main">
                   <strong>
                     {c.code}
-                    {/* Thin evidence: a 4.9 from three reviews and a 4.9 from
-                        ninety are not the same claim. */}
-                    {(c.reviews ?? 0) < THIN_EVIDENCE ? (
+                    {/* Three states, not two: a 4.9 from ninety reviews, a
+                        4.9 from three, and no rating at all are three
+                        different claims and used to look like two. */}
+                    {evidenceTier(c.reviews) === "none" ? (
+                      <i
+                        className="mark-unrated"
+                        title="Nobody has rated this professor — there is no rating behind this one"
+                      >
+                        ?
+                      </i>
+                    ) : evidenceTier(c.reviews) === "thin" ? (
                       <i
                         className="mark-thin"
-                        title={
-                          (c.reviews ?? 0) === 0
-                            ? "No RateMyProfessors ratings behind this one — nothing to go on"
-                            : `Only ${c.reviews} RateMyProfessors review${c.reviews === 1 ? "" : "s"} behind this rating — treat it as a weak signal`
-                        }
+                        title={`Only ${c.reviews} RateMyProfessors review${c.reviews === 1 ? "" : "s"} behind this rating — treat it as a weak signal`}
                       >
                         *
                       </i>
@@ -1507,6 +1538,21 @@ const DAY_LETTERS = ["M", "T", "W", "R", "F", "S", "U"];
 
 /** Below this many reviews, a rating is marked as thin evidence. */
 const THIN_EVIDENCE = 20;
+
+/** How much is actually known about who teaches a section.
+ *
+ * "No ratings" and "two ratings" were sharing one asterisk, which made the
+ * warning read as wrong whenever a number appeared beside it -- and a number
+ * always appears, because the shrinkage returns the campus mean for a
+ * professor nobody has rated.
+ */
+type Evidence = "none" | "thin" | "solid";
+
+function evidenceTier(reviews: number | null | undefined): Evidence {
+  const count = reviews ?? 0;
+  if (count === 0) return "none";
+  return count < THIN_EVIDENCE ? "thin" : "solid";
+}
 const CAMPUS_NAMES: Record<string, string> = {
   CSTAT: "College Station",
   GALV: "Galveston",

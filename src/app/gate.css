@@ -1409,6 +1409,7 @@ a,
  * are their own size now, with a target big enough to hover without aiming.
  */
 .mark-thin,
+.mark-unrated,
 .mark-alt {
   display: inline-flex;
   align-items: center;
@@ -1441,7 +1442,20 @@ a,
   color: #cfe4ff;
   background: #9ec7ff26;
 }
+/* No rating at all. Deliberately not the thin-rating asterisk and
+   deliberately not alarming: nothing is known about this professor, which is
+   a different statement from a weak rating and was sharing its mark. */
+.mark-unrated {
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1;
+  color: #d8cfd2;
+  background: #ffffff1f;
+  text-shadow: 0 1px 2px #00000055;
+}
+
 .mark-thin:hover,
+.mark-unrated:hover,
 .mark-alt:hover {
   background: #ffffff38;
 }
