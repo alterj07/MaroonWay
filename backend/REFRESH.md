@@ -4,9 +4,9 @@ Run from `backend/`, with `DATABASE_URL` set in `backend/.env`. Every step has
 a dry run; run it, read it, then run the real one. Nothing here needs a browser
 or a logged-in session.
 
-Steps 1–3 are the ones that close the missing-data gap. Steps 4–6 are the
+Steps 1–4 are the ones that close the missing-data gap. Steps 5–7 are the
 RateMyProfessors half and are only worth running once that question is settled
-(see **Before step 4**).
+(see **Before step 5**).
 
 ---
 
@@ -62,7 +62,38 @@ select count(*) total, count(person_id) with_person_id from instructors;
 `with_person_id` is the number that matters. It should be in the low
 thousands; it was 0 before this.
 
-## 3. Rebuild the grade dataset with the new matcher
+## 3. Put the ratings on the rows that teach
+
+**Run this once, after step 2.** Step 2 cannot repair a table it has already
+written to: it attaches an A&M id to a row and then skips that person forever
+(`if person_id in by_person: continue`), so re-running it leaves the wrong rows
+claimed. That is why `both` stayed at 291.
+
+The same person is in the table up to three times -- `CANTU J` from the grade
+reports, `Justin Cantu` from RateMyProfessors, `Justin Colt Cantu` from the
+class schedule -- and only the last of those is what a schedule reads.
+
+```bash
+.venv/bin/python -m app.ingest.merge_instructors --dry-run
+.venv/bin/python -m app.ingest.merge_instructors
+```
+
+The dry run writes nothing and prints the whole picture: the four counts you
+sent me, the share of schedulable sections carrying a rating per term, how many
+rows it would merge, and ten sample pairs. **Read the samples.** If any line
+pairs two people who are obviously not the same person, stop and send it to me
+rather than running the real thing.
+
+It refuses anything it cannot be sure of. A pair is merged only when it is
+unique in *both* directions -- one unidentified row answers to this
+instructor's name, and that row answers to no other instructor. `KIM J` fits
+ten people, so `KIM J` is merged into none of them; those show up as
+"left alone as ambiguous" and keep their gap.
+
+**Send me the before/after block it prints.** The line that matters is
+`with a rating` per term: that is the product.
+
+## 4. Rebuild the grade dataset with the new matcher
 
 **This needs inputs that are not in the repository.** `build_dataset.py` reads
 the cached Registrar PDFs from `Data/pdfs/` and the RateMyProfessors roster
@@ -102,9 +133,9 @@ I want to see it rather than have you work around it.
 
 ---
 
-## Before step 4 — the RateMyProfessors question
+## Before step 5 — the RateMyProfessors question
 
-Steps 4–6 collect from RateMyProfessors. Their terms of use prohibit automated
+Steps 5–7 collect from RateMyProfessors. Their terms of use prohibit automated
 access and redistribution of user content, and there is no official API or
 licensing route. That is a decision for you, not a technical blocker, and the
 honest options are:
@@ -123,7 +154,7 @@ honest options are:
 If you go ahead, pace it. `robots.txt` publishes `Crawl-delay: 10`; the
 `--rpm` flag below is what sets that.
 
-## 4. Load the professor roster
+## 5. Load the professor roster
 
 ```bash
 .venv/bin/python -m app.ingest.load_rmp --school-id 1003 --detail-limit 0 --dry-run
@@ -143,7 +174,7 @@ select count(*) from rmp_professors;
 
 Near 6,022 means the full roster loaded; ~1,991 means it did not.
 
-## 5. Comments, for the summaries and traits
+## 6. Comments, for the summaries and traits
 
 ```bash
 .venv/bin/python -m app.ingest.load_rmp --school-id 1003 --rpm 6
@@ -152,7 +183,7 @@ Near 6,022 means the full roster loaded; ~1,991 means it did not.
 Resumable. `--refetch-days` controls how stale a professor must be before
 re-fetching.
 
-## 6. Summaries and traits
+## 7. Summaries and traits
 
 ```bash
 .venv/bin/python -m app.ingest.run_summaries --limit 5 --dry-run
@@ -185,5 +216,5 @@ where s.term = 'SPRING 2027';
 ```
 
 That ratio is the product. Send it to me with the match_status table from step
-3 and I can tell you whether what is left is namesakes, professors genuinely
+4 and I can tell you whether what is left is namesakes, professors genuinely
 absent from RMP, or something we have not found yet.
