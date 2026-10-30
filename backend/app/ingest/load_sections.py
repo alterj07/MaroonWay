@@ -111,6 +111,11 @@ class ParsedRow:
     seats: int | None
     seats_open: int | None
     meetings: list[dict[str, Any]]
+    #: A&M's own instructor id, where the source carries one. Resolving on it
+    #: rather than on a normalised name is what tells ten different people
+    #: named "KIM J" apart; sources that only print a name leave it None and
+    #: fall back to the name as before.
+    person_id: int | None = None
 
 
 def parse_row(row: dict[str, str], cmap: ColumnMap) -> tuple[ParsedRow | None, str]:
@@ -193,12 +198,31 @@ async def persist(records: list[ParsedRow], *, stats: Stats | None = None) -> St
                 await session.execute(text("select id, upper(dept), upper(number) from courses"))
             ).all()
         }
-        instructors = {
-            str(row[1]): int(row[0])
-            for row in (
-                await session.execute(text("select id, canonical_key from instructors"))
-            ).all()
-        }
+        rows = (
+            await session.execute(text("select id, canonical_key, person_id from instructors"))
+        ).all()
+        instructors = {str(row[1]): int(row[0]) for row in rows}
+        by_person = {int(row[2]): int(row[0]) for row in rows if row[2] is not None}
+
+        # An instructor already known by name, now seen with an id, gets the id
+        # attached. Without this the same person would be created twice -- once
+        # from the grade reports under a name, once from the class schedule
+        # under an id -- and their ratings would sit on the row the schedule
+        # does not use.
+        adopted: list[dict[str, Any]] = []
+        for record in records:
+            if record.person_id is None or record.person_id in by_person:
+                continue
+            existing = instructors.get(canonical_key(record.instructor or ""))
+            if existing is not None and existing not in by_person.values():
+                adopted.append({"id": existing, "person_id": record.person_id})
+                by_person[record.person_id] = existing
+        if adopted:
+            await session.execute(
+                text("update instructors set person_id = :person_id where id = :id"),
+                adopted,
+            )
+            log.info("attached an A&M id to %d instructors already known by name", len(adopted))
 
         payload: list[dict[str, Any]] = []
         for record in records:
@@ -208,10 +232,12 @@ async def persist(records: list[ParsedRow], *, stats: Stats | None = None) -> St
                 stats.skip("unknown_course")
                 continue
             instructor_id = None
-            if record.instructor:
+            if record.person_id is not None:
+                instructor_id = by_person.get(record.person_id)
+            if instructor_id is None and record.instructor:
                 instructor_id = instructors.get(canonical_key(record.instructor))
-                if instructor_id is None:
-                    stats.unknown_instructors.add(record.instructor)
+            if instructor_id is None and record.instructor:
+                stats.unknown_instructors.add(record.instructor)
             if parse_term(record.term) is None:
                 stats.skip("unparsed_term")
             payload.append(
