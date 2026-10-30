@@ -29,7 +29,7 @@ import argparse
 import asyncio
 import logging
 from collections import defaultdict
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 from sqlalchemy import text
@@ -81,8 +81,14 @@ class Plan:
     #: ones we hold no history for.
     alone: int = 0
     #: Pairs refused because both rows already carry a different RMP profile.
-    conflicting: int = 0
+    #: One of the two links is wrong and is already being shown to students,
+    #: so these are listed rather than merely counted.
+    conflicts: list[tuple[Row, Row]] = field(default_factory=list)
     unreadable: int = 0
+
+    @property
+    def conflicting(self) -> int:
+        return len(self.conflicts)
 
 
 def plan_merges(rows: list[Row]) -> Plan:
@@ -139,7 +145,7 @@ def plan_merges(rows: list[Row]) -> Plan:
             plan.contested += 1
             continue
         if row.rmp_id is not None and other.rmp_id is not None and row.rmp_id != other.rmp_id:
-            plan.conflicting += 1
+            plan.conflicts.append((row, other))
             continue
         plan.merges.append(
             Merge(row.id, other.id, f"{other.full_name!r} is the only {row.full_name!r}")
@@ -300,6 +306,22 @@ async def run(*, dry_run: bool, limit: int | None = None) -> Plan:
                 "  keep %-34s (person %s) <- %-28s (rmp %s)",
                 keep.full_name, keep.person_id, drop.full_name, drop.rmp_id,
             )
+
+        # One of each pair is linked to the wrong professor, and the one on the
+        # teaching row is already being shown to students. Listed in full
+        # because 26 rows is a morning's work to check by hand and a wrong
+        # rating under a real person's name is the thing we must not ship.
+        if plan.conflicts:
+            log.warning(
+                "%d instructors are linked to two different RateMyProfessors "
+                "profiles -- one of each pair is wrong:",
+                len(plan.conflicts),
+            )
+            for keep, drop in plan.conflicts:
+                log.warning(
+                    "  %-34s teaches, and is rmp %-9s | %-28s is rmp %s",
+                    keep.full_name, keep.rmp_id, drop.full_name, drop.rmp_id,
+                )
 
         if dry_run:
             log.info("dry run: nothing written")

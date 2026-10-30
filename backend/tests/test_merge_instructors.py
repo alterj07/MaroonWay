@@ -91,6 +91,8 @@ def test_two_profiles_disagreeing_on_who_this_is_are_not_merged():
 
     assert plan.merges == []
     assert plan.conflicting == 1
+    keep, drop = plan.conflicts[0]
+    assert (keep.rmp_id, drop.rmp_id) == (55, 77), "both links are named so one can be fixed"
 
 
 def test_the_same_profile_on_both_rows_still_merges():
