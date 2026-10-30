@@ -226,3 +226,66 @@ def test_every_resolution_carries_the_person_id_it_was_asked_about():
         resolve(person(full_name="STAFF"), []),
     ):
         assert result.person_id == 749735
+
+
+# --- the two name forms our own tables hold -----------------------------------
+
+
+def test_a_grade_report_name_agrees_with_a_schedule_name():
+    """The regression this file exists for.
+
+    Instructors arrive twice: from the Registrar's grade reports as "CANTU J",
+    and from the class schedule as "Justin Colt Cantu". Matching those by
+    normalised-name equality -- which is what the first version did -- adopted
+    almost nobody, and the database ended up with 4,023 instructors carrying an
+    A&M id, 3,467 carrying a RateMyProfessors id, and only 291 carrying both.
+    The rating was on a row the scheduler never reads.
+    """
+    from_grades = read_name("CANTU J")
+    from_schedule = read_name("Justin Colt Cantu")
+
+    assert from_grades is not None and from_schedule is not None
+    assert names_agree(from_grades, from_schedule)
+    assert names_agree(from_schedule, from_grades), "and the other way round"
+
+
+@pytest.mark.parametrize(
+    ("grades", "schedule"),
+    [
+        ("YUM K", "Ki Hwan K. Yum (P)"),
+        ("LEE H", "Hyunyoung Lee"),
+        ("THORNTON D", "Douglas S. Thornton"),
+        ("VAN DER BERG J", "Jan van der Berg"),
+    ],
+)
+def test_real_pairs_from_both_sources_agree(grades, schedule):
+    assert names_agree(read_name(grades), read_name(schedule))
+
+
+def test_an_initial_form_that_fits_several_people_is_the_case_to_refuse():
+    """"KIM J" fits ten schedule names; adopting the first puts one person's
+    ratings on another person's classes."""
+    abbreviated = read_name("KIM J")
+    candidates = [read_name(n) for n in ("Jaehyun Kim", "Joon Kim", "Julia Kim")]
+
+    fits = [c for c in candidates if names_agree(c, abbreviated)]
+
+    assert len(fits) == 3, "all three fit, which is exactly why none may be adopted"
+
+
+@pytest.mark.parametrize(
+    ("raw", "surname", "given"),
+    [
+        ("Jan van der Berg", "VAN DER BERG", "JAN"),
+        ("Maria de la Cruz", "DE LA CRUZ", "MARIA"),
+        ("Ludwig von Mises", "VON MISES", "LUDWIG"),
+        ("Ahmed bin Rashid", "BIN RASHID", "AHMED"),
+    ],
+)
+def test_a_surname_reaches_back_over_its_particles(raw, surname, given):
+    assert read_name(raw) == Name(surname, given)
+
+
+def test_a_particle_never_swallows_the_given_name():
+    """"Van Doren" is a surname; there is still a person in front of it."""
+    assert read_name("Van Doren") == Name("DOREN", "VAN")

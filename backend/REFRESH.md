@@ -64,13 +64,22 @@ thousands; it was 0 before this.
 
 ## 3. Rebuild the grade dataset with the new matcher
 
+**This needs inputs that are not in the repository.** `build_dataset.py` reads
+the cached Registrar PDFs from `Data/pdfs/` and the RateMyProfessors roster
+from `Data/output/rmp_cache_v2/`, and neither is checked in -- the existing
+`schedule_dataset.csv` was built on another machine (see `DATA_README.md`).
+Without them the script fails either way: `--reparse` finds no PDFs, and
+without it there is no `sections_campus_source.csv` to read.
+
+So this step needs one of: the original machine's `Data/pdfs/` and
+`Data/output/` caches copied across, or a full re-download
+(`python3 build_dataset.py --fetch`, hours, and it hits RateMyProfessors).
+
+Loading the CSV we already have does work, and takes a path:
+
 ```bash
-cd ../Data
-python3 build_dataset.py --reparse
-python3 -m unittest test_dataset
-cd ../backend
-.venv/bin/python -m app.ingest.load_rmp_dataset --dry-run
-.venv/bin/python -m app.ingest.load_rmp_dataset
+.venv/bin/python -m app.ingest.load_rmp_dataset ../Data/output/schedule_dataset.csv --dry-run
+.venv/bin/python -m app.ingest.load_rmp_dataset ../Data/output/schedule_dataset.csv
 ```
 
 **Send me this**, it is the number the whole matcher change turns on:

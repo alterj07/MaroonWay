@@ -37,6 +37,16 @@ _ORNAMENTS = frozenset({"JR", "SR", "II", "III", "IV", "DR", "PROF", "PROFESSOR"
 #: class search. Neither is part of anybody's name.
 _ROLE_MARK = re.compile(r"\s*\((?:P|S)\)\s*$")
 
+#: Particles that belong to the surname that follows them. Without these,
+#: "Jan van der Berg" reads as a Mr Berg and stops agreeing with the grade
+#: reports' "VAN DER BERG J", which is the same person spelled the other way.
+#: Normalisation has already upper-cased everything, so the usual trick of
+#: spotting a lower-case particle is not available.
+_PARTICLES = frozenset(
+    {"VAN", "VON", "DER", "DEN", "DE", "DEL", "DELLA", "DI", "DA", "DOS", "DU",
+     "LA", "LE", "LOS", "BIN", "IBN", "AL", "ST", "TER", "TEN"}
+)
+
 
 def normalize(value: str | None) -> str:
     """Upper-case ASCII letters and single spaces. Accents folded, not dropped."""
@@ -77,9 +87,14 @@ def read_name(raw: str | None) -> Name | None:
     if len(tokens[-1]) == 1:
         # "YUM K": the trailing letter is the initial, the rest is the surname.
         return Name(" ".join(tokens[:-1]), tokens[-1])
-    # "Ki Hwan K. Yum": trailing token is the surname, leading one the given
-    # name. Middle names are dropped rather than guessed at.
-    return Name(tokens[-1], tokens[0])
+    # "Ki Hwan K. Yum": the trailing token is the surname and the leading one
+    # the given name; middle names are dropped rather than guessed at. A
+    # surname may reach back over its particles -- "Jan van der Berg" is a Mr
+    # van der Berg -- but never so far as to swallow the given name.
+    start = len(tokens) - 1
+    while start > 1 and tokens[start - 1] in _PARTICLES:
+        start -= 1
+    return Name(" ".join(tokens[start:]), tokens[0])
 
 
 def names_agree(ours: Name, theirs: Name) -> bool:

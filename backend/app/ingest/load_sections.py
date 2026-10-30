@@ -29,7 +29,8 @@ from app.ingest.columns import ColumnMap, resolve_columns, split_course_code
 from app.ingest.common import bump_data_version, configure_logging, session_scope
 from app.ingest.load_grades import normalize_campus, read_rows
 from app.models import sections
-from app.services.names import canonical_key
+from app.services.identity import Name, names_agree, read_name
+from app.services.names import canonical_key, normalize_name
 from app.services.scheduling import format_time, parse_days, parse_time
 from app.services.terms import parse_term
 
@@ -183,6 +184,24 @@ def parse_row(row: dict[str, str], cmap: ColumnMap) -> tuple[ParsedRow | None, s
     )
 
 
+#: Instructors named by the class schedule. The conflict target is the
+#: canonical key because that is the table's own unique constraint; where a row
+#: already exists under that key and nobody has claimed it, it takes the A&M id
+#: rather than a duplicate being made beside it.
+_INSTRUCTOR_UPSERT = text(
+    """
+    insert into instructors (full_name, normalized_name, canonical_key, person_id)
+    values (:full_name, :normalized_name, :canonical_key, :person_id)
+    on conflict (canonical_key) do update
+       set person_id = coalesce(instructors.person_id, excluded.person_id),
+           full_name = case
+               when instructors.person_id is null then excluded.full_name
+               else instructors.full_name
+           end
+    """
+)
+
+
 async def persist(records: list[ParsedRow], *, stats: Stats | None = None) -> Stats:
     """Write sections, resolving their course and instructor.
 
@@ -199,30 +218,97 @@ async def persist(records: list[ParsedRow], *, stats: Stats | None = None) -> St
             ).all()
         }
         rows = (
-            await session.execute(text("select id, canonical_key, person_id from instructors"))
+            await session.execute(
+                text("select id, canonical_key, person_id, full_name from instructors")
+            )
         ).all()
         instructors = {str(row[1]): int(row[0]) for row in rows}
         by_person = {int(row[2]): int(row[0]) for row in rows if row[2] is not None}
 
-        # An instructor already known by name, now seen with an id, gets the id
-        # attached. Without this the same person would be created twice -- once
-        # from the grade reports under a name, once from the class schedule
-        # under an id -- and their ratings would sit on the row the schedule
-        # does not use.
-        adopted: list[dict[str, Any]] = []
-        for record in records:
-            if record.person_id is None or record.person_id in by_person:
+        # Attaching A&M's id to the instructors we already hold.
+        #
+        # This cannot be done by comparing normalised names. The grade reports
+        # print "CANTU J" and the class schedule prints "Justin Colt Cantu";
+        # those canonicalise differently, so matching on the key adopted almost
+        # nobody -- 4,023 instructors ended up with an A&M id and 3,467 with a
+        # RateMyProfessors id while only 291 had both, because the row carrying
+        # the rating was never the row the scheduler reads.
+        #
+        # So it goes through the same rule that decides any other identity
+        # here: surnames must match, and one given name must be a prefix of the
+        # other, which is exactly "J" against "JUSTIN". A grade-report row that
+        # fits several of this term's instructors is left alone -- "KIM J" fits
+        # ten people, and adopting the first would put one person's ratings on
+        # another's classes.
+        unclaimed: dict[str, list[tuple[int, Name]]] = {}
+        for row in rows:
+            if row[2] is not None:
                 continue
-            existing = instructors.get(canonical_key(record.instructor or ""))
-            if existing is not None and existing not in by_person.values():
-                adopted.append({"id": existing, "person_id": record.person_id})
-                by_person[record.person_id] = existing
+            parsed = read_name(row[3])
+            if parsed is not None:
+                unclaimed.setdefault(parsed.surname, []).append((int(row[0]), parsed))
+
+        seen_people: dict[int, str] = {}
+        for record in records:
+            if record.person_id is not None and record.instructor:
+                seen_people.setdefault(record.person_id, record.instructor)
+
+        adopted: list[dict[str, Any]] = []
+        contested = 0
+        taken: set[int] = set()
+        for person_id, name in seen_people.items():
+            if person_id in by_person:
+                continue
+            theirs = read_name(name)
+            if theirs is None:
+                continue
+            fits = [
+                (row_id, parsed)
+                for row_id, parsed in unclaimed.get(theirs.surname, [])
+                if row_id not in taken and names_agree(parsed, theirs)
+            ]
+            if len(fits) != 1:
+                contested += len(fits) > 1
+                continue
+            row_id = fits[0][0]
+            adopted.append({"id": row_id, "person_id": person_id})
+            by_person[person_id] = row_id
+            taken.add(row_id)
+
         if adopted:
             await session.execute(
                 text("update instructors set person_id = :person_id where id = :id"),
                 adopted,
             )
-            log.info("attached an A&M id to %d instructors already known by name", len(adopted))
+        log.info(
+            "attached an A&M id to %d instructors already on record; %d names fit "
+            "more than one and were left alone",
+            len(adopted), contested,
+        )
+
+        # Whoever is left teaches here and we have never heard of them. Creating
+        # them is the point: a section whose instructor does not exist loads
+        # with nobody attached, and the student is shown a class taught by
+        # no one.
+        fresh = [
+            {
+                "full_name": name,
+                "normalized_name": normalize_name(name),
+                "canonical_key": canonical_key(name),
+                "person_id": person_id,
+            }
+            for person_id, name in seen_people.items()
+            if person_id not in by_person
+        ]
+        if fresh:
+            await session.execute(_INSTRUCTOR_UPSERT, fresh)
+            refreshed = (
+                await session.execute(
+                    text("select id, person_id from instructors where person_id is not null")
+                )
+            ).all()
+            by_person = {int(row[1]): int(row[0]) for row in refreshed}
+            log.info("created %d instructors this term's schedule names", len(fresh))
 
         payload: list[dict[str, Any]] = []
         for record in records:
