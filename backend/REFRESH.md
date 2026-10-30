@@ -93,6 +93,17 @@ ten people, so `KIM J` is merged into none of them; those show up as
 **Send me the before/after block it prints.** The line that matters is
 `with a rating` per term: that is the product.
 
+Two things in that report send you back a step:
+
+- **`with nobody`** above zero means that term was loaded before the ingest
+  learned to create instructors, so those sections point at no one. Re-run
+  step 2 for that term, then this step again.
+- **`linked to two different RateMyProfessors profiles`** lists instructors
+  where one of the two links is wrong and the wrong one may be the one
+  students see. Check them against ratemyprofessors.com by hand and clear the
+  bad link: `update instructors set rmp_id = null, rmp_match_basis = null
+  where id = <id>;`
+
 ## 4. Rebuild the grade dataset with the new matcher
 
 **This needs inputs that are not in the repository.** `build_dataset.py` reads
